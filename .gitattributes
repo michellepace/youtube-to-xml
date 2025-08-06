@@ -1,0 +1,27 @@
+# Auto detect text files and normalize to LF in repository
+# Working tree line endings will be native to the platform
+* text=auto
+
+# Shell scripts - force LF (even on Windows)
+*.sh text eol=lf
+
+# Windows specific files - keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Common Binary files - never modify line endings
+*.dll binary
+*.exe binary
+*.gif binary
+*.jpeg binary
+*.jpg binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.pdf binary
+*.png binary
+*.tar.gz binary
+*.webp binary
+*.xlsx binary
+*.zip binary

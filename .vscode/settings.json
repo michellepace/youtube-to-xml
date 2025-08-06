@@ -1,0 +1,24 @@
+{
+    // General editor settings
+    "window.commandCenter": true,   // search box at top of window
+    "editor.colorDecorators": true, // show colour pickers in code
+
+
+    // 🐍 UV PYTHON ENVIRONMENT
+    // Run `uv sync` to create .venv/ → restart IDE to activate venv → open NEW terminal 
+    // Run `which python` → → should show ../.venv/bin/python (interpretor and dependencies in here)
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python", // this auto detects anyhow
+    "python.terminal.activateEnvironment": true, // asks terminal to auto activate UV environment
+
+    // 🐍 Ruff: Python code linting and formatting 
+    // This configures HOW the IDE behaves (the WHAT to check is in pyproject.toml)
+    // NB: Cursor PyRight's WHAT to check also in pyproject.toml [tool.pyright]
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+}

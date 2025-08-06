@@ -1,0 +1,17 @@
+{
+    "recommendations": [
+
+        // Cursor recommneded https://docs.cursor.com/guides/languages/python
+        "ms-python.python",           // Base Python: debugging, Test Explorer UI, venv integration
+        "ms-python.debugpy",          // Python debugger (breakpoints, stepping)
+        "charliermarsh.ruff",         // Python linter & formatter (Astral ecosystem like UV)
+        "anysphere.cursorpyright",    // Python language server (autocomplete, hover info, go-to-definition)
+
+        // For VSCode users in place of anysphere.cursorpyright
+        "ms-python.vscode-pylance",
+
+        // Notes:
+        // 1. ms-python.python integrates venv with the IDE, but UV creates it
+        // 2. Ruff doesn't have type checking, CP overlaps some of ruff, control in pyproject.toml
+    ]
+}
