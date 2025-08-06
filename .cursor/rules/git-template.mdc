@@ -1,0 +1,42 @@
+---
+description: Git commit message template for clear and practical commit messages
+alwaysApply: false
+---
+
+Appl the message template in between `<template>` tags. Carefully determine an appropriate commit type `<commit_types>` to prefix. Use guidelines `<guidelines>` to ensure a well crafted and helpful git commit message.
+
+<template>
+[commit_type]: [brief main summary]
+
+[Logical Group Name]:
+- [relevant detail about what changed and why]
+- [filename: sometimes mentioning a file is useful]
+- [another important change or context]
+- [more details as needed]
+
+[Another Group Name if needed]:
+- [more details as needed]
+
+[1-3 concise simple sentences to explain the benefit / impact i.e. the point]
+</template>
+
+<commit_types>
+- feature: New feature for users (adds functionality)
+- fix: Bug fixes (fixes broken functionality)
+- docs: Documentation changes only e.g. README.md
+- rules `CLAUDE.md` files or in `.cursor/rules/`
+- style: Code formatting, whitespace, semicolons (no logic changes)
+- refactor: Code changes that neither fix bugs nor add features
+- test: Adding or updating tests
+- chore: Development workflow, workspace config, dependency updates, dev tools, (affects development experience)
+- build: Build system changes, compilation process, how code gets packaged, (how the final product gets created)
+- ci: CI/CD pipeline changes, automated workflows, deployment automation, (when/how automation runs)
+- perf: Performance improvements
+</commit_types>
+
+<guidelines>
+- Group related changes logically
+- List items can be filenames, key changes, important context, or anything that helps explain the commit
+- Main summary should be present tense, under 50 characters
+- Focus on format/content that would be most helpful to someone reviewing this later
+</guidelines>
