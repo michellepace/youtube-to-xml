@@ -35,6 +35,7 @@ typeCheckingMode = "standard"
 reportUnusedImport = false      # Ruff F401 handles it
 reportUnusedVariable = false    # Ruff F841 handles it
 reportDuplicateImport = false   # Ruff F811 handles it
+reportUnusedParameter = false   # Ruff ARG001 handles it
 
 [tool.ruff]
 # Strictest ruff settings
