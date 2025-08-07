@@ -22,7 +22,7 @@
 - Entry Point: `[project.scripts]` configuration in `pyproject.toml`
 - Usage: `youtube-to-xml transcript.txt` and `youtube-to-xml --help`
 
-**Entry Point Flow**: CLI command `youtube-to-xml` → `convert_transcript()` in `main.py` → `parse_transcript()` from `parser.py` → `generate_xml()` from `xml_generator.py`
+**Entry Point Flow**: CLI command `youtube-to-xml` → `convert_transcript()` in `main.py` → [modules to be determined following "one module, one purpose"]
 
 ## Design Principles
 
