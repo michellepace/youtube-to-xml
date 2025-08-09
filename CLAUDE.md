@@ -5,6 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Status
 YouTube-to-XML transcript converter - **foundation complete, core implementation missing**. Main entry point `src/youtube_to_xml/__init__.py` is placeholder only.
 
+## Python Requirements
+- **Python**: 3.13+ (pinned in `.python-version`)
+- **Core Libraries**: `argparse`, `pathlib`, `re`, `xml.etree.ElementTree`, `pytest`
+
 ## UV Workflow (Always)
 ```bash
 uv sync                           # Setup/update dependencies 
@@ -30,18 +34,11 @@ uv run pre-commit run --all-files # All hooks
 - **Type hints required** - All function signatures need type annotations
 - **Descriptive naming** - Functions/variables should clearly indicate purpose
 
-**TDD Testing Guidelines**:
-- **pytest `tmp_path` fixture** - no real test files
-- **Avoid mocks** - use real operations when possible
-
-## Reference Implementation
-`scripts/transcript_reporter.py` contains **working** implementations:
-- `find_timestamps()` - timestamp detection
-- `find_chapters()` - chapter extraction logic  
-- `TIMESTAMP_PATTERN` - regex for validation
-- `read_file()` - file I/O patterns
-
-**Adapt these proven patterns** rather than rewriting from scratch.
+## TDD Implementation
+- Use pytest's `tmp_path` fixture to avoid creating test files
+- Avoid mocks as they introduce unnecessary complexity
+- Test incrementally: One test should drive one behavior
+- Use focused test names that describe what's being tested  
 
 ## Code Quality Standards
 - **Ruff**: Strictest settings (ALL rules enabled)

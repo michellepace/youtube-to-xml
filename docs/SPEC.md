@@ -42,6 +42,8 @@
 **TDD Guidelines `pytest`**
 - Use pytest's `tmp_path` fixture to avoid creating test files
 - Avoid mocks as they introduce unnecessary complexity
+- Test incrementally: One test should drive one behavior
+- Use focused test names that describe what's being tested  
 
 ## Python Tech Stack
 
@@ -85,7 +87,7 @@ Final thoughts on implementation
 ```xml
 <transcript>
   <chapters>
-    <chapter name="Introduction" start="0:00">
+    <chapter title="Introduction" start_time="0:00">
       0:00
       Welcome to today's session
       2:28
@@ -95,13 +97,13 @@ Final thoughts on implementation
       23:30
       Second point here
     </chapter>
-    <chapter name="Getting Started Guide" start="1:15:30">
+    <chapter title="Getting Started Guide" start_time="1:15:30">
       1:15:30
       Download the software
       2:45:12
       Configure it , erm, how &quot;you&quot; like it
     </chapter>
-    <chapter name="Advanced Features &amp; Tips" start="10:15:30">
+    <chapter title="Advanced Features &amp; Tips" start_time="10:15:30">
       10:15:30
       Final thoughts on implementation
     </chapter>
@@ -114,8 +116,8 @@ Final thoughts on implementation
 
 - **Timestamp Pattern**: Lines containing only timestamp formats (M:SS, MM:SS, H:MM:SS, or HH:MM:SS)
 - **First Chapter**: First line of text file
-- **Subsequent Chapters**: When exactly 2 lines exist between consecutive timestamps, the second line (non-timestamp) is a chapter name
-- **Reference Implementation (parsing)**: Use timestamp and chapter detection logic from `scripts/transcript_reporter.py` (functions: `find_timestamps()`, `find_chapters()`, `TIMESTAMP_PATTERN`). Also consider `read_file()` for file I/O. Adapt the proven parsing patterns for transcript content extraction.
+- **Subsequent Chapters**: When exactly 2 lines exist between consecutive timestamps, the second line (non-timestamp) is a chapter title
+- **Reference Implementation (parsing)**: Adapt proven patterns and implementation from `scripts/transcript_reporter.py`. Ensure to use the `TIMESTAMP_PATTERN` regex and extend the Chapter dataclass to include content_lines. 
 
 
 ## XML Generation Rules and Required Template
@@ -129,10 +131,10 @@ Final thoughts on implementation
 ```xml
 <transcript>
   <chapters>
-    <chapter name="Chapter name 1" start="[start timestamp]">
+    <chapter title="chapter 1 title" start_time="[start timestamp]">
       Content first chapter... (timestamps AND non-timestamp lines with proper indentation)
     </chapter>
-    <chapter name="Chapter name 2" start="[start timestamp]">
+    <chapter title="chapter 2 title" start_time="[start timestamp]">
       Content second chapter... (timestamps AND non-timestamp lines with proper indentation)
     </chapter>
 
@@ -146,7 +148,7 @@ Final thoughts on implementation
 
 - **Execution**: CLI command `youtube-to-xml filename.txt`
 - **Input**: Text file containing YouTube transcript in the specified format
-- **Output**: XML file matches input files name and is saved to `transcript_files/` directory (create if it does not exist). Example: `filename99.txt` → `transcript_files/filename99.xml`
+- **Output**: XML file matches input filename and is saved to `transcript_files/` directory (create if it does not exist). Example: `filename99.txt` → `transcript_files/filename99.xml`
 - **Argparse `--help`**: the help message in between `<argparse_help>` tags is shown
 
 <argparse_help>
@@ -171,7 +173,7 @@ options:
    └─────────────────────────────────────────
 
 🔧 REQUIREMENTS:
-   - Must start with a chapter name (non-timestamp line)
+   - Must start with a chapter title (non-timestamp line)
    - Second line must be a timestamp
    - Third line must be content (non-timestamp line)
 
@@ -190,14 +192,14 @@ options:
 - Invalid transcript format: `f"❌ Wrong format in '{filename}' - run 'youtube-to-xml --help'"`
 
 - **Input Validation**: 
-  - File must start with non-timestamp line (chapter name)
+  - File must start with non-timestamp line (chapter title)
   - Must contain at least one timestamp
   - Must have detectable chapter structure per detection rules
 
 ## Success Criteria
 
 - [ ] Produces exact XML output format matching the provided template `<xml_template>`
-- [ ] Correctly identifies chapter names vs content including all edge cases
+- [ ] Correctly identifies chapter titles vs content including all edge cases
 - [ ] Generates valid XML that parses successfully with `xml.etree.ElementTree.parse()`
 - [ ] Validates input files and provides clear error messages for invalid formats
 - [ ] Test driven development used resulting in coverage and good design (avoid mocks)
@@ -207,6 +209,9 @@ options:
 ---
 
 ## Key References
+
+**Reference Implementation (parsing)**
+- `scripts/transcript_reporter.py` (as mentioned above)
 
 **Python Documentation**
 - ElementTree XML API: https://docs.python.org/3/library/xml.etree.elementtree.html
