@@ -45,8 +45,9 @@ class Chapter:
 
 
 def read_file(filename: str) -> list[str]:
-    """Read file and return lines."""
-    return Path(filename).read_text(encoding="utf-8").splitlines()
+    """Read file and return lines with empty lines removed."""
+    lines = Path(filename).read_text(encoding="utf-8").splitlines()
+    return [line for line in lines if line.strip()]
 
 
 def find_timestamps(lines: list[str]) -> list[int]:

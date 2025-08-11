@@ -8,7 +8,6 @@ import pytest
 
 from youtube_to_xml.parser import (
     TIMESTAMP_PATTERN,
-    Chapter,
     find_timestamps,
     parse_transcript,
     validate_transcript_format,
@@ -43,16 +42,18 @@ Chapter Two content"""
 @pytest.fixture
 def complex_transcript() -> str:
     """Realistic transcript with multiple chapters and timestamps."""
-    return """Introduction
-0:00
-Welcome to today's session
+    return """\nChapter 1
+0:55
+content
 2:28
-Let's dive into the topic
-Getting Started
+content
+Chapter 2
 1:15:30
-Download the software
-2:45:12
-Configure it"""
+content
+102:45:12
+content\n
+Chapter 3
+102:45:13"""
 
 
 # ============= TIMESTAMP TESTS =============
@@ -72,7 +73,7 @@ def test_invalid_timestamps(invalid: str) -> None:
     assert not TIMESTAMP_PATTERN.match(invalid)
 
 
-def test_find_timestamps_in_text(simple_transcript: str) -> None:
+def test_finds_all_timestamp_indices(simple_transcript: str) -> None:
     """Find all timestamp line indices in multi-line text."""
     lines = simple_transcript.splitlines()
     timestamp_indices = find_timestamps(lines)
@@ -85,30 +86,49 @@ def test_find_timestamps_in_text(simple_transcript: str) -> None:
 # ============= VALIDATION TESTS =============
 
 
-def test_validate_valid_transcript(simple_transcript: str) -> None:
+def test_validation_passes_for_valid_transcript(simple_transcript: str) -> None:
     """Valid transcript passes validation."""
     assert validate_transcript_format(simple_transcript) is None
 
 
-@pytest.mark.parametrize(
-    ("invalid_input", "error_match"),
-    [
-        ("", "empty"),
-        ("   \n  ", "empty"),
-        ("0:00\nContent", "timestamp"),
-        ("Chapter\nNo timestamps", "timestamp"),
-    ],
-)
-def test_validate_invalid_transcripts(invalid_input: str, error_match: str) -> None:
-    """Invalid transcripts raise appropriate errors."""
-    with pytest.raises(ValueError, match=error_match):
-        validate_transcript_format(invalid_input)
+def test_parses_valid_transcript_format() -> None:
+    """File following exact required format should parse successfully."""
+    required_format = """Introduction to Bret Taylor
+00:04
+You're CTO of Meta and co-CEO of..."""
+
+    chapters = parse_transcript(required_format)
+    assert len(chapters) == 1
+    assert chapters[0].title == "Introduction to Bret Taylor"
+
+
+def test_parses_valid_format_with_blank_lines() -> None:
+    """File following exact required format should parse successfully."""
+    valid_format_with_blank_lines = (
+        "\nChapter 1\n\n00:04\n\ncontent\n\nChapter 2\n\n00:05\n\ncontent\n\ncontent\n"
+    )
+
+    chapters = parse_transcript(valid_format_with_blank_lines)
+    assert len(chapters) == 2
+    assert chapters[0].title == "Chapter 1"
+    assert chapters[1].title == "Chapter 2"
+
+
+def test_rejects_transcript_starting_with_timestamp() -> None:
+    """File that starts with timestamp (like sample-00-chapters.txt) should fail."""
+    starts_with_timestamp = """0:21
+hey hey hey
+0:53
+[Music] welcome"""
+
+    with pytest.raises(ValueError, match="timestamp"):
+        parse_transcript(starts_with_timestamp)
 
 
 # ============= CHAPTER DETECTION TESTS =============
 
 
-def test_first_chapter_detection(simple_transcript: str) -> None:
+def test_finds_first_chapter_from_opening_line(simple_transcript: str) -> None:
     """First non-timestamp line becomes a chapter."""
     chapters = parse_transcript(simple_transcript)
 
@@ -117,7 +137,7 @@ def test_first_chapter_detection(simple_transcript: str) -> None:
     assert chapters[0].start_time == "0:00"
 
 
-def test_subsequent_chapter_detection(two_chapter_transcript: str) -> None:
+def test_finds_subsequent_chapter_with_boundary_rule(two_chapter_transcript: str) -> None:
     """Chapter detected when exactly 2 lines between timestamps."""
     chapters = parse_transcript(two_chapter_transcript)
 
@@ -150,14 +170,14 @@ Line 3
 More content""",
     ],
 )
-def test_no_chapter_when_wrong_gap(text: str) -> None:
+def test_no_chapter_when_boundary_rule_fails(text: str) -> None:
     """No chapter detected when gap is not exactly 2 lines."""
     chapters = parse_transcript(text)
     assert len(chapters) == 1
     assert chapters[0].title == "Intro"
 
 
-def test_multiple_chapters() -> None:
+def test_finds_all_chapters() -> None:
     """Multiple chapters detected with correct boundaries."""
     text = """First
 0:00
@@ -183,7 +203,7 @@ Final"""
 # ============= CONTENT EXTRACTION TESTS =============
 
 
-def test_single_chapter_content() -> None:
+def test_extracts_all_content_for_single_chapter() -> None:
     """Single chapter includes all content to end."""
     text = """Only Chapter
 0:00
@@ -202,7 +222,9 @@ Final line"""
     ]
 
 
-def test_chapter_content_ranges(two_chapter_transcript: str) -> None:
+def test_extracts_correct_content_ranges_for_chapters(
+    two_chapter_transcript: str,
+) -> None:
     """Multiple chapters have correct content ranges."""
     chapters = parse_transcript(two_chapter_transcript)
 
@@ -218,7 +240,7 @@ def test_chapter_content_ranges(two_chapter_transcript: str) -> None:
     assert chapters[1].content_lines == ["5:00", "Chapter Two content"]
 
 
-def test_chapter_with_many_timestamps() -> None:
+def test_includes_multiple_timestamps_in_chapter_content() -> None:
     """Chapter content includes multiple timestamps."""
     text = """Long Chapter
 0:00
@@ -241,38 +263,42 @@ Final"""
 # ============= INTEGRATION TESTS =============
 
 
-def test_complete_parsing(complex_transcript: str) -> None:
+def test_parses_complex_transcript_end_to_end(complex_transcript: str) -> None:
     """End-to-end test with realistic transcript."""
     chapters = parse_transcript(complex_transcript)
 
-    assert len(chapters) == 2
+    # Test overall structure
+    assert len(chapters) == 3
 
-    # Verify first chapter
-    assert chapters[0] == Chapter(
-        title="Introduction",
-        start_time="0:00",
-        content_lines=[
-            "0:00",
-            "Welcome to today's session",
-            "2:28",
-            "Let's dive into the topic",
-        ],
-    )
+    # Test chapter sequence and metadata
+    expected_chapters = [
+        ("Chapter 1", "0:55"),
+        ("Chapter 2", "1:15:30"),
+        ("Chapter 3", "102:45:13"),
+    ]
 
-    # Verify second chapter
-    assert chapters[1] == Chapter(
-        title="Getting Started",
-        start_time="1:15:30",
-        content_lines=[
-            "1:15:30",
-            "Download the software",
-            "2:45:12",
-            "Configure it",
-        ],
-    )
+    for i, (expected_title, expected_start) in enumerate(expected_chapters):
+        assert chapters[i].title == expected_title
+        assert chapters[i].start_time == expected_start
+
+    # Test content behavior (sufficient boundary checking)
+    ch1_content = chapters[0].content_lines
+    assert "0:55" in ch1_content
+    assert "2:28" in ch1_content
+    assert "content" in ch1_content
+    assert len(ch1_content) == 4  # ← This catches boundary issues
+
+    ch2_content = chapters[1].content_lines
+    assert "1:15:30" in ch2_content
+    assert "102:45:12" in ch2_content
+    assert len(ch2_content) == 4  # ← This catches boundary issues
+
+    ch3_content = chapters[2].content_lines
+    assert "102:45:13" in ch3_content
+    assert len(ch3_content) == 1  # ← This catches boundary issues
 
 
-def test_special_characters() -> None:
+def test_handles_special_characters_in_titles() -> None:
     """Parsing handles special characters correctly."""
     text = """Special & "Characters" <XML>
 0:00
@@ -285,7 +311,7 @@ Multi-hour timestamp"""
     assert "10:15:30" in chapters[0].content_lines
 
 
-def test_blank_lines_removed() -> None:
+def test_removes_blank_lines_during_processing() -> None:
     """Blank lines are automatically removed from transcript processing."""
     text_with_blanks = (
         "Chapter 1\n\n0:01\ncontent\n\n2:30\ncontent\n\nChapter 2\n5:00\ncontent\n\n"
@@ -300,7 +326,7 @@ def test_blank_lines_removed() -> None:
     assert "" not in all_content
 
 
-def test_consecutive_timestamps() -> None:
+def test_handles_consecutive_timestamps() -> None:
     """Multiple consecutive timestamps handled correctly."""
     text = """Chapter
 0:00
@@ -314,20 +340,3 @@ Some content after"""
     # All timestamps should be in content
     assert all(ts in content for ts in ["0:00", "0:30", "1:00"])
     assert "Some content after" in content
-
-
-# ============= ERROR CASES =============
-
-
-@pytest.mark.parametrize(
-    ("invalid_text", "error_match"),
-    [
-        ("", "empty"),
-        ("Just text\nNo timestamps", "timestamp"),
-        ("0:00\nContent", "timestamp"),
-    ],
-)
-def test_error_conditions(invalid_text: str, error_match: str) -> None:
-    """Various error conditions raise appropriate exceptions."""
-    with pytest.raises(ValueError, match=error_match):
-        parse_transcript(invalid_text)

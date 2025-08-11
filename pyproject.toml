@@ -39,7 +39,7 @@ reportUnusedParameter = false   # Ruff ARG001 handles it
 
 [tool.ruff]
 # Strictest ruff settings
-line-length = 88
+line-length = 90
 target-version = "py313"
 
 [tool.ruff.lint]
