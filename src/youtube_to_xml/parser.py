@@ -130,7 +130,8 @@ def parse_transcript(raw_transcript: str) -> list[Chapter]:
     """
     validate_transcript_format(raw_transcript)
 
-    transcript_lines = raw_transcript.splitlines()
+    # Remove all blank lines from the transcript
+    transcript_lines = [line for line in raw_transcript.splitlines() if line.strip()]
     timestamp_indices = find_timestamps(transcript_lines)
 
     chapters_metadata = []

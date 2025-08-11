@@ -285,18 +285,19 @@ Multi-hour timestamp"""
     assert "10:15:30" in chapters[0].content_lines
 
 
-def test_empty_lines_preserved() -> None:
-    """Empty lines are preserved in content."""
-    text = """Chapter
-0:00
+def test_blank_lines_removed() -> None:
+    """Blank lines are automatically removed from transcript processing."""
+    text_with_blanks = (
+        "Chapter 1\n\n0:01\ncontent\n\n2:30\ncontent\n\nChapter 2\n5:00\ncontent\n\n"
+    )
 
-Empty line above
-2:30
+    chapters = parse_transcript(text_with_blanks)
 
-Another empty line"""
-
-    chapters = parse_transcript(text)
-    assert "" in chapters[0].content_lines  # Empty lines preserved
+    # Single assert: no blank lines in any chapter title or content
+    all_content = [ch.title for ch in chapters] + [
+        line for ch in chapters for line in ch.content_lines
+    ]
+    assert "" not in all_content
 
 
 def test_consecutive_timestamps() -> None:
