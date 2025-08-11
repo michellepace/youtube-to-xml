@@ -12,14 +12,13 @@
         "WebFetch(domain:docs.anthropic.com)"
       ],
       "deny": [
-        "Read(.env)",
-        "Read(.envrc)",
         "Read(**/.env)",
         "Read(**/.envrc)",
-        "Read(*.csv)",
-        "Read(**/*.csv)",
+        "Read(**/.envrc)",
+        
         "Read(docs/prompts/**)",
-        "Read(docs/plan*/**)"
+        "Read(docs/plan*/**)", 
+        "Read(transcript_files/[0-9]*)"
       ]
     }
   }
