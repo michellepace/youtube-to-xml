@@ -117,7 +117,6 @@ Final thoughts on implementation
 - **Timestamp Pattern**: Lines containing only timestamp formats (M:SS, MM:SS, H:MM:SS, or HH:MM:SS)
 - **First Chapter**: First line of text file
 - **Subsequent Chapters**: When exactly 2 lines exist between consecutive timestamps, the second line (non-timestamp) is a chapter title
-- **Reference Implementation (parsing)**: Adapt proven patterns and implementation from `scripts/transcript_reporter.py`. Ensure to use the `TIMESTAMP_PATTERN` regex and extend the Chapter dataclass to include content_lines. 
 
 
 ## XML Generation Rules and Required Template
@@ -209,9 +208,6 @@ options:
 ---
 
 ## Key References
-
-**Reference Implementation (parsing)**
-- `scripts/transcript_reporter.py` (as mentioned above)
 
 **Python Documentation**
 - ElementTree XML API: https://docs.python.org/3/library/xml.etree.elementtree.html
