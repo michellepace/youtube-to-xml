@@ -58,13 +58,15 @@ Configure it"""
 # ============= TIMESTAMP TESTS =============
 
 
-@pytest.mark.parametrize("timestamp", ["0:00", "00:00", "1:23:45", "10:15:30"])
+@pytest.mark.parametrize(
+    "timestamp", ["0:00", "2:45", "00:00", "12:59", "1:23:45", "10:15:30", "999:59:59"]
+)
 def test_valid_timestamps(timestamp: str) -> None:
     """Verify regex matches valid timestamp formats."""
     assert TIMESTAMP_PATTERN.match(timestamp)
 
 
-@pytest.mark.parametrize("invalid", ["Chapter Title", "123:45", "1:2:3", "12:60", ""])
+@pytest.mark.parametrize("invalid", ["", "Chapter Title", "1:2:3", "123:45", "12:60"])
 def test_invalid_timestamps(invalid: str) -> None:
     """Verify regex rejects invalid patterns."""
     assert not TIMESTAMP_PATTERN.match(invalid)

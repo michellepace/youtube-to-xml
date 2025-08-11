@@ -11,9 +11,9 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-# Timestamp pattern matching M:SS, MM:SS, H:MM:SS, or HH:MM:SS
-# Minutes and seconds must be 00-59
-TIMESTAMP_PATTERN = re.compile(r"^\d{1,2}:[0-5]\d(:[0-5]\d)?$")
+# Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
+# Minutes and seconds must be 00-59, hours can be up to 999
+TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5]\d)$")
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
