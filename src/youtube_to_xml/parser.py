@@ -15,233 +15,135 @@ from dataclasses import dataclass
 # Minutes and seconds must be 00-59
 TIMESTAMP_PATTERN = re.compile(r"^\d{1,2}:[0-5]\d(:[0-5]\d)?$")
 
+# Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
+LINES_FOR_CHAPTER_BOUNDARY = 2
+
 
 @dataclass(frozen=True, slots=True)
 class Chapter:
-    """Chapter with all data needed for XML generation.
+    """Chapter with content for XML generation."""
 
-    Attributes:
-        line_idx: Zero-based index of the chapter title line in the original text
-        name: Chapter title text
-        start_timestamp: Starting timestamp for this chapter (e.g., "0:00")
-        content: All transcript lines belonging to this chapter (including timestamps)
-    """
-
-    line_idx: int
-    name: str
-    start_timestamp: str
-    content: list[str]
+    title: str
+    start_time: str
+    content_lines: list[str]
 
 
-def find_timestamps(lines: Sequence[str]) -> list[int]:
-    """Find all timestamp line indices in the transcript.
-
-    Args:
-        lines: List of transcript lines
-
-    Returns:
-        List of zero-based indices where timestamps appear
-    """
-    return [i for i, line in enumerate(lines) if TIMESTAMP_PATTERN.match(line.strip())]
+def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
+    """Find all timestamp line indices in the transcript."""
+    return [
+        i
+        for i, line in enumerate(transcript_lines)
+        if TIMESTAMP_PATTERN.match(line.strip())
+    ]
 
 
-def validate_transcript_format(text: str) -> None:
-    """Validate that the transcript meets format requirements.
-
-    Args:
-        text: Raw transcript text
-
-    Raises:
-        ValueError: If transcript is empty, starts with timestamp,
-                   or contains no timestamps
-    """
-    if not text.strip():
+def validate_transcript_format(raw_transcript: str) -> None:
+    """Validate that the transcript meets format requirements."""
+    if not raw_transcript.strip():
         msg = "Your file is empty"
         raise ValueError(msg)
 
-    lines = text.splitlines()
+    transcript_lines = raw_transcript.splitlines()
 
     # Check first line is not a timestamp
-    if lines and TIMESTAMP_PATTERN.match(lines[0].strip()):
+    if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
         msg = (
             "Wrong format - transcript must start with a chapter title, not a timestamp"
         )
         raise ValueError(msg)
 
     # Check that at least one timestamp exists
-    timestamp_indices = find_timestamps(lines)
+    timestamp_indices = find_timestamps(transcript_lines)
     if not timestamp_indices:
         msg = "Wrong format - transcript must contain at least one timestamp"
         raise ValueError(msg)
 
 
-def identify_first_chapter(
-    lines: Sequence[str], timestamp_indices: list[int]
-) -> Chapter | None:
-    """Identify the first chapter using Rule 1.
-
-    Rule 1: If the first line isn't a timestamp and a timestamp follows,
-    it's the first chapter.
-
-    Args:
-        lines: List of transcript lines
-        timestamp_indices: List of timestamp line indices
-
-    Returns:
-        First chapter if found, None otherwise
-    """
-    if not lines or not timestamp_indices:
+def _find_first_chapter(
+    transcript_lines: list[str], timestamp_indices: list[int]
+) -> dict | None:
+    """Find first chapter metadata if transcript starts with a title."""
+    if not transcript_lines or TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
         return None
 
-    # If first line is not a timestamp, it's the first chapter
-    if not TIMESTAMP_PATTERN.match(lines[0].strip()):
-        chapter_start_time = lines[timestamp_indices[0]]
-        return Chapter(
-            line_idx=0,
-            name=lines[0],
-            start_timestamp=chapter_start_time,
-            content=[],  # Content will be filled later
-        )
-
-    return None
+    return {
+        "title_index": 0,
+        "title": transcript_lines[0],
+        "start_time": transcript_lines[timestamp_indices[0]],
+        "content_start": timestamp_indices[0],
+    }
 
 
-def detect_chapter_boundaries(
-    lines: Sequence[str], timestamp_indices: list[int]
-) -> list[Chapter]:
-    """Detect subsequent chapters using the two-line rule.
-
-    Rule 2: When exactly 2 lines exist between consecutive timestamps,
-    the line before the second timestamp is a new chapter.
-
-    Args:
-        lines: List of transcript lines
-        timestamp_indices: List of timestamp line indices
-
-    Returns:
-        List of chapters found using the two-line rule
-    """
+def _find_subsequent_chapters(
+    transcript_lines: list[str], timestamp_indices: list[int]
+) -> list[dict]:
+    """Find subsequent chapters using the 2-line gap rule."""
     chapters = []
-
     for i in range(len(timestamp_indices) - 1):
-        current_timestamp_idx = timestamp_indices[i]
-        next_timestamp_idx = timestamp_indices[i + 1]
-        lines_between = next_timestamp_idx - current_timestamp_idx - 1
+        current_idx = timestamp_indices[i]
+        next_idx = timestamp_indices[i + 1]
 
-        if lines_between == 2:  # noqa: PLR2004
-            # The line before the next timestamp is a chapter title
-            chapter_line_idx = next_timestamp_idx - 1
-            chapter_start_time = lines[next_timestamp_idx]
+        if next_idx - current_idx - 1 == LINES_FOR_CHAPTER_BOUNDARY:
+            chapter_title_idx = next_idx - 1
             chapters.append(
-                Chapter(
-                    line_idx=chapter_line_idx,
-                    name=lines[chapter_line_idx],
-                    start_timestamp=chapter_start_time,
-                    content=[],  # Content will be filled later
-                )
+                {
+                    "title_index": chapter_title_idx,
+                    "title": transcript_lines[chapter_title_idx],
+                    "start_time": transcript_lines[next_idx],
+                    "content_start": next_idx,
+                }
             )
-
     return chapters
 
 
-def extract_chapter_content(
-    lines: Sequence[str], chapters: list[Chapter], chapter_index: int
-) -> list[str]:
-    """Extract content lines for a specific chapter.
+def _extract_content_for_chapters(
+    transcript_lines: list[str], chapter_metadata: list[dict]
+) -> list[Chapter]:
+    """Extract content lines for each chapter and create Chapter objects."""
+    result_chapters = []
+    for i, chapter_data in enumerate(chapter_metadata):
+        # Determine content range for this chapter
+        if i < len(chapter_metadata) - 1:
+            content_end = chapter_metadata[i + 1]["title_index"]
+        else:
+            content_end = len(transcript_lines)
 
-    Args:
-        lines: List of all transcript lines
-        chapters: List of all chapters (without content)
-        chapter_index: Index of the chapter to extract content for
+        # Extract content from start timestamp to range end
+        content_lines = transcript_lines[chapter_data["content_start"] : content_end]
 
-    Returns:
-        List of content lines for the specified chapter
-    """
-    chapter = chapters[chapter_index]
-
-    # Find the timestamp line for this chapter
-    timestamp_indices = find_timestamps(lines)
-
-    # Find where this chapter's timestamp appears
-    chapter_timestamp_idx = None
-    for idx in timestamp_indices:
-        # For chapters after the first, timestamp should be right after title
-        if lines[idx] == chapter.start_timestamp and (
-            chapter.line_idx == 0 or idx == chapter.line_idx + 1
-        ):
-            chapter_timestamp_idx = idx
-            break
-
-    # If we can't find the timestamp, try the line right after the chapter title
-    if (
-        chapter_timestamp_idx is None
-        and chapter.line_idx + 1 < len(lines)
-        and lines[chapter.line_idx + 1] == chapter.start_timestamp
-    ):
-        chapter_timestamp_idx = chapter.line_idx + 1
-
-    if chapter_timestamp_idx is None:
-        return []
-
-    # Determine the end boundary
-    if chapter_index == len(chapters) - 1:
-        # Last chapter: include everything from timestamp to end
-        content = list(lines[chapter_timestamp_idx:])
-    else:
-        # Not last chapter: include until the next chapter's title line
-        next_chapter = chapters[chapter_index + 1]
-        content = list(lines[chapter_timestamp_idx : next_chapter.line_idx])
-
-    return content
-
-
-def parse_transcript(text: str) -> list[Chapter]:
-    """Parse transcript text and return list of chapters with content.
-
-    This is the main entry point for parsing YouTube transcripts.
-
-    Args:
-        text: Raw transcript text
-
-    Returns:
-        List of Chapter objects with complete data including content
-
-    Raises:
-        ValueError: If transcript is empty, starts with timestamp,
-                   or contains no timestamps
-    """
-    # Validate format first
-    validate_transcript_format(text)
-
-    lines = text.splitlines()
-    timestamp_indices = find_timestamps(lines)
-
-    # Collect all chapters (first + subsequent)
-    chapters = []
-
-    # Find first chapter
-    first_chapter = identify_first_chapter(lines, timestamp_indices)
-    if first_chapter:
-        chapters.append(first_chapter)
-
-    # Find subsequent chapters using two-line rule
-    subsequent_chapters = detect_chapter_boundaries(lines, timestamp_indices)
-    chapters.extend(subsequent_chapters)
-
-    # Sort chapters by line index to maintain order
-    chapters.sort(key=lambda ch: ch.line_idx)
-
-    # Extract content for each chapter
-    chapters_with_content = []
-    for i, chapter in enumerate(chapters):
-        content = extract_chapter_content(lines, chapters, i)
-        chapters_with_content.append(
+        result_chapters.append(
             Chapter(
-                line_idx=chapter.line_idx,
-                name=chapter.name,
-                start_timestamp=chapter.start_timestamp,
-                content=content,
+                title=chapter_data["title"],
+                start_time=chapter_data["start_time"],
+                content_lines=list(content_lines),
             )
         )
 
-    return chapters_with_content
+    return result_chapters
+
+
+def parse_transcript(raw_transcript: str) -> list[Chapter]:
+    """Parse transcript text and return chapters with content.
+
+    Raises:
+        ValueError: If transcript format is invalid
+    """
+    validate_transcript_format(raw_transcript)
+
+    transcript_lines = raw_transcript.splitlines()
+    timestamp_indices = find_timestamps(transcript_lines)
+
+    chapters_metadata = []
+
+    # Find first chapter
+    if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
+        chapters_metadata.append(first_chapter)
+
+    # Find subsequent chapters
+    chapters_metadata.extend(
+        _find_subsequent_chapters(transcript_lines, timestamp_indices)
+    )
+
+    # Sort by title position and extract content
+    chapters_metadata.sort(key=lambda ch: ch["title_index"])
+    return _extract_content_for_chapters(transcript_lines, chapters_metadata)
