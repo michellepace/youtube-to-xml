@@ -1,7 +1,12 @@
 # CLAUDE.md
 
 ## Project Status
-YouTube-to-XML transcript converter - **parser module complete ✅**. Core transcript parsing with 29 tests implemented. Next: XML builder, file handler, and CLI modules. Main entry point [src/youtube_to_xml/__init__.py](src/youtube_to_xml/__init__.py) is placeholder only.
+YouTube-to-XML transcript converter
+
+- ✅ parser module complete (29 passing tests)
+- ✅ XML builder module complete (6 passing tests)
+- 🔲 **Next**: file handler and CLI modules
+- **Note**: Main entry point [src/youtube_to_xml/__init__.py](src/youtube_to_xml/__init__.py) is placeholder only
 
 ## Python Requirements
 - **Python**: 3.13+ (pinned in [.python-version](.python-version))
