@@ -1,27 +1,26 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Status
-YouTube-to-XML transcript converter - **foundation complete, core implementation missing**. Main entry point `src/youtube_to_xml/__init__.py` is placeholder only.
+YouTube-to-XML transcript converter - **parser module complete ✅**. Core transcript parsing with 29 tests implemented. Next: XML builder, file handler, and CLI modules. Main entry point [src/youtube_to_xml/__init__.py](src/youtube_to_xml/__init__.py) is placeholder only.
 
 ## Python Requirements
-- **Python**: 3.13+ (pinned in `.python-version`)
+- **Python**: 3.13+ (pinned in [.python-version](.python-version))
 - **Core Libraries**: `argparse`, `pathlib`, `re`, `xml.etree.ElementTree`, `pytest`
 
 ## UV Workflow (Always)
 ```bash
 uv sync                           # Setup/update dependencies 
-uv run youtube-to-xml <file>      # Run CLI
+uv run youtube-to-xml <file>      # Run CLI (not yet implemented)
 uv run python -m pytest          # All tests
 uv run python -m pytest -v tests/test_specific.py::test_function  # Single test
 uv run ruff check                 # Lint
 uv run ruff format                # Format
-uv run pre-commit run --all-files # All hooks
+uv run pre-commit run --all-files # All pre-commit hooks (uv-sync, pytest, ruff)
 ```
-**Never activate venv** - always use `uv run`
 
-## Design Principles (From SPEC.md - Non-negotiable)
+**Always use `uv run`** - never activate venv
+
+## Design Principles (From [docs/SPEC.md](docs/SPEC.md) - Non-negotiable)
 **TDD-Driven Design**: Write tests first - this naturally creates better architecture:
 - **Pure functions preferred** - no side effects in business logic, easier to test
 - **Clear module boundaries** - easier to test and understand
@@ -48,7 +47,7 @@ uv run pre-commit run --all-files # All hooks
 
 ## Key Technical Insights
 - **Ruff+Pyright Integration**: Smart rule deduplication prevents duplicate errors
-- **Entry Point**: `[project.scripts]` in pyproject.toml → `youtube_to_xml:main`
+- **Entry Point**: `[project.scripts]` in [pyproject.toml](pyproject.toml) → `youtube_to_xml:main`
 
 ## Development Context
-See `docs/SPEC.md` for current implementation requirements, XML templates, error formats, and detection rules. SPEC.md contains the "what" - CLAUDE.md contains the "how" and "with what tools".
+See [docs/SPEC.md](docs/SPEC.md) for project specification, like XML templates, error formats, and detection rules. SPEC.md contains the "what" - CLAUDE.md contains the "how" and "with what tools".

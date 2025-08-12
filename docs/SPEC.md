@@ -152,6 +152,7 @@ Final thoughts on implementation
 
 <argparse_help>
 
+```text
 usage: youtube-to-xml [-h] transcript.txt
 
 Convert YouTube transcripts to XML format with chapter detection
@@ -177,7 +178,7 @@ options:
    - Third line must be content (non-timestamp line)
 
 💡 Check that your transcript follows this basic pattern
-
+```
 </argparse_help>
 
 ## Error Handling & Validation
