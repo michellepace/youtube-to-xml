@@ -1,24 +1,22 @@
 {
-    "permissions": {
-      "allow": [
-        "Bash(mkdir:*)",
-        "Bash(uv run:*)",
-        "Bash(python3:*)",
-        "Bash(echo:*)",
-        "Bash(ls:*)",
-        "WebFetch(domain:docs.python.org)",
-        "WebFetch(domain:docs.pytest.org)",
-        "WebFetch(domain:docs.astral.sh)",
-        "WebFetch(domain:docs.anthropic.com)"
-      ],
-      "deny": [
-        "Read(**/.env)",
-        "Read(**/.envrc)",
-        "Read(**/.envrc)",
-        
-        "Read(docs/prompts/**)",
-        "Read(docs/plan*/**)", 
-        "Read(transcript_files/[0-9]*)"
-      ]
-    }
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(uv run:*)",
+      "Bash(python3:*)",
+      "Bash(echo:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:docs.python.org)",
+      "WebFetch(domain:docs.pytest.org)",
+      "WebFetch(domain:docs.astral.sh)",
+      "WebFetch(domain:docs.anthropic.com)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.envrc)",
+      "Read(docs/prompts/**)",
+      "Read(docs/plan*/**)",
+      "Read(transcript_files/[0-9]*)"
+    ]
   }
+}

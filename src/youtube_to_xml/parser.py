@@ -47,9 +47,7 @@ def validate_transcript_format(raw_transcript: str) -> None:
 
     # Check first line is not a timestamp
     if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
-        msg = (
-            "Wrong format - transcript must start with a chapter title, not a timestamp"
-        )
+        msg = "Wrong format - transcript must start with a chapter title, not a timestamp"
         raise ValueError(msg)
 
     # Check that at least one timestamp exists
@@ -63,7 +61,7 @@ def _find_first_chapter(
     transcript_lines: list[str], timestamp_indices: list[int]
 ) -> dict | None:
     """Find first chapter metadata if transcript starts with a title."""
-    if not transcript_lines or TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
+    if TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
         return None
 
     return {
@@ -145,6 +143,5 @@ def parse_transcript(raw_transcript: str) -> list[Chapter]:
         _find_subsequent_chapters(transcript_lines, timestamp_indices)
     )
 
-    # Sort by title position and extract content
-    chapters_metadata.sort(key=lambda ch: ch["title_index"])
+    # Extract content for chapters (order is already correct)
     return _extract_content_for_chapters(transcript_lines, chapters_metadata)
