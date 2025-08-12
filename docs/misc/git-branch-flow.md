@@ -1,28 +1,50 @@
 # Git Branch Workflow
 
-You can keep it simple and commit to main always, or you can use branches, or you can do both. This is about working with branches where you will need to do a "pull request" (PR), review and then approve it. When you approve, you need to choose how to "merge" the branch back into main (which is in fact a branch itself).
+Working with branches, pull requests and which merge option to choose.
+
+## The Elephant Branch and "pull request" into the Zoo
+
+When you commit code into Git, it's always to a "branch". The default branch is "main", so if you don't know about branches, you've always been committing to main. Run `git status` and you'll see it.
+
+Think of a branch as a "group of commits for a specific feature or task", you get to pick how to group things. Let's say you have a "zoo" project, and now you're building an elephant. You could do the "add the tail" and "add the legs" commits to main, OR, you could make an "elephant branch". Do all your commits in there, and when done "send the elephant branch to GitHub" by creating a "pull request". 
+
+A pull request is just "I built this elephant branch and I've sent it to GitHub, I'm REQUESTING you to PULL it into the main branch (the proper zoo)." 
+
+I code solo, so once I've sent a pull request to GitHub, I go to GitHub and approve it. In the real world, someone else would review the code and approve it. It's generally not the same person. 
+
+By the time I've created my pull request on GitHub, I'm really quite sick of code. So I don't want to review it. I use the free CodeRabbit to review my PR in GitHub. It picks up a surprising amount of things. I'm lazy to fix these things, I used to paste the suggestions back into my IDE but now I just get Claude Code to run `gh api repos/michellepace/youtube-to-xml/pulls/1/reviews` (my username, my repo, my pull number 1 - obviously the URL changes). Claude then sees all the issues CodeRabbit found and fixes them for me. Then I push the fixes to the branch (which updates the existing PR), and approve the PR from GitHub, which means it's now in the main branch. 
+
+The great thing about branches is you might make a royal mess of the elephant. It's much easier to remove the elephant from the zoo later, because the commits are all collected together.
+
+## In Short
+
+You can keep it simple and commit to main always, or you can use branches, or you can do both. I do both: I commit to main when I'm setting up the project, then I start to use branches for functionality.
+
+This is about working with branches where you will need to create a pull request (from your machine), review, and then approve it (from GitHub). When you approve, you need to choose how to "merge" the branch back into main (main is actually the default branch).
 
 > [!TIP]
 > ***Why "pull request"?*** *You're requesting that repo maintainers "pull" your changes from your branch into main. GitLab calls them "merge requests" which is more accurate.*
 > 
-> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and automatically detect problems missed, signup to https://coderabbit.ai and connect your repo. It's free for public repos. It creates a lovely visual diagram of the PR. It writes a poem.*
+> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and catch missed issues automatically, sign up at https://coderabbit.ai and connect your repo. Free for public repos, with a lovely PR diagram—and even a poem.*
 
 ## As Commands
 
 ```bash
-git checkout main && git pull origin main   # Start on main
-git checkout -b my-branch                   # Create branch
-git add .                                  # Do commits
-git commit -m "Commit message"             # Do commits
-git push origin my-branch                  # Push to remote
+git checkout main && git pull origin main  # Start on main branch
+git checkout -b my-branch                  # Create a branch
+git add .                                  # Add files you want to commit
+git commit # Make your commit (or "Claude Code: review changes and write commit msg")
+git push origin my-branch                  # Push to remote (i.e., GitHub)
+
 # Do Pull Request in GitHub UI
 # Create PR: select my-branch -> main
 # Review changes in PR
-# Approve and merge choices: ⭐commit, ✅rebase, 🏳️squash
-git checkout main && git pull origin main   # Sync local main
+# Approve and merge options: ⭐commit, ✅rebase, 🏳️squash
+
+git checkout main && git pull origin main  # Sync local main
 git branch --delete my-branch              # Delete branch (step 1)
 git push origin --delete my-branch         # Delete branch (step 2)
-# Ready for next branch: repeat from 'Create branch'
+# Ready for next feature branch
 ```
 
 ## As a Picture
@@ -127,11 +149,22 @@ gitGraph
 - The "**Pull requests**" tab lets you revisit PRs to see grouped commits, especially useful for merge commits
 - The "**Insights**" → "Network" graph visualises branch merges (most relevant for merge commit)
 
+## Claude Code is fabulous at Git / GitHub
+
+Claude Code is fantastic at working with Git. I get it to handle all things Git for me—generating commit messages, undoing a commit, creating PRs, etc.
+
+Go to the Anthropic docs and ask the chat there: 
+- Can Claude Code help me with git if I install `gh`?
+- Can Claude Code create a PR for me, what does this mean?
+- What can I do with `@claude` in GitHub, is this something else?
+
+Code Rabbit uses Anthropic https://www.anthropic.com/customers/coderabbit 🙂
+
 ---
 
 ## 🌿 Branch Strategy for YouTube Transcript to XML Converter
 
-*(Generated by claude.ai)*
+*(Generated by claude.ai for this little project)*
 
 **Note**: Project foundation (UV package structure, pyproject.toml) already committed to main ✅
 
