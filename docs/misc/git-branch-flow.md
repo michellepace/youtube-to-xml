@@ -25,7 +25,7 @@ This is about working with branches where you will need to create a pull request
 > [!TIP]
 > ***Why "pull request"?*** *You're requesting that repo maintainers "pull" your changes from your branch into main. GitLab calls them "merge requests" which is more accurate.*
 > 
-> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and automatically detect problems missed, sign up to https://coderabbit.ai and connect your repo. It's free for public repos. It creates a lovely visual diagram of the PR. It writes a poem.*
+> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and catch missed issues automatically, sign up at https://coderabbit.ai and connect your repo. Free for public repos, with a lovely PR diagram—and even a poem.*
 
 ## As Commands
 
@@ -151,12 +151,14 @@ gitGraph
 
 ## Claude Code is fabulous at Git / GitHub
 
-Claude Code is fantastic at working with git. I git it to do almost everything for me. I rarely write my own git commit messages. I get it to undo things for me when I mess up a commit.
+Claude Code is fantastic at working with Git. I get it to handle all things Git for me—generating commit messages, undoing a commit, creating PRs, etc.
 
 Go to the Anthropic docs and ask the chat there: 
 - Can Claude Code help me with git if I install `gh`?
 - Can Claude Code create a PR for me, what does this mean?
 - What can I do with `@claude` in GitHub, is this something else?
+
+Code Rabbit uses Anthropic https://www.anthropic.com/customers/coderabbit 🙂
 
 ---
 
