@@ -24,6 +24,46 @@
 
 **Entry Point Flow**: CLI command `youtube-to-xml` → `convert_transcript()` in `main.py` → [modules to be determined following "one module, one purpose"]
 
+### System Architecture & Data Flow
+
+```mermaid
+---
+config:
+  theme: redux
+---
+flowchart TD
+    CLI["`**User Command**
+    youtube-to-xml
+    transcript.txt`"]
+    MAIN["`**main.py**
+    • Parse args
+    • Orchestrate
+    • Handle errors`"]
+    FILEREAD["`**file_handler.py**
+    read_file()`"]
+    PARSER["`**parser.py**
+    • Validate format
+    • Find chapters
+    • Extract content`"]
+    XMLBUILDER["`**xml_builder.py**
+    • Generate XML
+    • Handle escaping`"]
+    FILEWRITE["`**file_handler.py**
+    write_file()`"]
+    OUTPUT["`**transcript_files/**
+    └── transcript.xml
+    (output file)`"]
+    CLI --> MAIN
+    MAIN --> FILEREAD
+    FILEREAD --> |Raw text<br>as string| PARSER
+    PARSER --> |"List[Chapter]<br>(frozen dataclass)"| XMLBUILDER
+    XMLBUILDER --> |XML string| FILEWRITE
+    FILEWRITE --> OUTPUT
+
+    style CLI color:#fff,fill:#3874ac,stroke:#000,stroke-dasharray: 5 5
+    style OUTPUT color:#fff,fill:#419f52,stroke:#000,stroke-dasharray: 5 5
+```
+
 ## Design Principles
 
 **TDD-Driven Design**: Write tests first - this naturally creates:
@@ -198,12 +238,12 @@ options:
 
 ## Success Criteria
 
-- [ ] Produces exact XML output format matching the provided template `<xml_template>`
-- [ ] Correctly identifies chapter titles vs content including all edge cases
-- [ ] Generates valid XML that parses successfully with `xml.etree.ElementTree.parse()`
-- [ ] Validates input files and provides clear error messages for invalid formats
-- [ ] Test driven development used resulting in coverage and good design (avoid mocks)
-- [ ] Clean project structure following Python best practices
+- [x] Produces exact XML output format matching the provided template `<xml_template>`
+- [x] Correctly identifies chapter titles vs content including all edge cases
+- [x] Generates valid XML that parses successfully with `xml.etree.ElementTree.parse()`
+- [x] Validates input files and provides clear error messages for invalid formats
+- [x] Test driven development used resulting in coverage and good design (avoid mocks)
+- [x] Clean project structure following Python best practices
 - [ ] Performance handles transcripts up to 15,000 lines in less than 2 seconds
 
 ---
