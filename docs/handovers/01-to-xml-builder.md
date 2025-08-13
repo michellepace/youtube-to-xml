@@ -34,11 +34,10 @@ The XML builder consumes `list[Chapter]` objects from the parser module and prod
 ## Key Files in This Handover
 
 ### `src/youtube_to_xml/xml_builder.py`
-- Contains `build_xml(chapters: list[Chapter]) -> ET.Element` 
-- Contains `format_xml(root: ET.Element) -> str`
+- Contains `chapters_to_xml(chapters: list[Chapter]) -> str`
 - Uses ElementTree API exclusively (per SPEC.md requirements)
 - Handles XML escaping automatically
-- Pure functions, no side effects
+- Pure function, no side effects
 
 ### `tests/test_xml_builder.py` (`pytest` v. 8.4.1)
 
