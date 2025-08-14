@@ -14,6 +14,7 @@
     "deny": [
       "Read(**/.env)",
       "Read(**/.envrc)",
+      "Read(docs/misc/**)",
       "Read(docs/prompts/**)",
       "Read(docs/plan*/**)",
       "Read(transcript_files/[0-9]*)"
