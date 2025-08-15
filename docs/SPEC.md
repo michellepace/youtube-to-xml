@@ -29,7 +29,7 @@
 ```mermaid
 ---
 config:
-  theme: redux
+  theme: dark
 ---
 flowchart TD
     subgraph TOP[" "]
