@@ -6,12 +6,6 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
 
-**Key Features**:
-- Automatic chapter detection using timestamp patterns
-- Valid XML output that parses with standard libraries
-- Clear visual error messages for invalid formats
-- Long videos: converts approx. 10 hours of transcript in 0.02 seconds
-
 ```bash
 youtube-to-xml my_transcript.txt
 # ✅ Created: transcript_files/my_transcript.xml
@@ -19,14 +13,18 @@ youtube-to-xml my_transcript.txt
 
 ## 🚀 Installation
 
-**GLOBAL CLI TOOL (RECOMMENDED)**
+**Prerequisites**
+
+UV must be installed first on your machine, follow the [installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+**Use as a Command Line Tool (recommended)**
 
 ```bash
 uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 youtube-to-xml --help
 ```
 
-**DEVELOPMENT SETUP**
+**Clone to Develop Further**
 
 ```bash
 git clone https://github.com/michellepace/youtube-to-xml.git
@@ -37,44 +35,56 @@ uv run youtube-to-xml --help
 
 ## 📋 Usage
 
-**BASIC CONVERSION**
+**Basic Steps**
 
-```bash
-youtube-to-xml my_transcript.txt
-```
+1. Manually copy a YouTube transcript into a .txt file (sorry)
 
-**EXPECTED INPUT FORMAT**
+2. Then run this command
+   ```bash
+   youtube-to-xml my_transcript.txt
+   ```
+
+3. Upload `my_transcript.xml` into a claude.ai project, chat, or other LLM
+
+**Required Format for `my_transcript.txt` (input)**
 
 Your transcript file should start with a chapter title, followed by timestamps and content:
 
 ```text
-Introduction to Python
-0:00
-Welcome to this tutorial on Python basics
+Introduction to Cows
+0:02
+Welcome to this talk about erm.. er
 2:30
 Let's start with the fundamentals
-Getting Started
+Washing the cow
 15:45
-First, we'll install Python
+First, we'll start with the patches
+11:59:59
+That took a long time
+12:04:27
+Usually it s much quicker
 ```
 
-**OUTPUT**
+**Transcript in XML `my_transcript.xml` (output)**
 
 Generates structured XML in `transcript_files/` directory:
 
 ```xml
+<?xml version='1.0' encoding='utf-8'?>
 <transcript>
   <chapters>
-    <chapter title="Introduction to Python" start_time="0:00">
-      0:00
-      Welcome to this tutorial on Python basics
+    <chapter title="Introduction to Cows" start_time="0:02">
+      0:02
+      Welcome to this talk about erm.. er
       2:30
-      Let's start with the fundamentals
-    </chapter>
-    <chapter title="Getting Started" start_time="15:45">
+      Let's start with the fundamentals</chapter>
+    <chapter title="Washing the cow" start_time="15:45">
       15:45
-      First, we'll install Python
-    </chapter>
+      First, we'll start with the patches
+      11:59:59
+      That took a long time
+      12:04:27
+      Usually it s much quicker</chapter>
   </chapters>
 </transcript>
 ```
@@ -82,24 +92,24 @@ Generates structured XML in `transcript_files/` directory:
 
 ## 🛠️ Development
 
-**REQUIREMENTS**
+**Requirements**
 
 - Python 3.13+
-- UV package manager
+- UV package manager [installed](https://docs.astral.sh/uv/getting-started/installation/)
 
-**RUNNING TESTS**
+**How to Run Tests**
 
 ```bash
 uv run python -m pytest          # All tests
 uv run python -m pytest -v       # Verbose output
 ```
 
-**CODE QUALITY**
+**Code Quality Automation**
 
 ```bash
 uv run ruff check                 # Lint
 uv run ruff format                # Format
-uv run pre-commit run --all-files # All hooks
+uv run pre-commit run --all-files # All hooks (uv-sync, pytest, ruff)
 ```
 
 ## 📊 Technical Details
