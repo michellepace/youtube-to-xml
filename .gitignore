@@ -1,16 +1,20 @@
-# Python-generated files
+# Security & Environment
+.env*
+
+# Python core
 __pycache__/
 *.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
 
 # Virtual environments
 .venv
 
-# Unit test
-.pytest_cache/
+# Build artifacts
+build/
+dist/
 
-# Ruff stuff
+# Development tools
+.pytest_cache/
 .ruff_cache/
+
+# Project-specific
+transcripts/**/*.xml
