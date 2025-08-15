@@ -2,20 +2,32 @@
 
 Convert YouTube transcripts to structured XML format with automatic chapter detection.
 
+**Problem**: Raw YouTube transcripts are unstructured text that LLMs struggle to parse effectively, degrading AI chat responses about video content.
+
+**Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
+
+**Key Features**:
+- Automatic chapter detection using timestamp patterns
+- Valid XML output that parses with standard libraries
+- Clear visual error messages for invalid formats
+- Long videos: converts approx. 10 hours of transcript in 0.02 seconds
+
 ```bash
-youtube-to-xml transcript.txt
-# ✅ Created: transcript_files/transcript.xml
+youtube-to-xml my_transcript.txt
+# ✅ Created: transcript_files/my_transcript.xml
 ```
 
 ## 🚀 Installation
 
-### Global CLI Tool (Recommended)
+**GLOBAL CLI TOOL (RECOMMENDED)**
+
 ```bash
 uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 youtube-to-xml --help
 ```
 
-### Development Setup
+**DEVELOPMENT SETUP**
+
 ```bash
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
@@ -25,12 +37,14 @@ uv run youtube-to-xml --help
 
 ## 📋 Usage
 
-### Basic Conversion
+**BASIC CONVERSION**
+
 ```bash
 youtube-to-xml my_transcript.txt
 ```
 
-### Expected Input Format
+**EXPECTED INPUT FORMAT**
+
 Your transcript file should start with a chapter title, followed by timestamps and content:
 
 ```text
@@ -44,7 +58,8 @@ Getting Started
 First, we'll install Python
 ```
 
-### Output
+**OUTPUT**
+
 Generates structured XML in `transcript_files/` directory:
 
 ```xml
@@ -64,31 +79,23 @@ Generates structured XML in `transcript_files/` directory:
 </transcript>
 ```
 
-## 🎯 Why This Project
-
-**Problem**: Raw YouTube transcripts are unstructured text that LLMs struggle to parse effectively, degrading AI chat responses about video content.
-
-**Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
-
-**Key Features**:
-- Automatic chapter detection using timestamp patterns
-- Valid XML output that parses with standard libraries
-- Clear visual error messages for invalid formats
-- Long videos: converts approx. 10 hours of transcript in 0.02 seconds
 
 ## 🛠️ Development
 
-### Requirements
+**REQUIREMENTS**
+
 - Python 3.13+
 - UV package manager
 
-### Running Tests
+**RUNNING TESTS**
+
 ```bash
 uv run python -m pytest          # All tests
 uv run python -m pytest -v       # Verbose output
 ```
 
-### Code Quality
+**CODE QUALITY**
+
 ```bash
 uv run ruff check                 # Lint
 uv run ruff format                # Format
