@@ -3,10 +3,12 @@
 ## Project Status
 YouTube-to-XML transcript converter
 
-- ✅ parser module complete (29 passing tests)
-- ✅ XML builder module complete (6 passing tests)
-- 🔲 **Next**: file handler and CLI modules
-- **Note**: Main entry point [src/youtube_to_xml/__init__.py](src/youtube_to_xml/__init__.py) is placeholder only
+- ✅ `exceptions.py` module complete (custom error types)
+- ✅ `parser.py` module complete (`tests/test_parser.py`)
+- ✅ `xml_builder.py` module complete (`tests/test_xml_builder.py`)
+- ✅ `cli.py` module complete (`tests/test_cli.py`)
+- **All tests passing**
+- **Entry Point**: [src/youtube_to_xml/cli.py](src/youtube_to_xml/cli.py) with `main()` function
 
 ## Python Requirements
 - **Python**: 3.13+ (pinned in [.python-version](.python-version))
@@ -15,7 +17,7 @@ YouTube-to-XML transcript converter
 ## UV Workflow (Always)
 ```bash
 uv sync                           # Setup/update dependencies 
-uv run youtube-to-xml <file>      # Run CLI (not yet implemented)
+uv run youtube-to-xml <file>      # Run CLI converter
 uv run python -m pytest          # All tests
 uv run python -m pytest -v tests/test_specific.py::test_function  # Single test
 uv run ruff check                 # Lint
@@ -52,7 +54,7 @@ uv run pre-commit run --all-files # All pre-commit hooks (uv-sync, pytest, ruff)
 
 ## Key Technical Insights
 - **Ruff+Pyright Integration**: Smart rule deduplication prevents duplicate errors
-- **Entry Point**: `[project.scripts]` in [pyproject.toml](pyproject.toml) → `youtube_to_xml:main`
+- **Entry Point**: `[project.scripts]` in [pyproject.toml](pyproject.toml) → `youtube_to_xml.cli:main`
 
 ## Development Context
 See [docs/SPEC.md](docs/SPEC.md) for project specification, like XML templates, error formats, and detection rules. SPEC.md contains the "what" - CLAUDE.md contains the "how" and "with what tools".

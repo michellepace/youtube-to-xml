@@ -11,6 +11,12 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from youtube_to_xml.exceptions import (
+    EmptyFileError,
+    InvalidTranscriptFormatError,
+    MissingTimestampError,
+)
+
 # Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
 # Minutes and seconds must be 00-59, hours can be up to 999
 TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5]\d)$")
@@ -40,21 +46,18 @@ def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
 def validate_transcript_format(raw_transcript: str) -> None:
     """Validate that the transcript meets format requirements."""
     if not raw_transcript.strip():
-        msg = "Your file is empty"
-        raise ValueError(msg)
+        raise EmptyFileError
 
     transcript_lines = raw_transcript.splitlines()
 
     # Check first line is not a timestamp
     if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
-        msg = "Wrong format - transcript must start with a chapter title, not a timestamp"
-        raise ValueError(msg)
+        raise InvalidTranscriptFormatError
 
     # Check that at least one timestamp exists
     timestamp_indices = find_timestamps(transcript_lines)
     if not timestamp_indices:
-        msg = "Wrong format - transcript must contain at least one timestamp"
-        raise ValueError(msg)
+        raise MissingTimestampError
 
 
 def _find_first_chapter(
@@ -124,7 +127,9 @@ def parse_transcript(raw_transcript: str) -> list[Chapter]:
     """Parse transcript text and return chapters with content.
 
     Raises:
-        ValueError: If transcript format is invalid
+        EmptyFileError: If transcript file is empty
+        InvalidTranscriptFormatError: If transcript starts with timestamp
+        MissingTimestampError: If transcript contains no timestamps
     """
     validate_transcript_format(raw_transcript)
 

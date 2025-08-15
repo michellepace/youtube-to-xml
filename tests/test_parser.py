@@ -6,6 +6,11 @@ Uses fixtures to reduce duplication and improve maintainability.
 
 import pytest
 
+from youtube_to_xml.exceptions import (
+    EmptyFileError,
+    InvalidTranscriptFormatError,
+    MissingTimestampError,
+)
 from youtube_to_xml.parser import (
     TIMESTAMP_PATTERN,
     find_timestamps,
@@ -121,8 +126,28 @@ hey hey hey
 0:53
 [Music] welcome"""
 
-    with pytest.raises(ValueError, match="timestamp"):
+    with pytest.raises(InvalidTranscriptFormatError):
         parse_transcript(starts_with_timestamp)
+
+
+def test_rejects_empty_transcript() -> None:
+    """Empty transcript file should raise EmptyFileError."""
+    with pytest.raises(EmptyFileError):
+        parse_transcript("")
+
+    with pytest.raises(EmptyFileError):
+        parse_transcript("   \n  \t  \n  ")
+
+
+def test_rejects_transcript_without_timestamps() -> None:
+    """Transcript without any timestamps should raise MissingTimestampError."""
+    no_timestamps = """Chapter Title
+Some content here
+More content
+Final line"""
+
+    with pytest.raises(MissingTimestampError):
+        parse_transcript(no_timestamps)
 
 
 # ============= CHAPTER DETECTION TESTS =============

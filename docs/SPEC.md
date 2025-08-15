@@ -22,7 +22,7 @@
 - Entry Point: `[project.scripts]` configuration in `pyproject.toml`
 - Usage: `youtube-to-xml transcript.txt` and `youtube-to-xml --help`
 
-**Entry Point Flow**: CLI command `youtube-to-xml` → `convert_transcript()` in `main.py` → [modules to be determined following "one module, one purpose"]
+**Entry Point Flow**: CLI command `youtube-to-xml` → `main()` in `cli.py` → orchestrates parser, xml_builder, and exceptions modules following "one module, one purpose"
 
 ### System Architecture & Data Flow
 
@@ -32,36 +32,48 @@ config:
   theme: redux
 ---
 flowchart TD
-    CLI["`**User Command**
-    youtube-to-xml
-    transcript.txt`"]
-    MAIN["`**main.py**
-    • Parse args
-    • Orchestrate
-    • Handle errors`"]
-    FILEREAD["`**file_handler.py**
-    read_file()`"]
+    subgraph TOP[" "]
+        direction LR
+        
+        CLI["`**🙂 User Command**
+        youtube-to-xml transcript.txt`"]
+
+        CLIMOD["`**cli.py**
+        • Parse args
+        • File I/O operations
+        • Error handling
+        • Orchestration`"]
+
+        OUTPUT["`**transcript_files/**
+        └─ transcript.xml<br>(output file)`"]
+
+        CLI --> CLIMOD
+        CLIMOD --> OUTPUT
+    end
+    
+    EXCEPTIONS["`**exceptions.py**
+    • EmptyFileError
+    InvalidTranscriptFormatError
+    • MissingTimestampError`"]
+    
     PARSER["`**parser.py**
     • Validate format
     • Find chapters
     • Extract content`"]
+    
     XMLBUILDER["`**xml_builder.py**
     • Generate XML
     • Handle escaping`"]
-    FILEWRITE["`**file_handler.py**
-    write_file()`"]
-    OUTPUT["`**transcript_files/**
-    └── transcript.xml
-    (output file)`"]
-    CLI --> MAIN
-    MAIN --> FILEREAD
-    FILEREAD --> |Raw text<br>as string| PARSER
+    
+    CLIMOD --> |Raw text<br>as string| PARSER
     PARSER --> |"List[Chapter]<br>(frozen dataclass)"| XMLBUILDER
-    XMLBUILDER --> |XML string| FILEWRITE
-    FILEWRITE --> OUTPUT
-
-    style CLI color:#fff,fill:#3874ac,stroke:#000,stroke-dasharray: 5 5
-    style OUTPUT color:#fff,fill:#419f52,stroke:#000,stroke-dasharray: 5 5
+    XMLBUILDER --> |XML string| CLIMOD
+    EXCEPTIONS -.-> PARSER
+    EXCEPTIONS -.-> CLIMOD
+    
+    style CLI color:#fff,fill:#3874ac
+    style OUTPUT color:#fff,fill:#419f52
+    style EXCEPTIONS color:#fff,fill:#e74c3c
 ```
 
 ## Design Principles
@@ -97,7 +109,7 @@ flowchart TD
 - `re` (regex pattern matching)
 - `xml.etree.ElementTree` (XML parsing/validation)
 - `pytest` (test driven development)
-- `subprocess` and `shutil` (CLI integration testing)
+- `subprocess` (CLI integration testing)
 
 ## Example: Raw Transcript → XML Format
 
@@ -162,7 +174,7 @@ Final thoughts on implementation
 ## XML Generation Rules and Required Template
 
 - **Use ElementTree API**: Build XML with `ET.Element()`, `ET.SubElement()`, `.set()` for attributes, assign content with `.text`, and format with `ET.indent()`
-- **XML Serialisation**: Use `ET.ElementTree(root).write(filename, encoding="utf-8", xml_declaration=True)` for automatic XML declaration and proper encoding
+- **XML Serialisation**: Use `ET.ElementTree(root).write()` or `ET.tostring()` + file write for XML output with proper encoding and declaration
 - **Parse Requirement**: Must parse successfully using `xml.etree.ElementTree.parse()`
 - **Template Compliance**: Must exactly follow XML template shown between `<xml_template>` tags
 
@@ -188,6 +200,7 @@ Final thoughts on implementation
 - **Execution**: CLI command `youtube-to-xml filename.txt`
 - **Input**: Text file containing YouTube transcript in the specified format
 - **Output**: XML file matches input filename and is saved to `transcript_files/` directory (create if it does not exist). Example: `filename99.txt` → `transcript_files/filename99.xml`
+- **Success Message**: `f"✅ Created: {output_path}"` when conversion completes successfully
 - **Argparse `--help`**: the help message in between `<argparse_help>` tags is shown
 
 <argparse_help>
@@ -213,9 +226,9 @@ options:
    └─────────────────────────────────────────
 
 🔧 REQUIREMENTS:
-   - Must start with a chapter title (non-timestamp line)
-   - Second line must be a timestamp
-   - Third line must be content (non-timestamp line)
+   - 1st line: (non-timestamp) → becomes first chapter
+   - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
+   - 3rd line: (non-timestamp) → first content line of first chapter
 
 💡 Check that your transcript follows this basic pattern
 ```
@@ -223,18 +236,22 @@ options:
 
 ## Error Handling & Validation
 
-**File System Errors**
+**Exception Architecture**: Custom exception types in `exceptions.py` module, all inheriting from `ValueError`:
+- `EmptyFileError`: "Cannot parse an empty transcript file"
+- `InvalidTranscriptFormatError`: "Transcript must start with a chapter title, not a timestamp"  
+- `MissingTimestampError`: "Transcript must contain at least one timestamp"
+
+**CLI Error Messages**: Parser raises specific exceptions, CLI catches and formats user-friendly messages:
 - File not found: `f"❌ We couldn't find your file: {filename}"`
 - Permission denied: `f"❌ We don't have permission to access: {filename}"`
-
-**Content Validation Errors**
 - Empty file: `f"❌ Your file is empty: {filename}"`
-- Invalid transcript format: `f"❌ Wrong format in '{filename}' - run 'youtube-to-xml --help'"`
+- Invalid format: `f"❌ Wrong format in '{filename}' - run 'youtube-to-xml --help'"`
+- Write permission: `f"❌ Cannot write to: {output_path}"`
 
-- **Input Validation**: 
-  - File must start with non-timestamp line (chapter title)
-  - Must contain at least one timestamp
-  - Must have detectable chapter structure per detection rules
+**Input Validation Requirements**: 
+- Refer to REQUIREMENTS section in `<argparse_help>` for format specification
+- File must not be empty
+- Must contain at least one timestamp
 
 ## Success Criteria
 
@@ -242,9 +259,11 @@ options:
 - [x] Correctly identifies chapter titles vs content including all edge cases
 - [x] Generates valid XML that parses successfully with `xml.etree.ElementTree.parse()`
 - [x] Validates input files and provides clear error messages for invalid formats
+- [x] Implements complete CLI with proper argparse help and file operations
+- [x] Custom exception architecture separating business logic from user presentation
 - [x] Test driven development used resulting in coverage and good design (avoid mocks)
 - [x] Clean project structure following Python best practices
-- [ ] Performance handles transcripts up to 15,000 lines in less than 2 seconds
+- [x] Performance handles transcripts up to 15,000 lines in less than 2 seconds
 
 ---
 
