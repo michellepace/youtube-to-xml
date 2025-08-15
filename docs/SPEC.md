@@ -73,7 +73,6 @@ flowchart TD
     
     style CLI color:#fff,fill:#3874ac
     style OUTPUT color:#fff,fill:#419f52
-    style EXCEPTIONS color:#fff,fill:#e74c3c
 ```
 
 ## Design Principles
