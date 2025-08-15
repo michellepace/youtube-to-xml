@@ -74,7 +74,7 @@ def main() -> None:
 
     # Create output directory and write XML
     output_dir = Path("transcript_files")
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     output_filename = transcript_path.stem + ".xml"
     output_path = output_dir / output_filename

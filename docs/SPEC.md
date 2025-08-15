@@ -174,7 +174,7 @@ Final thoughts on implementation
 ## XML Generation Rules and Required Template
 
 - **Use ElementTree API**: Build XML with `ET.Element()`, `ET.SubElement()`, `.set()` for attributes, assign content with `.text`, and format with `ET.indent()`
-- **XML Serialisation**: Use `ET.ElementTree(root).write(filename, encoding="utf-8", xml_declaration=True)` for automatic XML declaration and proper encoding
+- **XML Serialisation**: Use `ET.ElementTree(root).write()` or `ET.tostring()` + file write for XML output with proper encoding and declaration
 - **Parse Requirement**: Must parse successfully using `xml.etree.ElementTree.parse()`
 - **Template Compliance**: Must exactly follow XML template shown between `<xml_template>` tags
 

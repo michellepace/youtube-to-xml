@@ -7,7 +7,7 @@ Each layer of your application has a specific responsibility:
 - **Parser**: Detects and raises specific exception types with technical messages
 - **Exceptions**: Define error types and carry context-free problem descriptions  
 - **CLI**: Catches exceptions and formats them for command-line users
-- **Future API**: Will catch same exceptions and format for HTTP/JSON responses
+- **Future API**: Will catch the same exceptions and format for HTTP/JSON responses
 - **Tests**: Verify only exception types, not message content
 
 ### Why This Pattern Is Ideal
@@ -45,7 +45,7 @@ parse_transcript() ──> EmptyFileError          CLI (cli.py)
 youtube-to-xml = "youtube_to_xml.cli:main"  # Note: .cli module, not root package
 ```
 
-This separation also makes future expansion cleaner - API endpoints, GUI interfaces, or other entry points can be added as sibling modules without cluttering the package root.
+This separation also makes future expansion cleaner - API endpoints, GUIs, or other entry points can be added as sibling modules without cluttering the package root.
 
 ## Your Implementation Path
 
@@ -250,7 +250,7 @@ def main() -> None:
     
     # Create output directory and write XML
     output_dir = Path("transcript_files")
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     output_filename = transcript_path.stem + ".xml"
     output_path = output_dir / output_filename

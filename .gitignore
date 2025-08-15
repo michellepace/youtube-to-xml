@@ -17,4 +17,4 @@ dist/
 .ruff_cache/
 
 # Project-specific
-transcripts/**/*.xml
+transcript_files/**/*.xml
