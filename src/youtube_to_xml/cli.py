@@ -29,9 +29,9 @@ def parse_arguments() -> argparse.Namespace:
    └─────────────────────────────────────────
 
 🔧 REQUIREMENTS:
-   - Must start with a chapter title (non-timestamp line)
-   - Second line must be a timestamp
-   - Third line must be content (non-timestamp line)
+   - 1st line: (non-timestamp) → becomes first chapter
+   - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
+   - 3rd line: (non-timestamp) → first content line of first chapter
 
 💡 Check that your transcript follows this basic pattern
 """,

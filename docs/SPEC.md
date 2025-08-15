@@ -263,7 +263,7 @@ options:
 - [x] Custom exception architecture separating business logic from user presentation
 - [x] Test driven development used resulting in coverage and good design (avoid mocks)
 - [x] Clean project structure following Python best practices
-- [ ] Performance handles transcripts up to 15,000 lines in less than 2 seconds
+- [x] Performance handles transcripts up to 15,000 lines in less than 2 seconds
 
 ---
 
