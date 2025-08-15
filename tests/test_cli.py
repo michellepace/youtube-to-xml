@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
-    """Test that valid transcript produces XML output."""
     # Create test file in tmp directory
     test_file = tmp_path / "test.txt"
     test_file.write_text("Chapter One\n0:00\nContent here", encoding="utf-8")
@@ -29,7 +28,6 @@ def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
 
 
 def test_missing_file_shows_error(tmp_path: Path) -> None:
-    """Test error message for missing file."""
     result = subprocess.run(
         ["uv", "run", "youtube-to-xml", "nonexistent.txt"],
         capture_output=True,
@@ -43,7 +41,6 @@ def test_missing_file_shows_error(tmp_path: Path) -> None:
 
 
 def test_empty_file_shows_error(tmp_path: Path) -> None:
-    """Test error message for empty file."""
     # Create empty test file
     test_file = tmp_path / "empty.txt"
     test_file.write_text("", encoding="utf-8")
@@ -61,10 +58,9 @@ def test_empty_file_shows_error(tmp_path: Path) -> None:
 
 
 def test_invalid_format_shows_error(tmp_path: Path) -> None:
-    """Test error message for invalid format."""
     # Create invalid test file (starts with timestamp)
     test_file = tmp_path / "invalid.txt"
-    test_file.write_text("0:00\nContent", encoding="utf-8")
+    test_file.write_text("0:22\nContent", encoding="utf-8")
 
     result = subprocess.run(
         ["uv", "run", "youtube-to-xml", "invalid.txt"],

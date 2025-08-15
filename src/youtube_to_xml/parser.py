@@ -127,7 +127,9 @@ def parse_transcript(raw_transcript: str) -> list[Chapter]:
     """Parse transcript text and return chapters with content.
 
     Raises:
-        ValueError: If transcript format is invalid
+        EmptyFileError: If transcript file is empty
+        InvalidTranscriptFormatError: If transcript starts with timestamp
+        MissingTimestampError: If transcript contains no timestamps
     """
     validate_transcript_format(raw_transcript)
 
