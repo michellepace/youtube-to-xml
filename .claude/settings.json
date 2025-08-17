@@ -14,10 +14,12 @@
     "deny": [
       "Read(**/.env)",
       "Read(**/.envrc)",
+
       "Read(docs/misc/**)",
       "Read(docs/prompts/**)",
       "Read(docs/plan*/**)",
-      "Read(transcript_files/[0-9]*)"
+      "Read(transcript_files/advanced-claude-code-45min.*)",
+      "Read(transcript_files/nextjs-tutorial-11hrs.*)"
     ]
   }
 }

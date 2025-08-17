@@ -24,12 +24,12 @@
 
 **Entry Point Flow**: CLI command `youtube-to-xml` → `main()` in `cli.py` → orchestrates parser, xml_builder, and exceptions modules following "one module, one purpose"
 
-### System Architecture & Data Flow
+### Architecture & Data Flow
 
 ```mermaid
 ---
 config:
-  theme: redux
+  theme: dark
 ---
 flowchart TD
     subgraph TOP[" "]
@@ -73,7 +73,6 @@ flowchart TD
     
     style CLI color:#fff,fill:#3874ac
     style OUTPUT color:#fff,fill:#419f52
-    style EXCEPTIONS color:#fff,fill:#e74c3c
 ```
 
 ## Design Principles
