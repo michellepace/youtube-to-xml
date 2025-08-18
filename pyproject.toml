@@ -7,7 +7,9 @@ authors = [
     { name = "Michelle", email = "" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "yt-dlp>=2025.8.11",
+]
 
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
