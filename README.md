@@ -142,5 +142,6 @@ Performance tested with transcripts up to 15,000 lines completing in 0.02 second
 - **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
 
 **To Do**
-- Evals to prove XML format vs plain (myself here, then Braintrust)
-- If so, improve XML perhaps to [this](docs/misc/working-notes.md#better-format). I don't think so, disjoint.
+1. Evals to prove XML format vs plain (myself here, then Braintrust)
+2. If so, improve XML perhaps to [this](docs/misc/working-notes.md#better-format). I don't think so, disjoint.
+3. Refactor everything to do "Transcript from URL" as scripted [here](scripts/youtube_transcript_fetcher.py)
