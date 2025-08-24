@@ -15,17 +15,29 @@ YouTube-to-XML transcript converter
 - **Core Libraries**: `argparse`, `pathlib`, `re`, `xml.etree.ElementTree`, `pytest`
 
 ## UV Workflow (Always)
-```bash
-uv sync                           # Setup/update dependencies 
-uv run youtube-to-xml <file>      # Run CLI converter
-uv run python -m pytest          # All tests
-uv run python -m pytest -v tests/test_specific.py::test_function  # Single test
-uv run ruff check                 # Lint
-uv run ruff format                # Format
-uv run pre-commit run --all-files # All pre-commit hooks (uv-sync, pytest, ruff)
-```
 
-**Always use `uv run`** - never activate venv
+**Strict Rules:**
+- Use `uv run` - never activate venv
+- Use `uv add` - never pip
+- Use `pyproject.toml` - never requirements.txt
+
+**Common Commands:**
+```bash
+# Setup & Dependencies
+uv sync # Match packages to lockfile 
+uv add --dev <pkg> # Add dev dependency
+uv tree # Show dependency tree
+uv lock --upgrade-package <pkg> # Update specific package
+uv lock --upgrade && uv sync # Update all packages and apply
+
+# Development
+uv run youtube-to-xml <file> # Run CLI
+uv run python -m pytest # All tests
+uv run python -m pytest -v tests/test_specific.py::test_function
+uv run ruff check --fix # Lint and auto-fix (rules in pyproject.toml)
+uv run ruff format # Format (see pyproject.toml)
+uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
+```
 
 ## Design Principles (From [docs/SPEC.md](docs/SPEC.md) - Non-negotiable)
 **TDD-Driven Design**: Write tests first - this naturally creates better architecture:
