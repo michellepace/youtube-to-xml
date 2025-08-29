@@ -6,52 +6,57 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
 
-```bash
-youtube-to-xml my_transcript.txt
-# ✅ Created: transcript_files/my_transcript.xml
-```
-
 ![Description](docs/misc/youtube-to-xml-narrow.jpg)
 
-## 🚀 Installation
+## 🚀 Quick Start
 
-**Prerequisites**
+**Prerequisites:** [Install UV](https://docs.astral.sh/uv/getting-started/installation/) first.
 
-UV must be installed first on your machine, follow the [installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+### Option 1: Automated (Recommended)
 
-**Use as a Command Line Tool (recommended)**
-
-```bash
-uv tool install git+https://github.com/michellepace/youtube-to-xml.git
-youtube-to-xml --help
-```
-
-**Clone to Develop Further**
+Get YouTube transcripts directly from URL:
 
 ```bash
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
 uv sync
-uv run youtube-to-xml --help
+uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xml
 ```
 
-## 📋 Usage
+**Output:**
+```
+🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
+📊 Fetching video metadata...
+   Title: How Claude Code Hooks Save Me HOURS Daily
+   Duration: 2m 43s
+📝 Downloading subtitles...
+   Parsed 75 subtitles
+📑 Organising into 4 chapter(s)...
+🔧 Building XML document...
+✅ Saved to: output.xml
+```
 
-**Basic Steps**
+**Features:**
+- ✅ Downloads video metadata (title, duration, upload date)
+- ✅ Downloads video subtitles (i.e. transcript content)
+- ✅ Organises subtitles by video chapters automatically
+- ✅ Prioritises manual subtitles over auto-generated ones
+- ✅ Creates structured XML output
 
-1. Manually copy a YouTube transcript into a .txt file (sorry)
+### Option 2: Manual Method (Current CLI)
 
-2. Then run this command
-   ```bash
-   youtube-to-xml my_transcript.txt
-   ```
+For manual transcript processing:
 
-3. Upload `my_transcript.xml` into a claude.ai project, chat, or other LLM
+```bash
+# Install CLI tool
+uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 
-**Required Format for `my_transcript.txt` (input)**
+# Manually copy YouTube transcript into my_transcript.txt, then:
+youtube-to-xml my_transcript.txt
+# ✅ Created: transcript_files/my_transcript.xml
+```
 
-Your transcript file should start with a chapter title, followed by timestamps and content:
-
+**Required Format for `my_transcript.txt`:**
 ```text
 Introduction to Cows
 0:02
@@ -61,16 +66,9 @@ Let's start with the fundamentals
 Washing the cow
 15:45
 First, we'll start with the patches
-11:59:59
-That took a long time
-12:04:27
-Usually it s much quicker
 ```
 
-**Transcript in XML `my_transcript.xml` (output)**
-
-Generates structured XML in `transcript_files/` directory:
-
+**Output XML:**
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript>
@@ -82,35 +80,33 @@ Generates structured XML in `transcript_files/` directory:
       Let's start with the fundamentals</chapter>
     <chapter title="Washing the cow" start_time="15:45">
       15:45
-      First, we'll start with the patches
-      11:59:59
-      That took a long time
-      12:04:27
-      Usually it s much quicker</chapter>
+      First, we'll start with the patches</chapter>
   </chapters>
 </transcript>
 ```
 
+> **Note:** The CLI will be refactored soon to use the automated approach.
+
 ## 🛠️ Development
 
-**Requirements**
+**Setup:**
+```bash
+git clone https://github.com/michellepace/youtube-to-xml.git
+cd youtube-to-xml
+uv sync
+```
 
-- Python 3.13+
-- UV package manager [installed](https://docs.astral.sh/uv/getting-started/installation/)
-
-**How to Run Tests**
-
+**Testing:**
 ```bash
 uv run python -m pytest          # All tests
 uv run python -m pytest -v       # Verbose output
 ```
 
-**Code Quality Automation**
-
+**Code Quality:**
 ```bash
 uv run ruff check                 # Lint
 uv run ruff format                # Format
-uv run pre-commit run --all-files # All hooks (uv-sync, pytest, ruff)
+uv run pre-commit run --all-files # All hooks
 ```
 
 ## 📊 Technical Details
@@ -120,8 +116,10 @@ Built with Test-Driven Development using:
 - **XML Builder**: ElementTree API for valid XML generation
 - **CLI**: Argparse with comprehensive error handling
 - **Architecture**: Pure functions with clear module separation
-- **Dependencies**: None
-- **Package & Project Management**: UV Package Application (see [here](https://docs.astral.sh/uv/concepts/projects/) and [why](https://docs.astral.sh/uv/concepts/projects/config/#project-packaging))
+- **Dependencies**:
+  - Runtime Dependencies: `yt_dlp` (fetch transcript and metadata from YouTube URL). This is currently used by [scrpits/transcript_auto_fetcher.py](scrpits/transcript_auto_fetcher.py) only.
+  - Dev Dependencies: `pytest`, `ruff`, `pre-commit`
+- **Package Management**: UV Package Application
 
 Performance tested with transcripts up to 15,000 lines completing in 0.02 seconds.
 
@@ -134,7 +132,7 @@ Performance tested with transcripts up to 15,000 lines completing in 0.02 second
 - Next time: [Claude Code Docs](https://github.com/ericbuess/claude-code-docs) & [Project Index](https://github.com/ericbuess/claude-code-project-index) (see [chat](https://claude.ai/chat/c70ff077-6ebb-4c75-bf2b-74e31d2cb649))
 
 **Outstanding Questions**
-- **Q1.** Is there something I could have done better with UV ?
+- **Q1.** Is there something I could have done better with UV?
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
 - **Q3.** Are my [tests](/tests/) clear and sane, or did I seriously overcomplicate / over cook it?
 - **Q4.** Did I do the errors properly (make them a type, define in [exceptions.py](/src/youtube_to_xml/exceptions.py), customising messages in [cli.py](/src/youtube_to_xml/cli.py))?
@@ -144,4 +142,4 @@ Performance tested with transcripts up to 15,000 lines completing in 0.02 second
 **To Do**
 1. Evals to prove XML format vs plain (myself here, then Braintrust)
 2. If so, improve XML perhaps to [this](docs/misc/working-notes.md#better-format). I don't think so, disjoint.
-3. Refactor everything to do "Transcript from URL" as scripted [here](scripts/youtube_transcript_fetcher.py)
+3. Refactor [src/](src/) and [tests/](tests/) to automatically get transcript from YouTube URL as per experimental script [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py).

@@ -4,6 +4,12 @@ This script downloads YouTube transcripts and creates structured XML files.
 The XML structure: <transcript> root with video metadata, containing <chapters>
 with individual timestamped subtitles.
 
+Usage:
+    uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]
+
+Example:
+    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xml
+
 For a provided YouTube URL, the script will:
 1. Fetch the video metadata (title, upload date, duration)
 2. Download and parse subtitles (the timestamped text from YouTube's transcript)
@@ -473,8 +479,13 @@ def main() -> None:
     result = parse_arguments(sys.argv)
     if result is None:
         print("YouTube to XML Converter with Metadata")
-        print("Usage: python youtube_to_xml.py <YouTube_URL> [output_file]")
-        print("Example: python youtube_to_xml.py https://youtu.be/VIDEO_ID output.xml")
+        print(
+            "Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]"
+        )
+        print(
+            "Example: uv run scripts/transcript_auto_fetcher.py "
+            "https://youtu.be/VIDEO_ID output.xml"
+        )
         sys.exit(1)
 
     video_url, output_file = result
