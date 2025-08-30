@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<transcript video_title="How Claude Code Hooks Save Me HOURS Daily" upload_date="2025-07-12" duration="2m 43s" video_url="https://www.youtube.com/watch?v=Q4gsvJvRjCU">
+<transcript>
   <chapters>
     <chapter title="Intro" start_time="0:00">
       0:00
@@ -23,7 +23,7 @@
       0:18
       subscribe button.
     </chapter>
-    <chapter title="Hooks" start_time="0:19">
+    <chapter title="Hooks" start_time="0:20">
       0:20
       To create your first hook, use the hooks
       0:22
@@ -57,7 +57,7 @@
       0:54
       really useful, but if we go to our
     </chapter>
-    <chapter title="Editing Hooks" start_time="0:55">
+    <chapter title="Editing Hooks" start_time="0:56">
       0:56
       claude settings, we can edit the hook
       0:58
@@ -121,11 +121,11 @@
       2:04
       plays audio whenever it needs my input.
       2:06
-      &gt;&gt; Task completed successfully.
+      Task completed successfully.
     </chapter>
     <chapter title="Outro" start_time="2:08">
       2:08
-      &gt;&gt; Or I could even send notifications to my
+      Or I could even send notifications to my
       2:11
       phone with notify. The level of control
       2:13

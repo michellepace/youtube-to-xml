@@ -20,7 +20,7 @@ Get YouTube transcripts directly from URL:
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
 uv sync
-uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xml
+uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
 ```
 
 **Output:**
@@ -33,7 +33,7 @@ uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xm
    Parsed 75 subtitles
 📑 Organising into 4 chapter(s)...
 🔧 Building XML document...
-✅ Saved to: output.xml
+✅ Saved to: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
 **Features:**

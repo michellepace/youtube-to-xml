@@ -155,6 +155,7 @@ def test_includes_xml_declaration(single_chapter: list[Chapter]) -> None:
     """XML output includes proper declaration."""
     xml_string = chapters_to_xml(single_chapter)
     assert xml_string.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml_string.endswith("</transcript>\n")  # Should end with newline
 
 
 def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
@@ -170,3 +171,13 @@ def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
     # Content indentation (6 spaces = 3 levels deep x 2 spaces per level)
     assert lines[4].startswith("      0:00")  # 6 spaces
     assert lines[5].startswith("      Welcome to today's session")  # 6 spaces
+
+    # Closing tag indentation - should be on separate line with proper indent
+    # Find the closing chapter tag line
+    chapter_close_lines = [i for i, line in enumerate(lines) if "</chapter>" in line]
+    assert len(chapter_close_lines) > 0, "Should have closing chapter tags"
+
+    for line_idx in chapter_close_lines:
+        line = lines[line_idx]
+        # Closing chapter tag should be on its own line with 4 spaces (level 2)
+        assert line == "    </chapter>", f"Expected '    </chapter>', got '{line}'"
