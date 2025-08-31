@@ -5,16 +5,16 @@ The XML structure: <transcript> root with video metadata, containing <chapters>
 with individual timestamped subtitles.
 
 Usage:
-    uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]
+    uv run scripts/transcript_auto_fetcher.py <YouTube_URL>
 
 Example:
-    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xml
+    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
 
 For a provided YouTube URL, the script will:
 1. Fetch the video metadata (title, upload date, duration)
 2. Download and parse subtitles (the timestamped text from YouTube's transcript)
 3. Assign subtitles to chapters (using YouTube's chapter markers if available)
-4. Create and save an XML document with all the structured data "video_transcript.xml"
+4. Create and save an XML document with dynamic filename based on video title
 
 Subtitle priority:
 1. Manual subtitles uploaded by the video creator (highest quality)
@@ -37,12 +37,11 @@ from urllib.request import urlopen
 import yt_dlp
 
 # Constants
-DEFAULT_OUTPUT_FILE = "video_transcript.xml"
+DEFAULT_OUTPUT_FILE = "video_transcript.xml"  # Not used - dynamic filenames only
 MILLISECONDS_PER_SECOND = 1000.0
 SUBTITLE_LANGS = ["en.*", "all"]  # English preferred, any fallback
 YYYYMMDD_LENGTH = 8
 MIN_ARGS_REQUIRED = 2
-OUTPUT_ARG_INDEX = 2
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_MINUTE = 60
 
@@ -453,21 +452,18 @@ def convert_youtube_to_xml(video_url: str) -> str:
     return xml_content
 
 
-def save_transcript(video_url: str, output_file: str) -> None:
+def save_transcript(video_url: str) -> None:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
+    Uses dynamic filename based on video title.
 
     Args:
         video_url: YouTube video URL
-        output_file: Path for output XML file
     """
     # Fetch metadata to get title for filename generation
     metadata = fetch_video_metadata(video_url)
-
-    # Use dynamic filename if default was provided
-    if output_file == DEFAULT_OUTPUT_FILE:
-        output_file = sanitize_title_for_filename(metadata.video_title)
+    output_file = sanitize_title_for_filename(metadata.video_title)
 
     # Generate XML content
     xml_content = convert_youtube_to_xml(video_url)
@@ -479,43 +475,34 @@ def save_transcript(video_url: str, output_file: str) -> None:
     print(f"✅ Saved to: {output_path.absolute()}")
 
 
-def parse_arguments(args: list[str]) -> tuple[str, str] | None:
+def parse_arguments(args: list[str]) -> str | None:
     """Parse command-line arguments.
 
     Args:
         args: Command-line arguments (typically sys.argv)
 
     Returns:
-        Tuple of (video_url, output_file) if valid, None if invalid
+        Video URL if valid, None if invalid
     """
     if len(args) < MIN_ARGS_REQUIRED:
         return None
 
-    video_url = args[1]
-    output_file = (
-        args[OUTPUT_ARG_INDEX] if len(args) > OUTPUT_ARG_INDEX else DEFAULT_OUTPUT_FILE
-    )
-    return video_url, output_file
+    return args[1]
 
 
 def main() -> None:
     """Command-line interface entry point."""
-    result = parse_arguments(sys.argv)
-    if result is None:
+    video_url = parse_arguments(sys.argv)
+    if video_url is None:
         print("YouTube to XML Converter with Metadata")
+        print("Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL>")
         print(
-            "Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]"
-        )
-        print(
-            "Example: uv run scripts/transcript_auto_fetcher.py "
-            "https://youtu.be/VIDEO_ID output.xml"
+            "Example: uv run scripts/transcript_auto_fetcher.py https://youtu.be/VIDEO_ID"
         )
         sys.exit(1)
 
-    video_url, output_file = result
-
     try:
-        save_transcript(video_url, output_file)
+        save_transcript(video_url)
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
