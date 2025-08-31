@@ -5,9 +5,8 @@ import sys
 from pathlib import Path
 
 from youtube_to_xml.exceptions import (
-    EmptyFileError,
-    InvalidTranscriptFormatError,
-    MissingTimestampError,
+    FileEmptyError,
+    FileInvalidFormatError,
 )
 from youtube_to_xml.parser import parse_transcript
 from youtube_to_xml.xml_builder import chapters_to_xml
@@ -62,22 +61,19 @@ def main() -> None:
     # Parse the transcript
     try:
         chapters = parse_transcript(raw_content)
-    except EmptyFileError:
+    except FileEmptyError:
         print(f"❌ Your file is empty: {transcript_path}")
         sys.exit(1)
-    except (InvalidTranscriptFormatError, MissingTimestampError):
+    except FileInvalidFormatError:
         print(f"❌ Wrong format in '{transcript_path}' - run 'youtube-to-xml --help'")
         sys.exit(1)
 
     # Generate XML
     xml_content = chapters_to_xml(chapters)
 
-    # Create output directory and write XML
-    output_dir = Path("transcript_files")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
+    # Create output file in current directory
     output_filename = transcript_path.stem + ".xml"
-    output_path = output_dir / output_filename
+    output_path = Path(output_filename)
 
     try:
         output_path.write_text(xml_content, encoding="utf-8")

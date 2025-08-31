@@ -12,9 +12,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from youtube_to_xml.exceptions import (
-    EmptyFileError,
-    InvalidTranscriptFormatError,
-    MissingTimestampError,
+    FileEmptyError,
+    FileInvalidFormatError,
 )
 
 # Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
@@ -23,6 +22,9 @@ TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
+
+# Format validation constants
+MINIMUM_LINES_REQUIRED = 3
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,20 +46,40 @@ def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
 
 
 def validate_transcript_format(raw_transcript: str) -> None:
-    """Validate that the transcript meets format requirements."""
+    """Validate that the transcript is in YouTube format.
+
+    Requirements
+    - 1st line: (non-timestamp) → becomes first chapter
+    - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
+    - 3rd line: (non-timestamp) → first content line of first chapter
+    """
     if not raw_transcript.strip():
-        raise EmptyFileError
+        raise FileEmptyError
 
     transcript_lines = raw_transcript.splitlines()
 
-    # Check first line is not a timestamp
-    if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
-        raise InvalidTranscriptFormatError
+    # Remove blank lines for validation (consistent with processing)
+    non_empty_lines = [line for line in transcript_lines if line.strip()]
 
-    # Check that at least one timestamp exists
-    timestamp_indices = find_timestamps(transcript_lines)
-    if not timestamp_indices:
-        raise MissingTimestampError
+    # Must have at least 3 lines for minimum format
+    if len(non_empty_lines) < MINIMUM_LINES_REQUIRED:
+        msg = "File must have at least 3 lines: chapter title, timestamp, content"
+        raise FileInvalidFormatError(msg)
+
+    # Line 1: Must be chapter title (non-timestamp)
+    if TIMESTAMP_PATTERN.match(non_empty_lines[0].strip()):
+        msg = "First line must be chapter title, not timestamp"
+        raise FileInvalidFormatError(msg)
+
+    # Line 2: Must be timestamp
+    if not TIMESTAMP_PATTERN.match(non_empty_lines[1].strip()):
+        msg = "Second line must be a timestamp"
+        raise FileInvalidFormatError(msg)
+
+    # Line 3: Must be content (non-timestamp)
+    if TIMESTAMP_PATTERN.match(non_empty_lines[2].strip()):
+        msg = "Third line must be content, not timestamp"
+        raise FileInvalidFormatError(msg)
 
 
 def _find_first_chapter(
@@ -127,9 +149,8 @@ def parse_transcript(raw_transcript: str) -> list[Chapter]:
     """Parse transcript text and return chapters with content.
 
     Raises:
-        EmptyFileError: If transcript file is empty
-        InvalidTranscriptFormatError: If transcript starts with timestamp
-        MissingTimestampError: If transcript contains no timestamps
+        FileEmptyError: If transcript file is empty
+        FileInvalidFormatError: If transcript format is invalid
     """
     validate_transcript_format(raw_transcript)
 

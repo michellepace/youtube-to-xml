@@ -7,9 +7,8 @@ Uses fixtures to reduce duplication and improve maintainability.
 import pytest
 
 from youtube_to_xml.exceptions import (
-    EmptyFileError,
-    InvalidTranscriptFormatError,
-    MissingTimestampError,
+    FileEmptyError,
+    FileInvalidFormatError,
 )
 from youtube_to_xml.parser import (
     TIMESTAMP_PATTERN,
@@ -126,28 +125,61 @@ hey hey hey
 0:53
 [Music] welcome"""
 
-    with pytest.raises(InvalidTranscriptFormatError):
+    with pytest.raises(FileInvalidFormatError):
         parse_transcript(starts_with_timestamp)
 
 
 def test_rejects_empty_transcript() -> None:
-    """Empty transcript file should raise EmptyFileError."""
-    with pytest.raises(EmptyFileError):
+    """Empty transcript file should raise FileEmptyError."""
+    with pytest.raises(FileEmptyError):
         parse_transcript("")
 
-    with pytest.raises(EmptyFileError):
+    with pytest.raises(FileEmptyError):
         parse_transcript("   \n  \t  \n  ")
 
 
 def test_rejects_transcript_without_timestamps() -> None:
-    """Transcript without any timestamps should raise MissingTimestampError."""
+    """Transcript without any timestamps should raise FileInvalidFormatError."""
     no_timestamps = """Chapter Title
 Some content here
 More content
 Final line"""
 
-    with pytest.raises(MissingTimestampError):
+    with pytest.raises(FileInvalidFormatError, match="Second line must be a timestamp"):
         parse_transcript(no_timestamps)
+
+
+def test_rejects_consecutive_timestamps_after_title() -> None:
+    """Consecutive timestamps after chapter title should fail format validation."""
+    consecutive_timestamps = """Introduction to Bret Taylor
+00:04
+00:05
+You're CTO of Meta and and co-CEO of..."""
+
+    with pytest.raises(
+        FileInvalidFormatError, match="Third line must be content, not timestamp"
+    ):
+        parse_transcript(consecutive_timestamps)
+
+
+def test_rejects_content_before_first_timestamp() -> None:
+    """Content before first timestamp should fail format validation."""
+    content_before_timestamp = """Introduction to Bret Taylor
+content line should break
+00:04
+You're CTO of Meta and and co-CEO of..."""
+
+    with pytest.raises(FileInvalidFormatError, match="Second line must be a timestamp"):
+        parse_transcript(content_before_timestamp)
+
+
+def test_rejects_file_with_insufficient_lines() -> None:
+    """Files with fewer than 3 lines should fail format validation."""
+    too_short = """Chapter Title
+00:04"""
+
+    with pytest.raises(FileInvalidFormatError, match="File must have at least 3 lines"):
+        parse_transcript(too_short)
 
 
 # ============= CHAPTER DETECTION TESTS =============
@@ -349,19 +381,3 @@ def test_removes_blank_lines_during_processing() -> None:
         line for ch in chapters for line in ch.content_lines
     ]
     assert "" not in all_content
-
-
-def test_handles_consecutive_timestamps() -> None:
-    """Multiple consecutive timestamps handled correctly."""
-    text = """Chapter
-0:00
-0:30
-1:00
-Some content after"""
-
-    chapters = parse_transcript(text)
-    content = chapters[0].content_lines
-
-    # All timestamps should be in content
-    assert all(ts in content for ts in ["0:00", "0:30", "1:00"])
-    assert "Some content after" in content

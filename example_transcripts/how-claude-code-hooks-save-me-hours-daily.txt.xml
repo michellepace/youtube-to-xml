@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='utf-8'?>
+<transcript>
+  <chapters>
+    <chapter title="Intro" start_time="0:00">
+      0:00
+      Hooks are hands down one of the best
+      0:02
+      features in Claude Code and for some
+      0:03
+      reason a lot of people don't know about
+      0:05
+      them. Sure, spawning parallel sub agents
+      0:08
+      is cool, but creating a custom hook for
+      0:10
+      linting notifications and blocking
+      0:12
+      specific commands is so much cooler.
+      0:14
+      Let's go through how to do that. And
+      0:16
+      before we do, don't forget to hit that
+      0:18
+      subscribe button.
+    </chapter>
+    <chapter title="Hooks" start_time="0:20">
+      0:20
+      To create your first hook, use the hooks
+      0:22
+      slash command, which shows this scary
+      0:25
+      looking warning because hooks are
+      0:26
+      commands that run without confirmation.
+      0:29
+      So if you destroy your own code with
+      0:30
+      them, don't cry to anthropic. There are
+      0:33
+      five types of hooks. Pre-tool use, post
+      0:36
+      tool use, notification stop, and sub
+      0:38
+      aent stop. For now, we'll go with
+      0:41
+      pre-tool use, which runs the script
+      0:43
+      before tool execution. We'll add a bash
+      0:46
+      matcher, but you could choose from any
+      0:48
+      one of these. And then for the hook,
+      0:50
+      we'll just write ls and save it as user
+      0:52
+      settings. At the moment, this isn't
+      0:54
+      really useful, but if we go to our
+    </chapter>
+    <chapter title="Editing Hooks" start_time="0:56">
+      0:56
+      claude settings, we can edit the hook
+      0:58
+      here as well. Let's change the ls
+      1:00
+      command to this, which will save the
+      1:02
+      bash command to a file. So, whenever it
+      1:04
+      uses the bash tool, we'll be able to see
+      1:07
+      whatever command is used by the tool.
+      1:10
+      These values here are part of the hook
+      1:12
+      input, which is JSON data that a hook
+      1:14
+      receives. So instead of doing this, we
+      1:17
+      could write a script in any language
+      1:19
+      like Python that takes the hook input
+      1:22
+      and creates a more detailed JSON log
+      1:24
+      that looks like this, which could be
+      1:26
+      used for auditing or just improving the
+      1:28
+      use of the tool. But this is where
+      1:30
+      things get really interesting because in
+      1:32
+      a script, if we trigger an exit code of
+      1:34
+      two, the error gets shown to the model,
+      1:37
+      meaning it can adjust its process. So we
+      1:39
+      can see Claude is creating a node
+      1:41
+      project and by default, it's going to
+      1:43
+      use npm. But I have a use bun hook that
+      1:46
+      will stop it from using npm and tell it
+      1:48
+      to use bun instead. So the hook triggers
+      1:50
+      this error and instead it uses bun. But
+      1:53
+      you can also do cool things like show
+      1:55
+      claw linting errors or block it from
+      1:58
+      accessing sensitive files. And hooks
+      2:00
+      don't need to have a matcher like for
+      2:02
+      this notification and stop hook which
+      2:04
+      plays audio whenever it needs my input.
+      2:06
+      Task completed successfully.
+    </chapter>
+    <chapter title="Outro" start_time="2:08">
+      2:08
+      Or I could even send notifications to my
+      2:11
+      phone with notify. The level of control
+      2:13
+      you get with hooks is insane, and I've
+      2:16
+      only just scratched the surface. I
+      2:18
+      didn't even go through using hooks with
+      2:20
+      MCP tools. Anyway, check out the link in
+      2:23
+      the description to see some of my
+      2:24
+      examples. Again, don't forget to hit
+      2:26
+      subscribe. And until next time, happy
+      2:28
+      coding.
+      2:29
+      Hey, it's me again. If you enjoyed this
+      2:31
+      video, go and check out Better Stack.
+      2:33
+      It's an amazing product that I use all
+      2:36
+      the time to help me write better, more
+      2:38
+      robust software. And it's got a free
+      2:40
+      tier, so you've got no excuse not to
+      2:42
+      check it
+    </chapter>
+  </chapters>
+</transcript>
