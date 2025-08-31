@@ -26,6 +26,7 @@ and subtitles organised by chapter, with each individual subtitle timestamped.
 """
 
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -360,7 +361,7 @@ def format_xml_output(element: ET.Element) -> str:
         Pretty-printed XML string with declaration
     """
     ET.indent(element, space="  ")
-    return ET.tostring(element, encoding="unicode", xml_declaration=True)
+    return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
 
 
 def fetch_and_parse_subtitles(metadata: VideoMetadata) -> list[IndividualSubtitle]:
@@ -395,6 +396,22 @@ def generate_summary_stats(chapters: list[Chapter]) -> None:
     print(f"   Individual subtitles: {total_subtitles}")
 
 
+def sanitize_title_for_filename(title: str) -> str:
+    """Convert video title to safe filename.
+
+    Args:
+        title: Video title string
+
+    Returns:
+        Sanitized filename with .xml extension
+    """
+    # Remove non-alphanumeric characters except spaces and hyphens
+    safe_title = re.sub(r"[^\w\s-]", "", title.lower())
+    # Replace spaces and multiple hyphens with single hyphen
+    safe_title = re.sub(r"[\s_-]+", "-", safe_title).strip("-")
+    return f"{safe_title}.xml"
+
+
 def convert_youtube_to_xml(video_url: str) -> str:
     """Convert YouTube video to XML transcript with metadata.
 
@@ -423,7 +440,7 @@ def convert_youtube_to_xml(video_url: str) -> str:
 
     # Step 3: Assign subtitles to chapters
     chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
-    print(f"📑 Organizing into {chapters_count} chapter(s)...")
+    print(f"📑 Organising into {chapters_count} chapter(s)...")
     chapters = assign_subtitles_to_chapters(metadata, subtitles)
 
     # Step 4: Create XML
@@ -445,6 +462,13 @@ def save_transcript(video_url: str, output_file: str) -> None:
         video_url: YouTube video URL
         output_file: Path for output XML file
     """
+    # Fetch metadata to get title for filename generation
+    metadata = fetch_video_metadata(video_url)
+
+    # Use dynamic filename if default was provided
+    if output_file == DEFAULT_OUTPUT_FILE:
+        output_file = sanitize_title_for_filename(metadata.video_title)
+
     # Generate XML content
     xml_content = convert_youtube_to_xml(video_url)
 

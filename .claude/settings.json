@@ -18,8 +18,7 @@
       "Read(docs/misc/**)",
       "Read(docs/prompts/**)",
       "Read(docs/plan*/**)",
-      "Read(transcript_files/advanced-claude-code-45min.*)",
-      "Read(transcript_files/nextjs-tutorial-11hrs.*)"
+      "Read(example_transcripts/build-an-ai-powered-job-board-from-scratch-with-nextjs-15-drizzle-tailwind.xml)"
     ]
   }
 }
