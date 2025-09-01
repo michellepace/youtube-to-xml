@@ -15,3 +15,7 @@ dist/
 # Development tools
 .pytest_cache/
 .ruff_cache/
+
+# Logs
+*.log
+youtube_to_xml.log

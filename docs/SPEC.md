@@ -44,17 +44,17 @@ flowchart TD
         • Error handling
         • Orchestration`"]
 
-        OUTPUT["`**transcript_files/**
-        └─ transcript.xml<br>(output file)`"]
+        OUTPUT["`**transcript.xml**
+        (output file in current directory)`"]
 
         CLI --> CLIMOD
         CLIMOD --> OUTPUT
     end
     
     EXCEPTIONS["`**exceptions.py**
-    • EmptyFileError
-    InvalidTranscriptFormatError
-    • MissingTimestampError`"]
+    • BaseTranscriptError
+    • FileEmptyError
+    • FileInvalidFormatError`"]
     
     PARSER["`**parser.py**
     • Validate format
@@ -165,7 +165,7 @@ Final thoughts on implementation
 
 ## Detection Rules
 
-- **Timestamp Pattern**: Lines containing only timestamp formats (M:SS, MM:SS, H:MM:SS, or HH:MM:SS)
+- **Timestamp Pattern**: Lines containing only timestamp formats (M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS)
 - **First Chapter**: First line of text file
 - **Subsequent Chapters**: When exactly 2 lines exist between consecutive timestamps, the second line (non-timestamp) is a chapter title
 
@@ -198,7 +198,7 @@ Final thoughts on implementation
 
 - **Execution**: CLI command `youtube-to-xml filename.txt`
 - **Input**: Text file containing YouTube transcript in the specified format
-- **Output**: XML file matches input filename and is saved to `transcript_files/` directory (create if it does not exist). Example: `filename99.txt` → `transcript_files/filename99.xml`
+- **Output**: XML file matches input filename and is saved to current directory. Example: `filename99.txt` → `filename99.xml`
 - **Success Message**: `f"✅ Created: {output_path}"` when conversion completes successfully
 - **Argparse `--help`**: the help message in between `<argparse_help>` tags is shown
 
@@ -235,10 +235,9 @@ options:
 
 ## Error Handling & Validation
 
-**Exception Architecture**: Custom exception types in `exceptions.py` module, all inheriting from `ValueError`:
-- `EmptyFileError`: "Cannot parse an empty transcript file"
-- `InvalidTranscriptFormatError`: "Transcript must start with a chapter title, not a timestamp"  
-- `MissingTimestampError`: "Transcript must contain at least one timestamp"
+**Exception Architecture**: Custom exception types in `exceptions.py` module, all inheriting from `BaseTranscriptError`:
+- `FileEmptyError`: "Cannot parse an empty transcript file"
+- `FileInvalidFormatError`: "Transcript file must start with a chapter title, not a timestamp"
 
 **CLI Error Messages**: Parser raises specific exceptions, CLI catches and formats user-friendly messages:
 - File not found: `f"❌ We couldn't find your file: {filename}"`
@@ -250,7 +249,10 @@ options:
 **Input Validation Requirements**: 
 - Refer to REQUIREMENTS section in `<argparse_help>` for format specification
 - File must not be empty
-- Must contain at least one timestamp
+- Must have at least 3 non-empty lines: chapter title, timestamp, and content
+- First line must be a chapter title (not a timestamp)
+- Second line must be a timestamp
+- Third line must be content (not a timestamp)
 
 ## Success Criteria
 

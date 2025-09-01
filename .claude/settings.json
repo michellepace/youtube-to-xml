@@ -16,8 +16,7 @@
       "Read(**/.envrc)",
 
       "Read(docs/handovers/**)",
-      "Read(docs/misc/**)",
-      "Read(docs/plan*/**)"
+      "Read(docs/misc/**)"
     ]
   }
 }

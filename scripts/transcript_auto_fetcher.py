@@ -28,6 +28,7 @@ and subtitles organised by chapter, with each individual subtitle timestamped.
 import json
 import re
 import sys
+import uuid
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
@@ -42,6 +43,7 @@ from youtube_to_xml.exceptions import (
     URLSubtitlesNotFoundError,
     URLVideoNotFoundError,
 )
+from youtube_to_xml.logging_config import get_logger, setup_logging
 
 # Constants
 MILLISECONDS_PER_SECOND = 1000.0
@@ -435,7 +437,9 @@ def sanitize_title_for_filename(title: str) -> str:
     return f"{safe_title}.xml"
 
 
-def convert_youtube_to_xml(video_url: str) -> tuple[str, VideoMetadata]:
+def convert_youtube_to_xml(
+    video_url: str, execution_id: str
+) -> tuple[str, VideoMetadata]:
     """Convert YouTube video to XML transcript with metadata.
 
     Core business logic that:
@@ -446,11 +450,14 @@ def convert_youtube_to_xml(video_url: str) -> tuple[str, VideoMetadata]:
 
     Args:
         video_url: YouTube video URL
+        execution_id: Unique identifier for this execution
 
     Returns:
         Tuple of (XML content as string, VideoMetadata object)
     """
+    logger = get_logger(__name__)
     print(f"🎬 Processing: {video_url}")
+    logger.info("[%s] Processing video: %s", execution_id, video_url)
 
     # Step 1: Fetch all metadata
     print("📊 Fetching video metadata...")
@@ -462,9 +469,11 @@ def convert_youtube_to_xml(video_url: str) -> tuple[str, VideoMetadata]:
     try:
         subtitles = fetch_and_parse_subtitles(metadata)
     except URLSubtitlesNotFoundError:
+        logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
     except URLRateLimitError as e:
         print(f"❌ {e}", file=sys.stderr)
+        logger.error("[%s] URLRateLimitError: %s", execution_id, e)
         raise  # Re-raise to prevent file creation
 
     # Step 3: Assign subtitles to chapters
@@ -482,7 +491,7 @@ def convert_youtube_to_xml(video_url: str) -> tuple[str, VideoMetadata]:
     return xml_content, metadata
 
 
-def save_transcript(video_url: str) -> None:
+def save_transcript(video_url: str, execution_id: str) -> None:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
@@ -490,16 +499,19 @@ def save_transcript(video_url: str) -> None:
 
     Args:
         video_url: YouTube video URL
+        execution_id: Unique identifier for this execution
     """
     # Generate XML content and get metadata for filename
-    xml_content, metadata = convert_youtube_to_xml(video_url)
+    xml_content, metadata = convert_youtube_to_xml(video_url, execution_id)
     output_file = sanitize_title_for_filename(metadata.video_title)
 
     # Save to file
     output_path = Path(output_file)
     output_path.write_text(xml_content, encoding="utf-8")
 
+    logger = get_logger(__name__)
     print(f"✅ Created: {output_path.absolute()}")
+    logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
 
 def parse_arguments(args: list[str]) -> str | None:
@@ -519,6 +531,10 @@ def parse_arguments(args: list[str]) -> str | None:
 
 def main() -> None:
     """Command-line interface entry point."""
+    setup_logging()
+    logger = get_logger(__name__)
+    execution_id = str(uuid.uuid4())[:8]
+
     video_url = parse_arguments(sys.argv)
     if video_url is None:
         print("YouTube to XML Converter with Metadata")
@@ -528,8 +544,10 @@ def main() -> None:
         )
         sys.exit(1)
 
+    logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
+
     try:
-        save_transcript(video_url)
+        save_transcript(video_url, execution_id)
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
@@ -539,9 +557,11 @@ def main() -> None:
         URLRateLimitError,
     ) as e:
         print(f"\n❌ Error: {e}")
+        logger.error("[%s] Processing error: %s", execution_id, e)
         sys.exit(1)
     except (ValueError, OSError) as e:
         print(f"\n❌ Unexpected error: {e}")
+        logger.exception("[%s] Unexpected error: %s", execution_id, e)
         sys.exit(1)
 
 
