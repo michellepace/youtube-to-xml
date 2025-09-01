@@ -15,26 +15,27 @@ Single module approach with standardized internal format.
 **Goal**: Set up error handling and logging infrastructure first
 
 ### Deliverables:
-- [ ] Create enhanced `exceptions.py` with new exception types
-- [ ] Create `logging_config.py` with simple file logging
-- [ ] Add tests for new exceptions
-- [ ] Existing tests still pass
+- [x] Create enhanced `exceptions.py` with new exception types
+- [x] Create `logging_config.py` with simple file logging
+- [x] Add tests for new exceptions
+- [x] Existing tests still pass
 
 ### Implementation:
 ```python
 # exceptions.py
-class TranscriptProcessingError(Exception):
+class BaseTranscriptError(Exception):
     """Base exception for all transcript processing."""
     pass
 
 # File input errors (keep existing + base class)
-class FileEmptyError(TranscriptProcessingError): ...
-class FileInvalidFormatError(TranscriptProcessingError): ...
+class FileEmptyError(BaseTranscriptError): ...
+class FileInvalidFormatError(BaseTranscriptError): ...
 
 # YouTube input errors (new)
-class URLFormatError(TranscriptProcessingError): ...
-class URLVideoNotFoundError(TranscriptProcessingError): ...
-class URLSubtitlesUnavailableError(TranscriptProcessingError): ...
+class URLFormatError(BaseTranscriptError): ...
+class URLVideoNotFoundError(BaseTranscriptError): ...
+class URLSubtitlesNotFoundError(BaseTranscriptError): ...
+class URLRateLimitError(BaseTranscriptError): ...
 
 # logging_config.py
 def setup_logging(log_file="youtube_to_xml.log"):
@@ -55,7 +56,7 @@ def setup_logging(log_file="youtube_to_xml.log"):
 1. Run `uv run pytest` - all existing tests should still pass
 2. Check that new exception types exist in `exceptions.py`
 3. Verify `logging_config.py` creates log file when imported
-4. Test that `TranscriptProcessingError` is the base class for all exceptions
+4. Test that `BaseTranscriptError` is the base class for all exceptions
 
 **✅ Await confirmation before proceeding to Phase 2**
 
@@ -264,7 +265,7 @@ def main():
         xml = build_xml(data)
         save_output(xml, get_output_filename(data))
         logger.info(f"XML generated successfully: {data.video_title or args.input}")
-    except TranscriptProcessingError as e:
+    except BaseTranscriptError as e:
         logger.error(f"Processing failed: {e}")
         print(f"❌ {e}")
         sys.exit(1)

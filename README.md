@@ -71,7 +71,7 @@ First, we'll start with the patches
 **Output XML:**
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
-<transcript>
+<transcript video_title="" upload_date="" duration="" video_url="">
   <chapters>
     <chapter title="Introduction to Cows" start_time="0:02">
       0:02

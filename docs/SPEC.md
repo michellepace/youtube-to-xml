@@ -136,7 +136,7 @@ Final thoughts on implementation
 
 <transcript_processed>
 ```xml
-<transcript>
+<transcript video_title="" upload_date="" duration="" video_url="">
   <chapters>
     <chapter title="Introduction" start_time="0:00">
       0:00
@@ -179,7 +179,7 @@ Final thoughts on implementation
 
 <xml_template>
 ```xml
-<transcript>
+<transcript video_title="" upload_date="" duration="" video_url="">
   <chapters>
     <chapter title="chapter 1 title" start_time="[start timestamp]">
       Content first chapter... (timestamps AND non-timestamp lines with proper indentation)

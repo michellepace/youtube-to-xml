@@ -13,12 +13,16 @@
     // 🐍 Ruff: Python code linting and formatting 
     // This configures HOW the IDE behaves (the WHAT to check is in pyproject.toml)
     // NB: Cursor PyRight's WHAT to check also in pyproject.toml [tool.pyright]
+    
+    // Ruff extension settings
+    "ruff.nativeServer": "on",  // Use faster Rust-based server
+    
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": "explicit",
-            "source.organizeImports.ruff": "explicit"
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
         }
     },
 }

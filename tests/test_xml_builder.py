@@ -164,7 +164,9 @@ def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
     lines = xml_string.split("\n")
 
     # Element indentation (2 spaces per level per ET.indent)
-    assert lines[1] == "<transcript>"  # 0 spaces - root level
+    transcript_line = lines[1]
+    assert transcript_line.startswith("<transcript "), "Root has attributes"
+    assert transcript_line.endswith(">"), "Root transcript element should be well-formed"
     assert lines[2] == "  <chapters>"  # 2 spaces - level 1
     assert lines[3].startswith("    <chapter")  # 4 spaces - level 2
 
