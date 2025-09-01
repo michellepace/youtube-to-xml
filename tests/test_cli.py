@@ -23,7 +23,7 @@ def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
     assert "Created:" in result.stdout
 
     # Verify output file exists in tmp location
-    output_file = tmp_path / "transcript_files" / "test.xml"
+    output_file = tmp_path / "test.xml"
     assert output_file.exists()
 
 

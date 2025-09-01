@@ -66,6 +66,13 @@ ignore = [
     "S314",    # XML parsing (safe in tests with self-generated XML)
     "S607",    # Partial executable paths (controlled test env)
 ]
+"src/youtube_to_xml/cli.py" = [
+    "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
+]
+"scripts/transcript_auto_fetcher.py" = [
+    "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
+    "TRY401",  # Exception object in logging.exception is intentional for context
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

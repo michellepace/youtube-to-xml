@@ -1,20 +1,20 @@
 """Convert YouTube videos to XML files with subtitles organized by chapters.
 
 This script downloads YouTube transcripts and creates structured XML files.
-The XML structure: <transcript> root with video metadata, containing <chapters>
-with individual timestamped subtitles.
+The XML structure: <transcript> root with video metadata attributes, containing a
+<chapters> element with <chapter> elements that contain individual timestamped subtitles.
 
 Usage:
-    uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]
+    uv run scripts/transcript_auto_fetcher.py <YouTube_URL>
 
 Example:
-    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU output.xml
+    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
 
 For a provided YouTube URL, the script will:
 1. Fetch the video metadata (title, upload date, duration)
 2. Download and parse subtitles (the timestamped text from YouTube's transcript)
 3. Assign subtitles to chapters (using YouTube's chapter markers if available)
-4. Create and save an XML document with all the structured data "video_transcript.xml"
+4. Create and save an XML document with dynamic filename based on video title
 
 Subtitle priority:
 1. Manual subtitles uploaded by the video creator (highest quality)
@@ -28,21 +28,29 @@ and subtitles organised by chapter, with each individual subtitle timestamped.
 import json
 import re
 import sys
+import uuid
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 import yt_dlp
 
+from youtube_to_xml.exceptions import (
+    URLRateLimitError,
+    URLSubtitlesNotFoundError,
+    URLVideoNotFoundError,
+)
+from youtube_to_xml.logging_config import get_logger, setup_logging
+
 # Constants
-DEFAULT_OUTPUT_FILE = "video_transcript.xml"
 MILLISECONDS_PER_SECOND = 1000.0
+HTTP_TOO_MANY_REQUESTS = 429
 SUBTITLE_LANGS = ["en.*", "all"]  # English preferred, any fallback
 YYYYMMDD_LENGTH = 8
 MIN_ARGS_REQUIRED = 2
-OUTPUT_ARG_INDEX = 2
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_MINUTE = 60
 
@@ -114,7 +122,7 @@ def fetch_video_metadata(url: str) -> VideoMetadata:
         VideoMetadata object with video info and subtitle URL
 
     Raises:
-        ValueError: If video info cannot be extracted
+        URLVideoNotFoundError: If video info cannot be extracted
     """
     options = {
         "quiet": True,
@@ -131,7 +139,7 @@ def fetch_video_metadata(url: str) -> VideoMetadata:
 
         if not info:
             msg = f"Could not extract video info from {url}"
-            raise ValueError(msg)
+            raise URLVideoNotFoundError(msg)
 
         # Extract subtitle URL from available options
         subtitle_url = extract_subtitle_url(info)
@@ -174,6 +182,11 @@ def download_and_parse_subtitles(url: str) -> list[IndividualSubtitle]:
 
     Returns:
         List of IndividualSubtitle objects parsed from JSON3 format
+
+    Raises:
+        URLRateLimitError: When rate limited by YouTube (HTTP 429)
+        URLVideoNotFoundError: When HTTP error occurs
+        URLSubtitlesNotFoundError: When network or JSON parsing fails
     """
     if not url:
         return []
@@ -184,9 +197,15 @@ def download_and_parse_subtitles(url: str) -> list[IndividualSubtitle]:
 
         data = json.loads(json_text)
         return extract_subtitles_from_json3(data.get("events", []))
-    except (OSError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not fetch subtitles: {e}")
-        return []
+    except HTTPError as e:
+        if e.code == HTTP_TOO_MANY_REQUESTS:
+            msg = f"Rate limited: {e}"
+            raise URLRateLimitError(msg) from e
+        msg = f"HTTP {e.code}: {e}"
+        raise URLVideoNotFoundError(msg) from e
+    except (URLError, json.JSONDecodeError) as e:
+        msg = f"Subtitle fetch failed: {e}"
+        raise URLSubtitlesNotFoundError(msg) from e
 
 
 def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
@@ -373,15 +392,21 @@ def fetch_and_parse_subtitles(metadata: VideoMetadata) -> list[IndividualSubtitl
         metadata: Video metadata containing subtitle URL
 
     Returns:
-        List of individual subtitles, empty if none available
+        List of individual subtitles
+
+    Raises:
+        URLSubtitlesNotFoundError: When no subtitle URL is found
+        URLRateLimitError: When rate limited by YouTube
+        URLVideoNotFoundError: When HTTP error occurs
     """
-    if metadata.subtitle_url:
-        print("📝 Downloading subtitles...")
-        subtitles = download_and_parse_subtitles(metadata.subtitle_url)
-        print(f"   Parsed {len(subtitles)} subtitles")
-        return subtitles
-    print("⚠️  No subtitles available")
-    return []
+    if not metadata.subtitle_url:
+        msg = "No subtitle URL found for video (there is no transcript)"
+        raise URLSubtitlesNotFoundError(msg)
+
+    print("📝 Downloading subtitles...")
+    subtitles = download_and_parse_subtitles(metadata.subtitle_url)
+    print(f"   Parsed {len(subtitles)} subtitles")
+    return subtitles
 
 
 def generate_summary_stats(chapters: list[Chapter]) -> None:
@@ -412,7 +437,9 @@ def sanitize_title_for_filename(title: str) -> str:
     return f"{safe_title}.xml"
 
 
-def convert_youtube_to_xml(video_url: str) -> str:
+def convert_youtube_to_xml(
+    video_url: str, execution_id: str
+) -> tuple[str, VideoMetadata]:
     """Convert YouTube video to XML transcript with metadata.
 
     Core business logic that:
@@ -423,11 +450,14 @@ def convert_youtube_to_xml(video_url: str) -> str:
 
     Args:
         video_url: YouTube video URL
+        execution_id: Unique identifier for this execution
 
     Returns:
-        XML content as string
+        Tuple of (XML content as string, VideoMetadata object)
     """
+    logger = get_logger(__name__)
     print(f"🎬 Processing: {video_url}")
+    logger.info("[%s] Processing video: %s", execution_id, video_url)
 
     # Step 1: Fetch all metadata
     print("📊 Fetching video metadata...")
@@ -436,7 +466,15 @@ def convert_youtube_to_xml(video_url: str) -> str:
     print(f"   Duration: {format_duration(metadata.duration)}")
 
     # Step 2: Download and parse subtitles
-    subtitles = fetch_and_parse_subtitles(metadata)
+    try:
+        subtitles = fetch_and_parse_subtitles(metadata)
+    except URLSubtitlesNotFoundError:
+        logger.warning("[%s] No subtitles available for video", execution_id)
+        raise  # Re-raise to prevent file creation (no useless empty files)
+    except URLRateLimitError as e:
+        print(f"❌ {e}", file=sys.stderr)
+        logger.error("[%s] URLRateLimitError: %s", execution_id, e)
+        raise  # Re-raise to prevent file creation
 
     # Step 3: Assign subtitles to chapters
     chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
@@ -450,77 +488,80 @@ def convert_youtube_to_xml(video_url: str) -> str:
     # Summary statistics
     generate_summary_stats(chapters)
 
-    return xml_content
+    return xml_content, metadata
 
 
-def save_transcript(video_url: str, output_file: str) -> None:
+def save_transcript(video_url: str, execution_id: str) -> None:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
+    Uses dynamic filename based on video title.
 
     Args:
         video_url: YouTube video URL
-        output_file: Path for output XML file
+        execution_id: Unique identifier for this execution
     """
-    # Fetch metadata to get title for filename generation
-    metadata = fetch_video_metadata(video_url)
-
-    # Use dynamic filename if default was provided
-    if output_file == DEFAULT_OUTPUT_FILE:
-        output_file = sanitize_title_for_filename(metadata.video_title)
-
-    # Generate XML content
-    xml_content = convert_youtube_to_xml(video_url)
+    # Generate XML content and get metadata for filename
+    xml_content, metadata = convert_youtube_to_xml(video_url, execution_id)
+    output_file = sanitize_title_for_filename(metadata.video_title)
 
     # Save to file
     output_path = Path(output_file)
     output_path.write_text(xml_content, encoding="utf-8")
 
-    print(f"✅ Saved to: {output_path.absolute()}")
+    logger = get_logger(__name__)
+    print(f"✅ Created: {output_path.absolute()}")
+    logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
 
-def parse_arguments(args: list[str]) -> tuple[str, str] | None:
+def parse_arguments(args: list[str]) -> str | None:
     """Parse command-line arguments.
 
     Args:
         args: Command-line arguments (typically sys.argv)
 
     Returns:
-        Tuple of (video_url, output_file) if valid, None if invalid
+        Video URL if valid, None if invalid
     """
     if len(args) < MIN_ARGS_REQUIRED:
         return None
 
-    video_url = args[1]
-    output_file = (
-        args[OUTPUT_ARG_INDEX] if len(args) > OUTPUT_ARG_INDEX else DEFAULT_OUTPUT_FILE
-    )
-    return video_url, output_file
+    return args[1]
 
 
 def main() -> None:
     """Command-line interface entry point."""
-    result = parse_arguments(sys.argv)
-    if result is None:
+    setup_logging()
+    logger = get_logger(__name__)
+    execution_id = str(uuid.uuid4())[:8]
+
+    video_url = parse_arguments(sys.argv)
+    if video_url is None:
         print("YouTube to XML Converter with Metadata")
+        print("Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL>")
         print(
-            "Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL> [output_file]"
-        )
-        print(
-            "Example: uv run scripts/transcript_auto_fetcher.py "
-            "https://youtu.be/VIDEO_ID output.xml"
+            "Example: uv run scripts/transcript_auto_fetcher.py https://youtu.be/VIDEO_ID"
         )
         sys.exit(1)
 
-    video_url, output_file = result
+    logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
 
     try:
-        save_transcript(video_url, output_file)
+        save_transcript(video_url, execution_id)
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
-    except (ValueError, OSError) as e:
+    except (
+        URLVideoNotFoundError,
+        URLSubtitlesNotFoundError,
+        URLRateLimitError,
+    ) as e:
         print(f"\n❌ Error: {e}")
+        logger.error("[%s] Processing error: %s", execution_id, e)
+        sys.exit(1)
+    except (ValueError, OSError) as e:
+        print(f"\n❌ Unexpected error: {e}")
+        logger.exception("[%s] Unexpected error: %s", execution_id, e)
         sys.exit(1)
 
 

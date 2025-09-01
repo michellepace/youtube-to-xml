@@ -12,6 +12,10 @@ def chapters_to_xml(chapters: list[Chapter]) -> str:
     """Build complete YouTube transcript XML document from chapters."""
     # Create root XML tag element <transcript>
     root = ET.Element("transcript")
+    root.set("video_title", "")
+    root.set("upload_date", "")
+    root.set("duration", "")
+    root.set("video_url", "")
 
     # Add XML container tag element <chapters>
     chapters_elem = ET.SubElement(root, "chapters")

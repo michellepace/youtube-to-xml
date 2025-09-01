@@ -31,15 +31,18 @@ uv lock --upgrade-package <pkg> # Update specific package
 uv lock --upgrade && uv sync # Update all packages and apply
 
 # Development
+uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
 uv run youtube-to-xml <file> # Run CLI
-uv run python -m pytest # All tests
-uv run python -m pytest -v tests/test_specific.py::test_function
+uv run pytest # All tests
+uv run pytest -m "not integration" # Unit tests only (fast)
+uv run pytest -m "integration" # Integration tests only (includes YouTube URLs)
+uv run pytest -v tests/test_specific.py::test_function
 uv run ruff check --fix # Lint and auto-fix (rules in pyproject.toml)
 uv run ruff format # Format (see pyproject.toml)
-uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
+
 ```
 
-## Design Principles (From [docs/SPEC.md](docs/SPEC.md) - Non-negotiable)
+## Code Design Principles: Elegant Simplicity over Over-Engineered
 **TDD-Driven Design**: Write tests first - this naturally creates better architecture:
 - **Pure functions preferred** - no side effects in business logic, easier to test
 - **Clear module boundaries** - easier to test and understand
@@ -50,7 +53,7 @@ uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
 - **One module, one purpose** - Each `.py` file has a clear, focused role
 - **Handle errors at boundaries** - Catch exceptions in CLI layer, not business logic
 - **Type hints required** - All function signatures need type annotations
-- **Descriptive naming** - Functions/variables should clearly indicate purpose
+- **Descriptive naming** - Functions/variables should clearly indicate purpose and be consistent throughout
 
 ## TDD Implementation
 - Use pytest's `tmp_path` fixture to avoid creating test files

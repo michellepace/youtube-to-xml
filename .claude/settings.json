@@ -15,10 +15,8 @@
       "Read(**/.env)",
       "Read(**/.envrc)",
 
-      "Read(docs/misc/**)",
-      "Read(docs/prompts/**)",
-      "Read(docs/plan*/**)",
-      "Read(example_transcripts/build-an-ai-powered-job-board-from-scratch-with-nextjs-15-drizzle-tailwind.xml)"
+      "Read(docs/handovers/**)",
+      "Read(docs/misc/**)"
     ]
   }
 }
