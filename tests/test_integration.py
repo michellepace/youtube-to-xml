@@ -29,6 +29,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
         text=True,
         cwd=tmp_path,
         check=False,
+        timeout=SUBPROCESS_TIMEOUT,
     )
 
 
@@ -39,8 +40,8 @@ def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         cwd=tmp_path,
-        timeout=SUBPROCESS_TIMEOUT,
         check=False,
+        timeout=SUBPROCESS_TIMEOUT,
     )
 
     # Handle rate limiting - script now exits with error when rate limited
