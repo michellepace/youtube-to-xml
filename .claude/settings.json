@@ -15,8 +15,8 @@
       "Read(**/.env)",
       "Read(**/.envrc)",
 
+      "Read(docs/handovers/**)",
       "Read(docs/misc/**)",
-      "Read(docs/prompts/**)",
       "Read(docs/plan*/**)"
     ]
   }

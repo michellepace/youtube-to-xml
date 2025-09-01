@@ -1,5 +1,13 @@
 # YouTube-to-XML Refactoring Plan
 
+## Goal
+Design and implement YouTube URL processing capability within the main application's clean architecture to create a unified CLI that handles both file and URL inputs seamlessly.
+
+**Current State**: `uv run youtube-to-xml transcript.txt` (files only) + experimental proof-of-concept script
+**Target State**: `uv run youtube-to-xml <file_or_url>` (unified auto-detection)
+
+The experimental script `scripts/transcript_auto_fetcher.py` proves YouTube functionality is feasible and demonstrates the desired output format, but will be removed after we implement a proper architectural solution. This refactoring designs clean, separate source modules that both produce identical standardized output formats. This refactoring must meet the Success Criteria below and adhere to the specified Code Design Principles and TDD Implementation guidelines.
+
 ## Architecture: Simple & Elegant
 ```
 Input → Source Detection → TranscriptData → XML Builder → Output
