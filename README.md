@@ -12,44 +12,10 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Prerequisites:** [Install UV](https://docs.astral.sh/uv/getting-started/installation/) first.
 
-### Option 1: Automated (Experimental)
-
-> [!NOTE]  
-> This approach uses a local development environment. You'll clone the repo and run the experimental script directly.
-
-Get YouTube transcripts directly from URL:
-
-```bash
-git clone https://github.com/michellepace/youtube-to-xml.git
-cd youtube-to-xml
-uv sync
-uv run transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
-```
-
-**Output:**
-```
-🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
-📊 Fetching video metadata...
-   Title: How Claude Code Hooks Save Me HOURS Daily
-   Duration: 2m 43s
-📝 Downloading subtitles...
-   Parsed 75 subtitles
-📑 Organising into 4 chapter(s)...
-🔧 Building XML document...
-✅ Created: /home/mp/projects/python/youtube-to-xml/how-claude-code-hooks-save-me-hours-daily.xml
-```
-
-**Features:**
-- ✅ Downloads video metadata (title, duration, upload date)
-- ✅ Downloads video subtitles (i.e. transcript content)
-- ✅ Organises subtitles by video chapters automatically
-- ✅ Prioritises manual subtitles over auto-generated ones
-- ✅ Creates structured XML output
-
-### Option 2: Manual Method (Current CLI)
+### Option 1: Manual Method (Current CLI)
 
 > [!TIP]  
-> This installs the tool globally on your system. You can use `youtube-to-xml` from any directory after installation.
+> This installs the tool globally on your system. Only `youtube-to-xml` is available after installation (not `transcript-auto-fetcher`).
 
 For manual transcript processing:
 
@@ -91,7 +57,41 @@ First, we'll start with the patches
 </transcript>
 ```
 
-> **Note:** The CLI will be refactored soon to use the automated approach.
+### Option 2: Automated (Experimental)
+
+> [!WARNING]  
+> **Experimental - Clone Required**: This entry point only works when run from a cloned repository. It cannot be installed globally as the `scripts/` directory is not packaged.
+
+Get YouTube transcripts directly from URL:
+
+```bash
+git clone https://github.com/michellepace/youtube-to-xml.git
+cd youtube-to-xml
+uv sync
+uv run transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
+```
+
+**Output:**
+```
+🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
+📊 Fetching video metadata...
+   Title: How Claude Code Hooks Save Me HOURS Daily
+   Duration: 2m 43s
+📝 Downloading subtitles...
+   Parsed 75 subtitles
+📑 Organising into 4 chapter(s)...
+🔧 Building XML document...
+✅ Created: /home/mp/projects/python/youtube-to-xml/how-claude-code-hooks-save-me-hours-daily.xml
+```
+
+**Features:**
+- ✅ Downloads video metadata (title, duration, upload date)
+- ✅ Downloads video subtitles (i.e. transcript content)
+- ✅ Organises subtitles by video chapters automatically
+- ✅ Prioritises manual subtitles over auto-generated ones
+- ✅ Creates structured XML output
+
+> **Note:** The main CLI will be enhanced (and refactored) to integrate this automated functionality, eliminating the need for the experimental script.
 
 ## 🛠️ Development
 
@@ -123,7 +123,7 @@ Built with Test-Driven Development using:
 - **CLI**: Argparse with comprehensive error handling
 - **Architecture**: Pure functions with clear module separation
 - **Dependencies**:
-  - Runtime Dependencies: `yt_dlp` (fetch transcript and metadata from YouTube URL). This is currently used by the experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) only.
+  - Runtime Dependencies: `yt-dlp` (fetch transcript and metadata from YouTube URL). This is currently used by the experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) only.
   - Dev Dependencies: `pytest`, `ruff`, `pre-commit`
 - **Package Management**: UV Package Application
 
