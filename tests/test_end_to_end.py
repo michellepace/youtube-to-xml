@@ -1,4 +1,11 @@
-"""Integration tests for end-to-end validation of CLI and YouTube fetcher."""
+"""End-to-end tests for complete user workflows.
+
+Tests the full application stack from user input to final output:
+- File-based workflow: transcript file → CLI → XML output
+- URL-based workflow: YouTube URL → experimental auto-fetcher → YouTube API → XML output
+
+Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
+"""
 
 import subprocess
 import xml.etree.ElementTree as ET
@@ -67,7 +74,6 @@ def assert_files_identical(actual: Path, expected: Path) -> None:
     assert result.returncode == 0, f"Files differ:\n{result.stdout}"
 
 
-@pytest.mark.integration
 def test_file_multi_chapters_success(tmp_path: Path) -> None:
     """Test CLI processing of file with multiple chapters."""
     # Copy input file to tmp directory and run CLI there
@@ -87,7 +93,6 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-@pytest.mark.integration
 def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     """Test CLI processing of file with chapters containing blank lines."""
     input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
@@ -105,7 +110,6 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-@pytest.mark.integration
 def test_file_invalid_format_error(tmp_path: Path) -> None:
     """Test CLI error handling for invalid transcript format."""
     input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"

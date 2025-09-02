@@ -65,6 +65,11 @@ reportUnusedParameter = false   # Ruff ARG001 handles it
 # Ruff Linter Configuration
 # ============================================================================
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that require external YouTube API access"
+]
+
 [tool.ruff]
 # Strictest ruff settings
 line-length = 90
