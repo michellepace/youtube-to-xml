@@ -20,10 +20,10 @@ URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 URL_NO_TRANSCRIPT = "https://www.youtube.com/watch?v=6eBSHbLKuN0"
 URL_INVALID = "https://www.youtube.com/watch?v=play99invalid"
-SUBPROCESS_TIMEOUT = 20
+SUBPROCESS_TIMEOUT = 10
 
 
-def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProcess:
+def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProcess[str]:
     """Run the main CLI command."""
     return subprocess.run(  # noqa: S603
         ["uv", "run", "youtube-to-xml", *args],
@@ -35,7 +35,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
     )
 
 
-def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess:
+def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
     """Run YouTube script with rate limit handling."""
     result = subprocess.run(  # noqa: S603
         ["uv", "run", "transcript-auto-fetcher", url],
