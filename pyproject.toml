@@ -1,43 +1,69 @@
-[project]
-name = "youtube-to-xml"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-authors = [
-    { name = "Michelle", email = "" }
-]
-requires-python = ">=3.13"
-dependencies = [
-    "yt-dlp>=2025.8.11",
-]
-
-[project.scripts]
-youtube-to-xml = "youtube_to_xml.cli:main"
+# ============================================================================
+# Build System
+# ============================================================================
 
 [build-system]
 requires = ["uv_build>=0.8.4,<0.9.0"]
 build-backend = "uv_build"
 
+
+# ============================================================================
+# Project Metadata & Dependencies
+# ============================================================================
+
+[project]
+name = "youtube-to-xml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [ { name = "Michelle", email = "" } ]
+
+requires-python = ">=3.13"
+
+dependencies = [
+    "yt-dlp>=2025.8.27",
+]
+
+# Entry points
+[project.scripts]
+youtube-to-xml = "youtube_to_xml.cli:main"
+transcript-auto-fetcher = "youtube_to_xml.transcript_auto_fetcher_wrapper:main" # experimental
+
+
+# ============================================================================
+# Development Dependencies
+# ============================================================================
+
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
-    "ruff>=0.12.7",
+    "ruff>=0.12.11",
 ]
+
+
+# ============================================================================
+# Development Tools Configuration
+# ============================================================================
 
 [tool.pyright]
 # Type Checker is needed as Ruff is only a linter: https://docs.astral.sh/ruff/faq/
 # For Cursor (Cursor Pyright extension), for VSCode (Microsoft Pylance)
 # Cursor Pyright forks BasedPyright, some lint rules overlap with Ruff, causes dupe errors
 
-# CP default
+# Cursor Pyright default
 typeCheckingMode = "standard"
 
-# Disable Basedpyright rules that dupe Ruff
+# Disable Basedpyright rules that duplicate Ruff
 reportUnusedImport = false      # Ruff F401 handles it
 reportUnusedVariable = false    # Ruff F841 handles it
 reportDuplicateImport = false   # Ruff F811 handles it
 reportUnusedParameter = false   # Ruff ARG001 handles it
+
+
+# ============================================================================
+# Ruff Linter Configuration
+# ============================================================================
 
 [tool.ruff]
 # Strictest ruff settings
@@ -58,6 +84,18 @@ ignore = [
     "T201",    # Print found (allow print statements)
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pylint]
+max-args = 5
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
     "D103",    # Missing docstring in public function  
@@ -73,15 +111,3 @@ ignore = [
     "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
     "TRY401",  # Exception object in logging.exception is intentional for context
 ]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.pylint]
-max-args = 5
-max-branches = 12
-max-returns = 6
-max-statements = 50
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10

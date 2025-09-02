@@ -12,7 +12,10 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Prerequisites:** [Install UV](https://docs.astral.sh/uv/getting-started/installation/) first.
 
-### Option 1: Automated (Recommended)
+### Option 1: Automated (Experimental)
+
+> [!NOTE]  
+> This approach uses a local development environment. You'll clone the repo and run the experimental script directly.
 
 Get YouTube transcripts directly from URL:
 
@@ -20,7 +23,7 @@ Get YouTube transcripts directly from URL:
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
 uv sync
-uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
+uv run transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
 ```
 
 **Output:**
@@ -33,7 +36,7 @@ uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
    Parsed 75 subtitles
 📑 Organising into 4 chapter(s)...
 🔧 Building XML document...
-✅ Saved to: how-claude-code-hooks-save-me-hours-daily.xml
+✅ Created: /home/mp/projects/python/youtube-to-xml/how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
 **Features:**
@@ -45,10 +48,13 @@ uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
 
 ### Option 2: Manual Method (Current CLI)
 
+> [!TIP]  
+> This installs the tool globally on your system. You can use `youtube-to-xml` from any directory after installation.
+
 For manual transcript processing:
 
 ```bash
-# Install CLI tool
+# Install CLI tool globally
 uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 
 # Manually copy YouTube transcript into my_transcript.txt, then:
@@ -98,8 +104,8 @@ uv sync
 
 **Testing:**
 ```bash
-uv run python -m pytest          # All tests
-uv run python -m pytest -v       # Verbose output
+uv run pytest                    # All tests
+uv run pytest -v                 # Verbose output
 ```
 
 **Code Quality:**
@@ -117,7 +123,7 @@ Built with Test-Driven Development using:
 - **CLI**: Argparse with comprehensive error handling
 - **Architecture**: Pure functions with clear module separation
 - **Dependencies**:
-  - Runtime Dependencies: `yt_dlp` (fetch transcript and metadata from YouTube URL). This is currently used by [scrpits/transcript_auto_fetcher.py](scrpits/transcript_auto_fetcher.py) only.
+  - Runtime Dependencies: `yt_dlp` (fetch transcript and metadata from YouTube URL). This is currently used by the experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) only.
   - Dev Dependencies: `pytest`, `ruff`, `pre-commit`
 - **Package Management**: UV Package Application
 
@@ -142,4 +148,4 @@ Performance tested with transcripts up to 15,000 lines completing in 0.02 second
 **To Do**
 1. Evals to prove XML format vs plain (myself here, then Braintrust)
 2. If so, improve XML perhaps to [this](docs/misc/working-notes.md#better-format). I don't think so, disjoint.
-3. Refactor [src/](src/) and [tests/](tests/) to automatically get transcript from YouTube URL as per experimental script [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py).
+3. Integrate experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) functionality into main CLI, then remove the standalone script.
