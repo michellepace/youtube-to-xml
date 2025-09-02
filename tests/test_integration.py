@@ -1,17 +1,12 @@
 """Integration tests for end-to-end validation of CLI and YouTube fetcher."""
 
 import subprocess
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
-# Import from script for direct function testing
-sys.path.insert(0, str(Path.cwd() / "scripts"))
-
 # Test constants
-SCRIPT_PATH = Path.cwd() / "scripts/transcript_auto_fetcher.py"
 EXAMPLES_DIR = Path("example_transcripts")
 URL_CHAPTERS = "https://www.youtube.com/watch?v=Q4gsvJvRjCU"
 URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
@@ -36,7 +31,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
 def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess:
     """Run YouTube script with rate limit handling."""
     result = subprocess.run(  # noqa: S603
-        ["uv", "run", "python", str(SCRIPT_PATH), url],
+        ["uv", "run", "transcript-auto-fetcher", url],
         capture_output=True,
         text=True,
         cwd=tmp_path,

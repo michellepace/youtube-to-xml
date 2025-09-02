@@ -206,13 +206,13 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "yt-dlp", specifier = ">=2025.8.11" }]
+requires-dist = [{ name = "yt-dlp", specifier = ">=2025.8.27" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pytest", specifier = ">=8.4.1" },
-    { name = "ruff", specifier = ">=0.12.7" },
+    { name = "ruff", specifier = ">=0.12.11" },
 ]
 
 [[package]]
