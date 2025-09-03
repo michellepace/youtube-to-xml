@@ -242,21 +242,21 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     assert file_lines == url_lines, "Line count must be the same"
 
     # 2. Assert transcript element attributes
+    expected_attrs = ["video_title", "upload_date", "duration", "video_url"]
+
+    # File transcript should have empty metadata
     assert len(file_root.attrib) == 4, (
         "File transcript should have 4 empty metadata attributes"
     )
-    assert file_root.attrib["video_title"] == "", (
-        "File transcript video_title should be empty"
+    assert all(file_root.attrib[attr] == "" for attr in expected_attrs), (
+        "File metadata should be empty"
     )
-    assert file_root.attrib["upload_date"] == "", (
-        "File transcript upload_date should be empty"
-    )
-    assert file_root.attrib["duration"] == "", "File transcript duration should be empty"
-    assert file_root.attrib["video_url"] == "", (
-        "File transcript video_url should be empty"
-    )
+
+    # URL transcript should have populated metadata
     assert len(url_root.attrib) >= 4, "URL transcript should have metadata attributes"
-    assert "video_title" in url_root.attrib, "URL transcript missing video_title"
+    assert all(attr in url_root.attrib for attr in expected_attrs), (
+        "URL missing required metadata"
+    )
 
     # 3. Assert matching chapter structure
     file_chapters = file_root.findall(".//chapter")
