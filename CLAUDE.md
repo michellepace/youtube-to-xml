@@ -1,18 +1,10 @@
-# CLAUDE.md
+## Project Capabilities
+Source of truth is [README.mdl](README.md)
 
-## Project Status
-YouTube-to-XML transcript converter
-
-- ✅ `exceptions.py` module complete (custom error types)
-- ✅ `parser.py` module complete (`tests/test_parser.py`)
-- ✅ `xml_builder.py` module complete (`tests/test_xml_builder.py`)
-- ✅ `cli.py` module complete (`tests/test_cli.py`)
-- **All tests passing**
-- **Entry Point**: [src/youtube_to_xml/cli.py](src/youtube_to_xml/cli.py) with `main()` function
-
-## Python Requirements
-- **Python**: 3.13+ (pinned in [.python-version](.python-version))
+## Tech Stack
+- **Python**: 3.13+
 - **Core Libraries**: `argparse`, `pathlib`, `re`, `xml.etree.ElementTree`, `pytest`
+- **Entry Points and Dependencies**: `pyproject.toml`
 
 ## UV Workflow (Always)
 
@@ -39,7 +31,6 @@ uv run pytest -m "integration" # Integration tests only (includes YouTube URLs)
 uv run pytest -v tests/test_specific.py::test_function
 uv run ruff check --fix # Lint and auto-fix (rules in pyproject.toml)
 uv run ruff format # Format (see pyproject.toml)
-
 ```
 
 ## Code Design Principles: Elegant Simplicity over Over-Engineered
@@ -66,10 +57,6 @@ uv run ruff format # Format (see pyproject.toml)
 - **Pyright**: Configured to avoid Ruff duplicates  
 - **Pre-commit**: Auto-runs on every commit
 - **Performance target**: 15,000 lines in <2 seconds
-
-## Key Technical Insights
-- **Ruff+Pyright Integration**: Smart rule deduplication prevents duplicate errors
-- **Entry Point**: `[project.scripts]` in [pyproject.toml](pyproject.toml) → `youtube_to_xml.cli:main`
 
 ## Development Context
 See [docs/SPEC.md](docs/SPEC.md) for project specification, like XML templates, error formats, and detection rules. SPEC.md contains the "what" - CLAUDE.md contains the "how" and "with what tools".
