@@ -7,6 +7,7 @@ Tests the full application stack from user input to final output:
 Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
 """
 
+import difflib
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -36,7 +37,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
 
 
 def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
-    """Run YouTube script with rate limit handling."""
+    """Run experimental YouTube script."""
     result = subprocess.run(  # noqa: S603
         ["uv", "run", "transcript-auto-fetcher", url],
         capture_output=True,
@@ -47,10 +48,12 @@ def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[
     )
 
     # Handle rate limiting - script now exits with error when rate limited
-    if result.returncode != 0 and (
-        "Rate limited" in result.stderr or "Rate limited" in result.stdout
-    ):
-        pytest.skip("YouTube rate limited")
+    if result.returncode != 0:
+        output = result.stderr + result.stdout
+        if any(
+            pattern in output for pattern in ["429", "Rate limited", "Too Many Requests"]
+        ):
+            pytest.skip("YouTube rate limited")
 
     return result
 
@@ -64,19 +67,27 @@ def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
 
 
 def assert_files_identical(actual: Path, expected: Path) -> None:
-    """Assert two files are identical using diff."""
-    result = subprocess.run(  # noqa: S603
-        ["diff", str(expected), str(actual)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert result.returncode == 0, f"Files differ:\n{result.stdout}"
+    """Assert two files are identical using cross-platform comparison."""
+    expected_content = expected.read_text(encoding="utf-8")
+    actual_content = actual.read_text(encoding="utf-8")
+
+    if expected_content != actual_content:
+        # Generate diff-like output for debugging
+        diff_lines = list(
+            difflib.unified_diff(
+                expected_content.splitlines(keepends=True),
+                actual_content.splitlines(keepends=True),
+                fromfile=f"expected/{expected.name}",
+                tofile=f"actual/{actual.name}",
+                lineterm="",
+            )
+        )
+        diff_output = "".join(diff_lines)
+        pytest.fail(f"Files differ:\n{diff_output}")
 
 
 def test_file_multi_chapters_success(tmp_path: Path) -> None:
     """Test CLI processing of file with multiple chapters."""
-    # Copy input file to tmp directory and run CLI there
     input_file = EXAMPLES_DIR / "x4-chapters.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
@@ -130,11 +141,9 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert "✅ Created:" in result.stdout
 
-    # Find the generated XML file
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
 
-    # Copy reference file to tmp directory and compare
     reference_file = setup_reference_file(
         tmp_path, "how-claude-code-hooks-save-me-hours-daily.xml"
     )
@@ -180,12 +189,10 @@ def test_url_no_subtitles_error(tmp_path: Path) -> None:
     """Test YouTube fetcher exits with error when video has no subtitles."""
     result = run_youtube_script(URL_NO_TRANSCRIPT, tmp_path)
 
-    # Should exit with error code (no useless empty files)
     assert result.returncode == 1
     assert "❌ Error:" in result.stdout
     assert "No subtitle URL found for video" in result.stdout
 
-    # Should NOT create any XML files (useless without subtitles)
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 0, "No XML file should be created without subtitles"
 
@@ -196,7 +203,6 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
     result = run_youtube_script(URL_INVALID, tmp_path)
 
     assert result.returncode == 1
-    # Check for expected error patterns
     error_patterns = ["truncated", "Incomplete YouTube ID", "Video unavailable"]
     assert any(pattern in result.stderr for pattern in error_patterns), (
         f"Expected error message not found in: {result.stderr}"
