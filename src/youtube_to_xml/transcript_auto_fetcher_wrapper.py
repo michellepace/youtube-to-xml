@@ -18,7 +18,13 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import after path setup to avoid import errors
-from scripts.transcript_auto_fetcher import main as script_main  # noqa: E402
+try:
+    from scripts.transcript_auto_fetcher import main as script_main
+except ModuleNotFoundError:
+    print(
+        "This experimental feature only works from a cloned repository.", file=sys.stderr
+    )
+    raise SystemExit(2) from None
 
 
 def main() -> None:

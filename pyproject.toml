@@ -14,7 +14,7 @@ build-backend = "uv_build"
 [project]
 name = "youtube-to-xml"
 version = "0.1.0"
-description = "Add your description here"
+description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
 authors = [ { name = "Michelle", email = "" } ]
 
@@ -64,6 +64,11 @@ reportUnusedParameter = false   # Ruff ARG001 handles it
 # ============================================================================
 # Ruff Linter Configuration
 # ============================================================================
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that require external YouTube API access"
+]
 
 [tool.ruff]
 # Strictest ruff settings
