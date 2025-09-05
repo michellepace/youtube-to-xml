@@ -1,6 +1,6 @@
 # Managing MCPs Nicely — Scope, Example, Commands
 
-**VERIFIED** against official Anthropic documentation:
+**VERIFIED** against official Anthropic documentation (Sep 4, 2025):
 - https://docs.anthropic.com/en/docs/claude-code/mcp
 - https://docs.anthropic.com/en/docs/claude-code/settings
 
@@ -18,24 +18,21 @@ There are three MCP installation scopes to choose from. I use "Project Scope" fo
 
 _**Key Notes**_
 - _**All Scopes Active**: MCPs from all three scopes (local + project + user) are available simultaneously in your project._
-- _**Precedence: Local (strongest) ➜ Project ➜ User**: When the same MCP is installed, local overrides project, project overrides user._
+- _**Precedence: Local (strongest) ➜ Project ➜ User**: When the same MCP is added, local overrides project, project overrides user._
 - _**Security**: Project-scoped servers from `.mcp.json` require approval before use for security_
 - _**Source control**: Only `.mcp.json` (project scope) should be checked into source control_
+- _**Project scope tip**: Run a new `claude` once you've added at project scope to approve_ 
 - _**Reset**: Use `claude mcp reset-project-choices` to reset project-scoped server approval choices_
 
 🛖♥️🔛
 
 ---
 
-## Example: Add Ref MCP with an API Key
+## 🍑 Example: Add Ref MCP with an API Key
 
-On https://ref.tools/mcp, the installation instructions that are given will hardcode your API key into a configuration file:
+To install [https://ref.tools/mcp](https://ref.tools/mcp) if you followed the instructions it would hardcode your API key and default to local scope, `claude mcp add --transport http Ref "https://api.ref.tools/mcp?apiKey=YOUR_API_KEY"`
 
-```bash
-claude mcp add --transport http Ref "https://api.ref.tools/mcp?apiKey=YOUR_API_KEY"
-```
-
-### a) Put Your MCP API Keys In "one place":
+### Step 1 — Put Your MCP API Keys In "one place"
 
 1. Check your shell type: `echo $SHELL` (to determine if to use .zshrc or .bashrc)
 2. Open shell settings (e.g., `cursor ~/.zshrc` or `cursor ~/.bashrc` for bash).
@@ -50,7 +47,9 @@ claude mcp add --transport http Ref "https://api.ref.tools/mcp?apiKey=YOUR_API_K
 
 ⭐ Ensure you replace "ref-4b23455555gat343434c" above with your own Ref API key
 
-### b) Add Ref MCP for All Scopes With "one place" API Key:
+### Step 2 — Add Ref MCP for all scopes
+
+_Adding to "all scopes" as a learning exercise, otherwise choose your preferred._
 
 ```bash
 # Use this exactly (keep "API_KEY_MCP_REF" )
@@ -59,9 +58,11 @@ claude mcp add --scope project --transport http Ref 'https://api.ref.tools/mcp?a
 claude mcp add --scope user --transport http Ref 'https://api.ref.tools/mcp?apiKey=${API_KEY_MCP_REF}'
 ```
 
-Check the config files shown in the table - you'll see your API key isn't hardcoded in any of them. That's super. It means you can safely check `mcp.json` into source control. And you can easily change your API key in only one place if you need to.
+Now check the config files shown in the table - you'll see your API key isn't hardcoded in any of them. That's super. It means you can safely check `mcp.json` into source control. And you can easily change your API key in only one place if you need to.
 
-### c) See How Precedence Works — Local (strongest) → Project → User:
+### Step 3 — See how precedence works
+
+Local (strongest) → Project → User:
 
 1. Accessible MCPs: `claude mcp list`
 2. Verify Ref at Local scope: `claude mcp get Ref`
@@ -73,8 +74,32 @@ Check the config files shown in the table - you'll see your API key isn't hardco
 8. Add Ref again at your preferred scope(s)
 9. Open Claude Code `claude` → see your MCP(s) `/mcp`
 
-Since I prefer source control, I add my MCPs once at Project Scope, ensuring it's always explicit within the project which MCPs Claude Code can use. I avoid other scopes as they are additive. That is, if you configure MCP xyz at, say, Local Scope, it will be available in your project too, but not explicit. See Key Note under table (item 1).
+I add my MCPs at Project Scope as it is visible in the project root and goes into source control. I avoid other scopes as they are additive. That is, if you configure MCP xyz at, say, Local Scope, it will be available in your project too, but not explicit. See Key Note under table (item 1).
 
----
+## 🍑 Example: Add FireCrawl MCP with an API Key
 
-**The End.**
+To add [https://www.firecrawl.dev](https://www.firecrawl.dev/) at project scope:
+
+```bash
+# Add API key as variable
+echo 'export API_KEY_MCP_FIRECRAWL="fc-0646dd97d66a555db02ccb0000000000"' >> ~/.zshrc
+
+# Check you set the key
+source ~/.zshrc && echo $API_KEY_MCP_FIRECRAWL
+
+# Install firecrawl
+claude mcp add --scope project firecrawl -e FIRECRAWL_API_KEY='${API_KEY_MCP_FIRECRAWL}' -- npx -y firecrawl-mcp
+
+# Start a new claude and check your MCPs
+claude  # then run "/mcp" to see your available MCPs
+```
+
+## 🔥 Limit your MCPs
+
+Read [https://ghuntley.com/allocations/](https://ghuntley.com/allocations/) and run claude `/context` as to why you should consider limiting the MCPs you set up.
+
+<a href="https://ghuntley.com/allocations/">
+   <img src="../images/tokens-by-mcp.webp" alt="Tokens by MCP Server" width="730" style="max-width: 100%; height: auto;">
+</a>
+
+In short - manage your context, limit the MCPs you add to just what you really need.
