@@ -60,7 +60,7 @@ First, we'll start with the patches
 ### Option 2: URL Method (Experimental)
 
 > [!CAUTION]  
-> This is experimental because it's a separate script pending integration into the main CLI.
+> Experimental script pending integration. YouTube rate limits may require updating yt-dlp: `uv lock --upgrade-package yt-dlp && uv sync` then manually update the version in `pyproject.toml` to this version as a minimum, run `uv sync` again.
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
