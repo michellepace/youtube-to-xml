@@ -1,12 +1,12 @@
-"""Wrapper to run the experimental transcript auto fetcher script as an entry point.
+"""Wrapper to run the experimental URL to transcript script as an entry point.
 
 This wrapper exists to:
-- Enable easier script execution: `uv run transcript-auto-fetcher` vs long path
+- Enable easier script execution: `uv run url-to-transcript` vs long path
 - Simplify integration test commands in tests/test_integration.py
 
-TODO: When experimental scripts/transcript_auto_fetcher.py is integrated and deleted:
+TODO: When experimental scripts/url_to_transcript.py is integrated and deleted:
 - Remove this wrapper file
-- Remove 'transcript-auto-fetcher' entry point from pyproject.toml
+- Remove 'url-to-transcript' entry point from pyproject.toml
 - Update integration tests to use main CLI instead
 """
 
@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 # Import after path setup to avoid import errors
 try:
-    from scripts.transcript_auto_fetcher import main as script_main
+    from scripts.url_to_transcript import main as script_main
 except ModuleNotFoundError:
     print(
         "This experimental feature only works from a cloned repository.", file=sys.stderr
@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 
 
 def main() -> None:
-    """Entry point wrapper for transcript_auto_fetcher script."""
+    """Entry point wrapper for url_to_transcript script."""
     script_main()
 
 

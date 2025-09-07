@@ -2,7 +2,8 @@
 
 Tests the full application stack from user input to final output:
 - File-based workflow: transcript file → CLI → XML output
-- URL-based workflow: YouTube URL → experimental auto-fetcher → YouTube API → XML output
+- URL-based workflow: YouTube URL → experimental url_to_transcript.py → YouTube API →
+  XML output
 
 Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
 """
@@ -39,7 +40,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
 def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
     """Run experimental YouTube script."""
     result = subprocess.run(  # noqa: S603
-        ["uv", "run", "transcript-auto-fetcher", url],
+        ["uv", "run", "url-to-transcript", url],
         capture_output=True,
         text=True,
         cwd=tmp_path,

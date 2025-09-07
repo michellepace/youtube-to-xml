@@ -15,7 +15,7 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 ### Option 1: File Method
 
 > [!TIP]  
-> This installs **both** `youtube-to-xml` and `transcript-auto-fetcher` commands globally. Both commands work fully after installation.
+> This installs **both** `youtube-to-xml` and `url-to-transcript` commands globally. Both commands work fully after installation.
 
 ```bash
 # Install CLI tool globally
@@ -60,11 +60,11 @@ First, we'll start with the patches
 ### Option 2: URL Method (Experimental)
 
 > [!CAUTION]  
-> This is experimental because it's a separate script pending integration into the main CLI.
+> Experimental script pending integration. YouTube rate limits may require updating yt-dlp: `uv lock --upgrade-package yt-dlp && uv sync` then manually update the version in `pyproject.toml` to this version as a minimum, run `uv sync` again.
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
-transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
+url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
 📊 Fetching video metadata...
@@ -77,7 +77,7 @@ transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
-**Output XML (condensed - 5 chapters, 163 lines total):**
+**Output XML (condensed - 4 chapters, 163 lines total):**
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily" 
@@ -114,7 +114,7 @@ transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
 Built with Test-Driven Development using:
 - **Key Modules**
    - **[cli.py](src/youtube_to_xml/cli.py)** — Argparse with error handling and structured logging
-   - **[parser.py](src/youtube_to_xml/parser.py)** — Regex-based timestamp detection and chapter boundary rules
+   - **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
    - **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
    - **[exceptions.py](src/youtube_to_xml/exceptions.py)** — Custom error hierarchy for clean error handling
 - **Architecture**: Pure functions with clear module separation
@@ -160,10 +160,10 @@ uv run pre-commit run --all-files # All hooks
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
 - **Q3.** Are my [tests](/tests/) clear and sane, or did I seriously overcomplicate / over cook it?
 - **Q4.** Did I do the errors properly (make them a type, define in [exceptions.py](/src/youtube_to_xml/exceptions.py), customising messages in [cli.py](/src/youtube_to_xml/cli.py))?
-- **Q5.** Is the code "clean"... was I right to make private methods in parser.py and only expose one public function. It was at the cost of direct testability, but does it matter?
+- **Q5.** Is the code "clean"... was I right to make private methods in file_parser.py and only expose one public function. It was at the cost of direct testability, but does it matter?
 - **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
 
 **To Do**
 1. Evals to prove XML format vs plain (myself here, then Braintrust)
 2. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). I don't think so, disjoint.
-3. Integrate experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) functionality into main CLI, then remove the standalone script.
+3. Integrate experimental [scripts/url_to_transcript.py](scripts/url_to_transcript.py) functionality into main CLI, then remove the standalone script.

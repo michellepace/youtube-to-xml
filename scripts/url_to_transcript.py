@@ -5,10 +5,10 @@ The XML structure: <transcript> root with video metadata attributes, containing 
 <chapters> element with <chapter> elements that contain individual timestamped subtitles.
 
 Usage:
-    uv run scripts/transcript_auto_fetcher.py <YouTube_URL>
+    uv run scripts/url_to_transcript.py <YouTube_URL>
 
 Example:
-    uv run scripts/transcript_auto_fetcher.py https://youtu.be/Q4gsvJvRjCU
+    uv run scripts/url_to_transcript.py https://youtu.be/Q4gsvJvRjCU
 
 For a provided YouTube URL, the script will:
 1. Fetch the video metadata (title, upload date, duration)
@@ -240,10 +240,10 @@ def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
     return subtitles
 
 
-def assign_subtitles_to_chapters(
+def parse_transcript_api(
     metadata: VideoMetadata, subtitles: list[IndividualSubtitle]
 ) -> list[Chapter]:
-    """Assign individual subtitles to their respective chapters.
+    """Parse API transcript data into chapters.
 
     Args:
         metadata: Video metadata including chapter info
@@ -473,13 +473,13 @@ def convert_youtube_to_xml(
         raise  # Re-raise to prevent file creation (no useless empty files)
     except URLRateLimitError as e:
         print(f"❌ {e}", file=sys.stderr)
-        logger.error("[%s] URLRateLimitError: %s", execution_id, e)
+        logger.exception("[%s] URLRateLimitError", execution_id)
         raise  # Re-raise to prevent file creation
 
     # Step 3: Assign subtitles to chapters
     chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
     print(f"📑 Organising into {chapters_count} chapter(s)...")
-    chapters = assign_subtitles_to_chapters(metadata, subtitles)
+    chapters = parse_transcript_api(metadata, subtitles)
 
     # Step 4: Create XML
     print("🔧 Building XML document...")
@@ -538,10 +538,8 @@ def main() -> None:
     video_url = parse_arguments(sys.argv)
     if video_url is None:
         print("YouTube to XML Converter with Metadata")
-        print("Usage: uv run scripts/transcript_auto_fetcher.py <YouTube_URL>")
-        print(
-            "Example: uv run scripts/transcript_auto_fetcher.py https://youtu.be/VIDEO_ID"
-        )
+        print("Usage: uv run scripts/url_to_transcript.py <YouTube_URL>")
+        print("Example: uv run scripts/url_to_transcript.py https://youtu.be/VIDEO_ID")
         sys.exit(1)
 
     logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
@@ -557,11 +555,11 @@ def main() -> None:
         URLRateLimitError,
     ) as e:
         print(f"\n❌ Error: {e}")
-        logger.error("[%s] Processing error: %s", execution_id, e)
+        logger.exception("[%s] Processing error", execution_id)
         sys.exit(1)
     except (ValueError, OSError) as e:
         print(f"\n❌ Unexpected error: {e}")
-        logger.exception("[%s] Unexpected error: %s", execution_id, e)
+        logger.exception("[%s] Unexpected error", execution_id)
         sys.exit(1)
 
 

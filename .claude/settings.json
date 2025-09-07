@@ -1,22 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(uv run:*)",
-      "Bash(python3:*)",
-      "Bash(echo:*)",
-      "Bash(ls:*)",
       "WebFetch(domain:docs.python.org)",
       "WebFetch(domain:docs.pytest.org)",
       "WebFetch(domain:docs.astral.sh)",
-      "WebFetch(domain:docs.anthropic.com)"
+
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(ls:*)",
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv tree:*)"
     ],
     "deny": [
       "Read(**/.env)",
       "Read(**/.envrc)",
 
+      "Read(**/.pytest_cache)",
+      "Read(**/.ruff_cache)",
+      "Read(**/.venv)",
+
       "Read(docs/handovers/**)",
-      "Read(docs/misc/**)"
+      "Read(docs/images/**)",
+      "Read(docs/knowledge/**)",
+      "Read(docs/plans/**)"
     ]
   }
 }

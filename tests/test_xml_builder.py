@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from youtube_to_xml.parser import Chapter
+from youtube_to_xml.file_parser import Chapter
 from youtube_to_xml.xml_builder import chapters_to_xml
 
 # ============= FIXTURES =============

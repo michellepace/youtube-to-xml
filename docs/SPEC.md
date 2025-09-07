@@ -22,7 +22,9 @@
 - Entry Point: `[project.scripts]` configuration in `pyproject.toml`
 - Usage: `youtube-to-xml transcript.txt` and `youtube-to-xml --help`
 
-**Entry Point Flow**: CLI command `youtube-to-xml` → `main()` in `cli.py` → orchestrates parser, xml_builder, and exceptions modules following "one module, one purpose"
+**Entry Point Flow**: CLI command `youtube-to-xml` → `main()` in `cli.py` → orchestrates file_parser, xml_builder, and exceptions modules following "one module, one purpose"
+
+**URL Flow (experimental)**: CLI command `url-to-transcript` → `url_to_transcript_wrapper.main()` → `scripts/url_to_transcript.py` → fetch metadata/subtitles → `parse_transcript_api()` → XML
 
 ### Architecture & Data Flow
 
@@ -56,7 +58,7 @@ flowchart TD
     • FileEmptyError
     • FileInvalidFormatError`"]
     
-    PARSER["`**parser.py**
+    PARSER["`**file_parser.py**
     • Validate format
     • Find chapters
     • Extract content`"]
