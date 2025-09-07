@@ -67,6 +67,10 @@ def main() -> None:
         print(f"❌ We don't have permission to access: {transcript_path}")
         logger.error("[%s] PermissionError reading: %s", execution_id, transcript_path)
         sys.exit(1)
+    except UnicodeDecodeError:
+        print(f"❌ File is not UTF-8 encoded: {transcript_path}")
+        logger.error("[%s] UnicodeDecodeError reading: %s", execution_id, transcript_path)
+        sys.exit(1)
 
     # Parse the transcript
     try:

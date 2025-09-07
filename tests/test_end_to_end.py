@@ -2,7 +2,8 @@
 
 Tests the full application stack from user input to final output:
 - File-based workflow: transcript file → CLI → XML output
-- URL-based workflow: YouTube URL → experimental auto-fetcher → YouTube API → XML output
+- URL-based workflow: YouTube URL → experimental url_to_transcript.py → YouTube API →
+  XML output
 
 Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
 """

@@ -21,7 +21,7 @@ authors = [ { name = "Michelle", email = "" } ]
 requires-python = ">=3.13"
 
 dependencies = [
-    "yt-dlp>=2025.8.27",
+    "yt-dlp>=2025.9.5",
 ]
 
 # Entry points
@@ -37,8 +37,8 @@ url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experiment
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
-    "pytest>=8.4.1",
-    "ruff>=0.12.11",
+    "pytest>=8.4.2",
+    "ruff>=0.12.12",
 ]
 
 
@@ -111,8 +111,4 @@ max-complexity = 10
 ]
 "src/youtube_to_xml/cli.py" = [
     "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
-]
-"scripts/transcript_auto_fetcher.py" = [
-    "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
-    "TRY401",  # Exception object in logging.exception is intentional for context
 ]

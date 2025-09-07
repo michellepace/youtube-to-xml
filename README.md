@@ -77,7 +77,7 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
-**Output XML (condensed - 5 chapters, 163 lines total):**
+**Output XML (condensed - 4 chapters, 163 lines total):**
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily" 
