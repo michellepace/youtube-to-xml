@@ -114,7 +114,7 @@ transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
 Built with Test-Driven Development using:
 - **Key Modules**
    - **[cli.py](src/youtube_to_xml/cli.py)** — Argparse with error handling and structured logging
-   - **[parser.py](src/youtube_to_xml/parser.py)** — Regex-based timestamp detection and chapter boundary rules
+   - **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
    - **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
    - **[exceptions.py](src/youtube_to_xml/exceptions.py)** — Custom error hierarchy for clean error handling
 - **Architecture**: Pure functions with clear module separation
@@ -160,7 +160,7 @@ uv run pre-commit run --all-files # All hooks
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
 - **Q3.** Are my [tests](/tests/) clear and sane, or did I seriously overcomplicate / over cook it?
 - **Q4.** Did I do the errors properly (make them a type, define in [exceptions.py](/src/youtube_to_xml/exceptions.py), customising messages in [cli.py](/src/youtube_to_xml/cli.py))?
-- **Q5.** Is the code "clean"... was I right to make private methods in parser.py and only expose one public function. It was at the cost of direct testability, but does it matter?
+- **Q5.** Is the code "clean"... was I right to make private methods in file_parser.py and only expose one public function. It was at the cost of direct testability, but does it matter?
 - **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
 
 **To Do**

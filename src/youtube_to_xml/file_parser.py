@@ -145,8 +145,14 @@ def _extract_content_for_chapters(
     return result_chapters
 
 
-def parse_transcript(raw_transcript: str) -> list[Chapter]:
-    """Parse transcript text and return chapters with content.
+def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
+    """Parse transcript file contents and return chapters with content.
+
+    Args:
+        raw_transcript: Raw transcript text content from file
+
+    Returns:
+        List of Chapter objects with titles, timestamps, and content
 
     Raises:
         FileEmptyError: If transcript file is empty

@@ -8,7 +8,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from youtube_to_xml.parser import parse_transcript
+from youtube_to_xml.file_parser import parse_transcript_file
 from youtube_to_xml.xml_builder import chapters_to_xml
 
 
@@ -35,7 +35,7 @@ def main() -> int:
     transcript_text = input_file.read_text(encoding="utf-8")
 
     # Parse transcript
-    chapters = parse_transcript(transcript_text)
+    chapters = parse_transcript_file(transcript_text)
     print(f"✓ Parsed {len(chapters)} chapters")
 
     # Build XML
