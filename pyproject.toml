@@ -27,7 +27,7 @@ dependencies = [
 # Entry points
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
-transcript-auto-fetcher = "youtube_to_xml.transcript_auto_fetcher_wrapper:main" # experimental
+url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experimental
 
 
 # ============================================================================

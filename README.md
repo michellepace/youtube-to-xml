@@ -15,7 +15,7 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 ### Option 1: File Method
 
 > [!TIP]  
-> This installs **both** `youtube-to-xml` and `transcript-auto-fetcher` commands globally. Both commands work fully after installation.
+> This installs **both** `youtube-to-xml` and `url-to-transcript` commands globally. Both commands work fully after installation.
 
 ```bash
 # Install CLI tool globally
@@ -64,7 +64,7 @@ First, we'll start with the patches
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
-transcript-auto-fetcher https://youtu.be/Q4gsvJvRjCU
+url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
 📊 Fetching video metadata...
@@ -166,4 +166,4 @@ uv run pre-commit run --all-files # All hooks
 **To Do**
 1. Evals to prove XML format vs plain (myself here, then Braintrust)
 2. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). I don't think so, disjoint.
-3. Integrate experimental [scripts/transcript_auto_fetcher.py](scripts/transcript_auto_fetcher.py) functionality into main CLI, then remove the standalone script.
+3. Integrate experimental [scripts/url_to_transcript.py](scripts/url_to_transcript.py) functionality into main CLI, then remove the standalone script.

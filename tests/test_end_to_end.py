@@ -39,7 +39,7 @@ def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProc
 def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
     """Run experimental YouTube script."""
     result = subprocess.run(  # noqa: S603
-        ["uv", "run", "transcript-auto-fetcher", url],
+        ["uv", "run", "url-to-transcript", url],
         capture_output=True,
         text=True,
         cwd=tmp_path,
