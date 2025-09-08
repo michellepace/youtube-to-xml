@@ -67,7 +67,7 @@ def seconds_to_timestamp(seconds: float, *, show_hours_if_zero: bool = False) ->
     return f"{minutes}:{secs:02d}"
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class VideoMetadata:
     """Video metadata needed for XML output."""
 
@@ -79,7 +79,7 @@ class VideoMetadata:
     subtitle_url: str | None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class IndividualSubtitle:
     """A single subtitle entry with timestamp and text."""
 
@@ -87,7 +87,7 @@ class IndividualSubtitle:
     text: str
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Chapter:
     """A video chapter containing individual subtitles within its time range."""
 
@@ -95,6 +95,11 @@ class Chapter:
     start_time: float
     end_time: float
     all_chapter_subtitles: list[IndividualSubtitle]
+
+    @property
+    def duration(self) -> float:
+        """Calculate chapter duration."""
+        return self.end_time - self.start_time
 
     def format_content(self) -> str:
         """Format individual subtitles as timestamped text for XML output."""
