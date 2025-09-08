@@ -35,17 +35,28 @@ with tempfile.TemporaryDirectory() as temp_dir:
 - **Better error handling** - consistent yt-dlp exception handling
 - **Cleaner architecture** - reduced complexity and duplicate code paths
 
-### Rate Limiting Mitigation Options Added
+### yt-dlp Configuration Using Default Behaviour
 ```python
 options = {
-    "extractor_retries": 3,
-    "socket_timeout": 30,
-    "extractor_args": {
-        "youtube": {"player_client": ["tv", "web_safari", "web"]},
-        "generic": {"impersonate": True}
-    },
+    "quiet": True,
+    "no_warnings": True,
+    "skip_download": True,
+    "writesubtitles": True,
+    "writeautomaticsub": True,
+    "subtitleslangs": ["en", "en-orig"],
+    "subtitlesformat": "json3",
+    "outtmpl": "%(title)s [%(id)s].%(ext)s",
 }
 ```
+
+**Rate limiting protection**: Relies on yt-dlp's built-in intelligence and default behaviour rather than overriding with potentially invalid options.
+
+**CLI-only rate limiting options**: The following options are available in CLI but **not documented for Python API**:
+- `--extractor-retries` → No Python API equivalent found
+- `--socket-timeout` → No Python API equivalent found  
+- `--extractor-args` → Available in Python API but not needed for unauthenticated access
+
+**Template approach**: Uses complex template `"%(title)s [%(id)s].%(ext)s"` with glob pattern matching for robust file handling.
 
 ## yt-dlp Nightly Build Configuration ✅
 
@@ -120,5 +131,25 @@ Even with **all code improvements implemented**, the script **still fails on the
 - **YouTube's detection is sophisticated** - even yt-dlp can be blocked per-IP
 - **Code quality matters** for maintainability, but won't solve IP blocks
 - **Network diversity** is the most reliable workaround for heavy users
+
+## Template Simplification Learning 📝
+
+### Output Template Complexity Issue
+During optimization, we discovered that changing the `outtmpl` from complex to simple requires coordinated changes:
+
+**Original working approach**:
+- Template: `"%(title)s [%(id)s].%(ext)s"` → Files like `"Phone Your Architecture [-ZS9NmYq5To].json3"`
+- Finding: `glob(f"*[{video_id}]*.json3")` → Handles any title complexity
+
+**Attempted simplification**:
+- Template: `"%(id)s.%(ext)s"` → Files like `"-ZS9NmYq5To.json3"`
+- Finding: `Path(f"{video_id}.json3")` → Direct path construction
+
+**Key insight**: Both template and file-finding logic must be changed together. The script currently uses the proven complex template approach with matching glob logic for reliability.
+
+### Recommendations
+- **Keep complex template + glob**: More robust, handles edge cases
+- **Or fully implement simple approach**: Change both template and finding logic together
+- **Never mix approaches**: Template and file-finding must match
 
 This solution provides **architectural improvements and best practices**, but **network switching remains the primary tool** against YouTube's IP-based rate limiting.

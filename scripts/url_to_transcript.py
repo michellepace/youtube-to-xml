@@ -17,9 +17,9 @@ For a provided YouTube URL, the script will:
 4. Create and save an XML document with dynamic filename based on video title
 
 Subtitle priority:
-1. Manual subtitles uploaded by the video creator (highest quality)
+1. Manual English subtitles uploaded by the video creator (highest quality)
 2. Auto-generated English subtitles (fallback)
-3. Any available subtitles (last resort)
+No other languages are downloaded - English only.
 
 The output XML contains video metadata (video_title, upload_date, duration, video_url)
 and subtitles organised by chapter, with each individual subtitle timestamped.
@@ -45,17 +45,11 @@ from youtube_to_xml.exceptions import (
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.time_utils import (
+    MILLISECONDS_PER_SECOND,
     SECONDS_PER_HOUR,
     SECONDS_PER_MINUTE,
     seconds_to_timestamp,
 )
-
-# Constants
-MILLISECONDS_PER_SECOND = 1000.0
-HTTP_TOO_MANY_REQUESTS = 429
-SUBTITLE_LANGS = ["en.*", "all"]  # English preferred, any fallback
-YYYYMMDD_LENGTH = 8
-MIN_ARGS_REQUIRED = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,17 +123,9 @@ def fetch_video_metadata_and_subtitles(
         "skip_download": True,
         "writesubtitles": True,
         "writeautomaticsub": True,
-        "subtitleslangs": ["en", "en-orig"],  # Try auto-captions first
+        "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
         "subtitlesformat": "json3",
         "outtmpl": "%(title)s [%(id)s].%(ext)s",
-        # Rate limiting mitigation
-        "extractor_retries": 3,
-        "socket_timeout": 30,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["tv", "web_safari", "web"],
-            }
-        },
     }
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -220,7 +206,7 @@ def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
     return subtitles
 
 
-def parse_transcript_api(
+def assign_subtitles_to_chapters(
     metadata: VideoMetadata, subtitles: list[IndividualSubtitle]
 ) -> list[Chapter]:
     """Parse API transcript data into chapters.
@@ -271,15 +257,8 @@ def parse_transcript_api(
 
 
 def format_date(date_string: str) -> str:
-    """Convert YYYYMMDD to yyyy-mm-dd format.
-
-    Args:
-        date_string: Date in YYYYMMDD format from yt-dlp
-
-    Returns:
-        Formatted date like "2024-07-23", or original string if invalid
-    """
-    if len(date_string) == YYYYMMDD_LENGTH:
+    """Convert YYYYMMDD to yyyy-mm-dd format."""
+    if len(date_string) == len("20250101"):
         try:
             date = datetime.strptime(date_string, "%Y%m%d").replace(tzinfo=None)  # noqa: DTZ007
             return date.strftime("%Y-%m-%d")
@@ -291,11 +270,7 @@ def format_date(date_string: str) -> str:
 def format_duration(seconds: int) -> str:
     """Convert seconds to human-readable duration.
 
-    Args:
-        seconds: Duration in seconds
-
-    Returns:
-        Formatted string like "21m 34s" or "1h 5m 12s"
+    Formatted string like "21m 34s" or "1h 5m 12s"
     """
     if seconds <= 0:
         return "0s"
@@ -351,24 +326,13 @@ def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str
 
 
 def format_xml_output(element: ET.Element) -> str:
-    """Format XML element with proper indentation.
-
-    Args:
-        element: XML Element to format
-
-    Returns:
-        Pretty-printed XML string with declaration
-    """
+    """Format XML element with proper indentation."""
     ET.indent(element, space="  ")
     return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
 
 
 def generate_summary_stats(chapters: list[Chapter]) -> None:
-    """Print summary statistics for the processed transcript.
-
-    Args:
-        chapters: List of chapters with subtitles
-    """
+    """Print summary statistics for the processed transcript."""
     total_subtitles = sum(len(ch.all_chapter_subtitles) for ch in chapters)
     print("\n📈 Summary:")
     print(f"   Chapters: {len(chapters)}")
@@ -430,7 +394,7 @@ def convert_youtube_to_xml(
     # Step 2: Assign subtitles to chapters
     chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
     print(f"📑 Organising into {chapters_count} chapter(s)...")
-    chapters = parse_transcript_api(metadata, subtitles)
+    chapters = assign_subtitles_to_chapters(metadata, subtitles)
 
     # Step 3: Create XML
     print("🔧 Building XML document...")
@@ -465,32 +429,18 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
 
-def parse_arguments(args: list[str]) -> str | None:
-    """Parse command-line arguments.
-
-    Args:
-        args: Command-line arguments (typically sys.argv)
-
-    Returns:
-        Video URL if valid, None if invalid
-    """
-    if len(args) < MIN_ARGS_REQUIRED:
-        return None
-
-    return args[1]
-
-
 def main() -> None:
     """Command-line interface entry point."""
     setup_logging()
     logger = get_logger(__name__)
     execution_id = str(uuid.uuid4())[:8]
 
-    video_url = parse_arguments(sys.argv)
-    if video_url is None:
-        print("YouTube to XML Converter with Metadata")
-        print("Usage: uv run scripts/url_to_transcript.py <YouTube_URL>")
-        print("Example: uv run scripts/url_to_transcript.py https://youtu.be/VIDEO_ID")
+    try:
+        video_url = sys.argv[1]
+    except IndexError:
+        print("YouTube URL to XML Converter")
+        print("  Usage: include the YouTube URL as an argument")
+        print("  E.g.: url_to_transcript.py https://www.youtube.com/watch?v=Q4gsvJvRjCU")
         sys.exit(1)
 
     logger.info("[%s] Starting script execution for: %s", execution_id, video_url)

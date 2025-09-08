@@ -12,6 +12,7 @@ from youtube_to_xml.exceptions import FileInvalidFormatError
 # Time conversion constants
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_MINUTE = 60
+MILLISECONDS_PER_SECOND = 1000.0
 
 # Timestamp format constants
 TIMESTAMP_PARTS_SHORT = 2  # M:SS format
