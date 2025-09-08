@@ -14,6 +14,8 @@ from youtube_to_xml.file_parser import (
     TIMESTAMP_PATTERN,
     find_timestamps,
     parse_transcript_file,
+    seconds_to_timestamp,
+    timestamp_to_seconds,
     validate_transcript_format,
 )
 
@@ -191,7 +193,7 @@ def test_finds_first_chapter_from_opening_line(simple_transcript: str) -> None:
 
     assert len(chapters) == 1
     assert chapters[0].title == "Introduction"
-    assert chapters[0].start_time == "0:00"
+    assert chapters[0].start_time == 0.0
 
 
 def test_finds_subsequent_chapter_with_boundary_rule(two_chapter_transcript: str) -> None:
@@ -201,7 +203,7 @@ def test_finds_subsequent_chapter_with_boundary_rule(two_chapter_transcript: str
     assert len(chapters) == 2
     assert chapters[0].title == "Introduction"
     assert chapters[1].title == "Chapter Two"
-    assert chapters[1].start_time == "5:00"
+    assert chapters[1].start_time == 300.0
 
 
 @pytest.mark.parametrize(
@@ -254,7 +256,7 @@ Final"""
 
     assert len(chapters) == 3
     assert [ch.title for ch in chapters] == ["First", "Second", "Third"]
-    assert [ch.start_time for ch in chapters] == ["0:00", "5:00", "10:00"]
+    assert [ch.start_time for ch in chapters] == [0.0, 300.0, 600.0]
 
 
 # ============= CONTENT EXTRACTION TESTS =============
@@ -336,7 +338,7 @@ def test_parses_complex_transcript_end_to_end(complex_transcript: str) -> None:
 
     for i, (expected_title, expected_start) in enumerate(expected_chapters):
         assert chapters[i].title == expected_title
-        assert chapters[i].start_time == expected_start
+        assert seconds_to_timestamp(chapters[i].start_time) == expected_start
 
     # Test content behavior (sufficient boundary checking)
     ch1_content = chapters[0].content_lines
@@ -381,3 +383,90 @@ def test_removes_blank_lines_during_processing() -> None:
         line for ch in chapters for line in ch.content_lines
     ]
     assert "" not in all_content
+
+
+# ============= TIMESTAMP TYPE REFACTORING TESTS =============
+
+
+def test_chapter_has_end_time_field(simple_transcript: str) -> None:
+    """Chapter dataclass should have an end_time field."""
+    chapters = parse_transcript_file(simple_transcript)
+    assert hasattr(chapters[0], "end_time")
+
+
+def test_chapter_timestamps_are_floats_with_duration(two_chapter_transcript: str) -> None:
+    """Chapter timestamps should be floats with correct duration calculation."""
+    chapters = parse_transcript_file(two_chapter_transcript)
+
+    # First chapter: 0:00 = 0.0 seconds, ends at 5:00 = 300.0 seconds
+    assert isinstance(chapters[0].start_time, float)
+    assert chapters[0].start_time == 0.0
+    assert chapters[0].end_time == 300.0
+    assert chapters[0].duration == 300.0  # 300.0 - 0.0
+
+    # Second chapter: 5:00 = 300.0 seconds, unknown end
+    assert isinstance(chapters[1].start_time, float)
+    assert chapters[1].start_time == 300.0
+    assert chapters[1].end_time == float("inf")
+    assert chapters[1].duration == float("inf")  # inf - 300.0
+
+
+def test_complex_timestamps_as_floats(complex_transcript: str) -> None:
+    """Complex H:MM:SS timestamps should convert to float seconds."""
+    chapters = parse_transcript_file(complex_transcript)
+
+    # 0:55 = 55 seconds
+    assert chapters[0].start_time == 55.0
+
+    # 1:15:30 = 4530 seconds
+    assert chapters[1].start_time == 4530.0
+
+    # 102:45:13 = 369913 seconds (102*3600 + 45*60 + 13)
+    assert chapters[2].start_time == 369913.0
+
+    # End times
+    assert chapters[0].end_time == 4530.0
+    assert chapters[1].end_time == 369913.0
+    assert chapters[2].end_time == float("inf")
+
+
+def test_timestamp_to_seconds_conversion() -> None:
+    """Test conversion from timestamp string to float seconds."""
+    # M:SS format
+    assert timestamp_to_seconds("0:00") == 0.0
+    assert timestamp_to_seconds("2:30") == 150.0
+    assert timestamp_to_seconds("59:59") == 3599.0
+
+    # H:MM:SS format
+    assert timestamp_to_seconds("1:00:00") == 3600.0
+    assert timestamp_to_seconds("1:15:30") == 4530.0
+    assert timestamp_to_seconds("10:15:30") == 36930.0
+
+
+def test_seconds_to_timestamp_conversion() -> None:
+    """Test conversion from float seconds to timestamp string."""
+    # Less than an hour - M:SS format
+    assert seconds_to_timestamp(0.0) == "0:00"
+    assert seconds_to_timestamp(150.0) == "2:30"
+    assert seconds_to_timestamp(3599.0) == "59:59"
+
+    # Hour or more - H:MM:SS format
+    assert seconds_to_timestamp(3600.0) == "1:00:00"
+    assert seconds_to_timestamp(4530.0) == "1:15:30"
+    assert seconds_to_timestamp(36930.0) == "10:15:30"
+
+
+def test_timestamp_to_seconds_raises_error_for_invalid_format() -> None:
+    """Test that invalid timestamp formats raise FileInvalidFormatError."""
+    invalid_timestamps = [
+        "invalid",
+        "1:2:3:4",  # too many parts
+        "25:61",  # invalid minutes/seconds
+        "1:60:30",  # invalid minutes
+        "",  # empty string
+        "abc:def",  # non-numeric
+    ]
+
+    for invalid_ts in invalid_timestamps:
+        with pytest.raises(FileInvalidFormatError, match="Invalid timestamp format"):
+            timestamp_to_seconds(invalid_ts)

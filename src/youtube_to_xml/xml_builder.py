@@ -5,7 +5,7 @@ Converts parsed Chapter objects into XML format following the specified template
 
 import xml.etree.ElementTree as ET
 
-from youtube_to_xml.file_parser import Chapter
+from youtube_to_xml.file_parser import Chapter, seconds_to_timestamp
 
 
 def chapters_to_xml(chapters: list[Chapter]) -> str:
@@ -24,7 +24,7 @@ def chapters_to_xml(chapters: list[Chapter]) -> str:
     for chapter in chapters:
         chapter_elem = ET.SubElement(chapters_elem, "chapter")
         chapter_elem.set("title", chapter.title)
-        chapter_elem.set("start_time", chapter.start_time)
+        chapter_elem.set("start_time", seconds_to_timestamp(chapter.start_time))
 
         # Add content as text with proper indentation (6 spaces per line)
         if chapter.content_lines:

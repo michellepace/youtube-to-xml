@@ -20,7 +20,8 @@ def single_chapter() -> list[Chapter]:
     return [
         Chapter(
             title='Introduction & "Getting Started" <Overview>',
-            start_time="0:00",
+            start_time=0.0,
+            end_time=float("inf"),
             content_lines=[
                 "0:00",
                 "Welcome to today's session",
@@ -37,7 +38,8 @@ def multiple_chapters() -> list[Chapter]:
     return [
         Chapter(
             title="Introduction",
-            start_time="0:00",
+            start_time=0.0,
+            end_time=4530.0,
             content_lines=[
                 "0:00",
                 "Welcome to today's session",
@@ -51,7 +53,8 @@ def multiple_chapters() -> list[Chapter]:
         ),
         Chapter(
             title="Getting Started Guide",
-            start_time="1:15:30",
+            start_time=4530.0,
+            end_time=36930.0,
             content_lines=[
                 "1:15:30",
                 "Download the software",
@@ -61,7 +64,8 @@ def multiple_chapters() -> list[Chapter]:
         ),
         Chapter(
             title="Advanced Features & Tips",
-            start_time="10:15:30",
+            start_time=36930.0,
+            end_time=float("inf"),
             content_lines=["10:15:30", "Final thoughts on implementation"],
         ),
     ]

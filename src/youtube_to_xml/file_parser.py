@@ -5,6 +5,9 @@ Based on structural patterns:
 - First line of transcript (if not timestamp) is the first chapter
 - When exactly 2 lines exist between consecutive timestamps, the line before
   the second timestamp is a new chapter title
+
+Timestamps are stored internally as float seconds for calculations, then
+converted back to "M:SS" or "H:MM:SS" format for XML output.
 """
 
 import re
@@ -26,14 +29,87 @@ LINES_FOR_CHAPTER_BOUNDARY = 2
 # Format validation constants
 MINIMUM_LINES_REQUIRED = 3
 
+# Time conversion constants
+SECONDS_PER_HOUR = 3600
+SECONDS_PER_MINUTE = 60
+TIMESTAMP_PARTS_SHORT = 2  # M:SS format
+TIMESTAMP_PARTS_LONG = 3  # H:MM:SS format
+
+
+def timestamp_to_seconds(timestamp_str: str) -> float:
+    """Convert timestamp string to float seconds.
+
+    Args:
+        timestamp_str: Time in "M:SS", "MM:SS", or "H:MM:SS" format
+
+    Returns:
+        Time in seconds as float
+
+    Examples:
+        "2:30" -> 150.0
+        "1:15:30" -> 4530.0
+
+    Raises:
+        FileInvalidFormatError: If timestamp format is invalid
+    """
+    # Validate format using existing regex pattern first
+    if not TIMESTAMP_PATTERN.match(timestamp_str.strip()):
+        msg = f"Invalid timestamp format: {timestamp_str}"
+        raise FileInvalidFormatError(msg)
+
+    parts = timestamp_str.split(":")
+
+    if len(parts) == TIMESTAMP_PARTS_SHORT:  # M:SS or MM:SS format
+        minutes, seconds = parts
+        return float(minutes) * SECONDS_PER_MINUTE + float(seconds)
+    if len(parts) == TIMESTAMP_PARTS_LONG:  # H:MM:SS format
+        hours, minutes, seconds = parts
+        return (
+            float(hours) * SECONDS_PER_HOUR
+            + float(minutes) * SECONDS_PER_MINUTE
+            + float(seconds)
+        )
+
+    msg = f"Invalid timestamp format: {timestamp_str}"
+    raise FileInvalidFormatError(msg)
+
+
+def seconds_to_timestamp(seconds: float) -> str:
+    """Convert float seconds to timestamp string.
+
+    Args:
+        seconds: Time in seconds
+
+    Returns:
+        Formatted timestamp string ("M:SS" or "H:MM:SS")
+
+    Examples:
+        150.0 -> "2:30"
+        4530.0 -> "1:15:30"
+    """
+    total_seconds = int(seconds)
+    hours = total_seconds // SECONDS_PER_HOUR
+    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
+    secs = total_seconds % SECONDS_PER_MINUTE
+
+    if hours > 0:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
+
 
 @dataclass(frozen=True, slots=True)
 class Chapter:
     """Chapter with content for XML generation."""
 
     title: str
-    start_time: str
+    start_time: float  # seconds
+    end_time: float  # seconds (float("inf") for last chapter)
     content_lines: list[str]
+
+    @property
+    def duration(self) -> float:
+        """Calculate chapter duration."""
+        return self.end_time - self.start_time
 
 
 def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
@@ -92,7 +168,7 @@ def _find_first_chapter(
     return {
         "title_index": 0,
         "title": transcript_lines[0],
-        "start_time": transcript_lines[timestamp_indices[0]],
+        "start_time": timestamp_to_seconds(transcript_lines[timestamp_indices[0]]),
         "content_start": timestamp_indices[0],
     }
 
@@ -112,7 +188,7 @@ def _find_subsequent_chapters(
                 {
                     "title_index": chapter_title_idx,
                     "title": transcript_lines[chapter_title_idx],
-                    "start_time": transcript_lines[next_idx],
+                    "start_time": timestamp_to_seconds(transcript_lines[next_idx]),
                     "content_start": next_idx,
                 }
             )
@@ -125,11 +201,13 @@ def _extract_content_for_chapters(
     """Extract content lines for each chapter and create Chapter objects."""
     result_chapters = []
     for i, chapter_data in enumerate(chapter_metadata):
-        # Determine content range for this chapter
+        # Determine content range and end time for this chapter
         if i < len(chapter_metadata) - 1:
             content_end = chapter_metadata[i + 1]["title_index"]
+            end_time = chapter_metadata[i + 1]["start_time"]
         else:
             content_end = len(transcript_lines)
+            end_time = float("inf")
 
         # Extract content from start timestamp to range end
         content_lines = transcript_lines[chapter_data["content_start"] : content_end]
@@ -138,6 +216,7 @@ def _extract_content_for_chapters(
             Chapter(
                 title=chapter_data["title"],
                 start_time=chapter_data["start_time"],
+                end_time=end_time,
                 content_lines=list(content_lines),
             )
         )
