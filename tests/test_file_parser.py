@@ -4,6 +4,8 @@ Following TDD principles with modern pytest patterns.
 Uses fixtures to reduce duplication and improve maintainability.
 """
 
+import math
+
 import pytest
 
 from youtube_to_xml.exceptions import (
@@ -407,8 +409,8 @@ def test_chapter_timestamps_are_floats_with_duration(two_chapter_transcript: str
     # Second chapter: 5:00 = 300.0 seconds, unknown end
     assert isinstance(chapters[1].start_time, float)
     assert chapters[1].start_time == 300.0
-    assert chapters[1].end_time == float("inf")
-    assert chapters[1].duration == float("inf")  # inf - 300.0
+    assert math.isinf(chapters[1].end_time)
+    assert math.isinf(chapters[1].duration)  # inf - 300.0
 
 
 def test_complex_timestamps_as_floats(complex_transcript: str) -> None:
@@ -427,7 +429,7 @@ def test_complex_timestamps_as_floats(complex_transcript: str) -> None:
     # End times
     assert chapters[0].end_time == 4530.0
     assert chapters[1].end_time == 369913.0
-    assert chapters[2].end_time == float("inf")
+    assert math.isinf(chapters[2].end_time)
 
 
 def test_timestamp_to_seconds_conversion() -> None:
@@ -442,6 +444,10 @@ def test_timestamp_to_seconds_conversion() -> None:
     assert timestamp_to_seconds("1:15:30") == 4530.0
     assert timestamp_to_seconds("10:15:30") == 36930.0
 
+    # High hour and whitespace cases
+    assert timestamp_to_seconds("999:59:59") == 3599999.0
+    assert timestamp_to_seconds(" 0:05 ") == 5.0
+
 
 def test_seconds_to_timestamp_conversion() -> None:
     """Test conversion from float seconds to timestamp string."""
@@ -454,6 +460,12 @@ def test_seconds_to_timestamp_conversion() -> None:
     assert seconds_to_timestamp(3600.0) == "1:00:00"
     assert seconds_to_timestamp(4530.0) == "1:15:30"
     assert seconds_to_timestamp(36930.0) == "10:15:30"
+
+
+def test_seconds_to_timestamp_fractional_floors() -> None:
+    """Fractional seconds are floored when formatting."""
+    assert seconds_to_timestamp(2.9) == "0:02"
+    assert seconds_to_timestamp(59.999) == "0:59"
 
 
 def test_timestamp_to_seconds_raises_error_for_invalid_format() -> None:

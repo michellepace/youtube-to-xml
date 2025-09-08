@@ -98,7 +98,7 @@ class Chapter:
 
     @property
     def duration(self) -> float:
-        """Calculate chapter duration."""
+        """Calculate chapter duration (may be inf for the final open-ended chapter)."""
         return self.end_time - self.start_time
 
     def format_content(self) -> str:
