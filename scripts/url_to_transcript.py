@@ -26,6 +26,7 @@ and subtitles organised by chapter, with each individual subtitle timestamped.
 """
 
 import json
+import math
 import re
 import sys
 import uuid
@@ -44,6 +45,11 @@ from youtube_to_xml.exceptions import (
     URLVideoNotFoundError,
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
+from youtube_to_xml.time_utils import (
+    SECONDS_PER_HOUR,
+    SECONDS_PER_MINUTE,
+    seconds_to_timestamp,
+)
 
 # Constants
 MILLISECONDS_PER_SECOND = 1000.0
@@ -51,20 +57,6 @@ HTTP_TOO_MANY_REQUESTS = 429
 SUBTITLE_LANGS = ["en.*", "all"]  # English preferred, any fallback
 YYYYMMDD_LENGTH = 8
 MIN_ARGS_REQUIRED = 2
-SECONDS_PER_HOUR = 3600
-SECONDS_PER_MINUTE = 60
-
-
-def seconds_to_timestamp(seconds: float, *, show_hours_if_zero: bool = False) -> str:
-    """Convert seconds to H:MM:SS or M:SS format."""
-    total_seconds = int(seconds)
-    hours = total_seconds // SECONDS_PER_HOUR
-    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
-    secs = total_seconds % SECONDS_PER_MINUTE
-
-    if hours > 0 or show_hours_if_zero:
-        return f"{hours}:{minutes:02d}:{secs:02d}"
-    return f"{minutes}:{secs:02d}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,7 +255,7 @@ def parse_transcript_api(
             Chapter(
                 title=metadata.video_title,
                 start_time=0,
-                end_time=float("inf"),
+                end_time=math.inf,
                 all_chapter_subtitles=subtitles,
             )
         ]
@@ -278,7 +270,7 @@ def parse_transcript_api(
         if i + 1 < len(chapter_list):
             end = float(chapter_list[i + 1]["start_time"])
         else:
-            end = float("inf")
+            end = math.inf
 
         # Filter subtitles within this chapter's time range
         chapter_subtitles = [sub for sub in subtitles if start <= sub.start_time < end]

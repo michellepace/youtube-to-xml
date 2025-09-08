@@ -5,7 +5,8 @@ Converts parsed Chapter objects into XML format following the specified template
 
 import xml.etree.ElementTree as ET
 
-from youtube_to_xml.file_parser import Chapter, seconds_to_timestamp
+from youtube_to_xml.file_parser import Chapter
+from youtube_to_xml.time_utils import seconds_to_timestamp
 
 
 def chapters_to_xml(chapters: list[Chapter]) -> str:

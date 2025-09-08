@@ -10,7 +10,7 @@ Timestamps are stored internally as float seconds for calculations, then
 converted back to "M:SS" or "H:MM:SS" format for XML output.
 """
 
-import re
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -18,83 +18,13 @@ from youtube_to_xml.exceptions import (
     FileEmptyError,
     FileInvalidFormatError,
 )
-
-# Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
-# Minutes and seconds must be 00-59, hours can be up to 999
-TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5]\d)$")
+from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
 
 # Format validation constants
 MINIMUM_LINES_REQUIRED = 3
-
-# Time conversion constants
-SECONDS_PER_HOUR = 3600
-SECONDS_PER_MINUTE = 60
-TIMESTAMP_PARTS_SHORT = 2  # M:SS format
-TIMESTAMP_PARTS_LONG = 3  # H:MM:SS format
-
-
-def timestamp_to_seconds(timestamp_str: str) -> float:
-    """Convert timestamp string to float seconds.
-
-    Args:
-        timestamp_str: Time in "M:SS", "MM:SS", or "H:MM:SS" format
-
-    Returns:
-        Time in seconds as float
-
-    Examples:
-        "2:30" -> 150.0
-        "1:15:30" -> 4530.0
-
-    Raises:
-        FileInvalidFormatError: If timestamp format is invalid
-    """
-    # Validate format using existing regex pattern first
-    if not TIMESTAMP_PATTERN.match(timestamp_str.strip()):
-        msg = f"Invalid timestamp format: {timestamp_str}"
-        raise FileInvalidFormatError(msg)
-
-    parts = timestamp_str.split(":")
-
-    if len(parts) == TIMESTAMP_PARTS_SHORT:  # M:SS or MM:SS format
-        minutes, seconds = parts
-        return float(minutes) * SECONDS_PER_MINUTE + float(seconds)
-    if len(parts) == TIMESTAMP_PARTS_LONG:  # H:MM:SS format
-        hours, minutes, seconds = parts
-        return (
-            float(hours) * SECONDS_PER_HOUR
-            + float(minutes) * SECONDS_PER_MINUTE
-            + float(seconds)
-        )
-
-    msg = f"Invalid timestamp format: {timestamp_str}"
-    raise FileInvalidFormatError(msg)
-
-
-def seconds_to_timestamp(seconds: float) -> str:
-    """Convert float seconds to timestamp string.
-
-    Args:
-        seconds: Time in seconds
-
-    Returns:
-        Formatted timestamp string ("M:SS" or "H:MM:SS")
-
-    Examples:
-        150.0 -> "2:30"
-        4530.0 -> "1:15:30"
-    """
-    total_seconds = int(seconds)
-    hours = total_seconds // SECONDS_PER_HOUR
-    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
-    secs = total_seconds % SECONDS_PER_MINUTE
-
-    if hours > 0:
-        return f"{hours}:{minutes:02d}:{secs:02d}"
-    return f"{minutes}:{secs:02d}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,7 +33,7 @@ class Chapter:
 
     title: str
     start_time: float  # seconds
-    end_time: float  # seconds (float("inf") for last chapter)
+    end_time: float  # seconds (math.inf for last chapter)
     content_lines: list[str]
 
     @property
@@ -205,9 +135,13 @@ def _extract_content_for_chapters(
         if i < len(chapter_metadata) - 1:
             content_end = chapter_metadata[i + 1]["title_index"]
             end_time = chapter_metadata[i + 1]["start_time"]
+            # Enforce monotonic chapter boundaries
+            if end_time <= chapter_data["start_time"]:
+                msg = "Subsequent chapter timestamps must be strictly increasing"
+                raise FileInvalidFormatError(msg)
         else:
             content_end = len(transcript_lines)
-            end_time = float("inf")
+            end_time = math.inf
 
         # Extract content from start timestamp to range end
         content_lines = transcript_lines[chapter_data["content_start"] : content_end]

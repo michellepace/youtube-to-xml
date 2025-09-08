@@ -13,12 +13,12 @@ from youtube_to_xml.exceptions import (
     FileInvalidFormatError,
 )
 from youtube_to_xml.file_parser import (
-    TIMESTAMP_PATTERN,
     find_timestamps,
     parse_transcript_file,
-    seconds_to_timestamp,
-    timestamp_to_seconds,
     validate_transcript_format,
+)
+from youtube_to_xml.time_utils import (
+    seconds_to_timestamp,
 )
 
 # ============= FIXTURES =============
@@ -65,20 +65,6 @@ Chapter 3
 
 
 # ============= TIMESTAMP TESTS =============
-
-
-@pytest.mark.parametrize(
-    "timestamp", ["0:00", "2:45", "00:00", "12:59", "1:23:45", "10:15:30", "999:59:59"]
-)
-def test_valid_timestamps(timestamp: str) -> None:
-    """Verify regex matches valid timestamp formats."""
-    assert TIMESTAMP_PATTERN.match(timestamp)
-
-
-@pytest.mark.parametrize("invalid", ["", "Chapter Title", "1:2:3", "123:45", "12:60"])
-def test_invalid_timestamps(invalid: str) -> None:
-    """Verify regex rejects invalid patterns."""
-    assert not TIMESTAMP_PATTERN.match(invalid)
 
 
 def test_finds_all_timestamp_indices(simple_transcript: str) -> None:
@@ -432,53 +418,26 @@ def test_complex_timestamps_as_floats(complex_transcript: str) -> None:
     assert math.isinf(chapters[2].end_time)
 
 
-def test_timestamp_to_seconds_conversion() -> None:
-    """Test conversion from timestamp string to float seconds."""
-    # M:SS format
-    assert timestamp_to_seconds("0:00") == 0.0
-    assert timestamp_to_seconds("2:30") == 150.0
-    assert timestamp_to_seconds("59:59") == 3599.0
+def test_rejects_non_increasing_chapter_timestamps() -> None:
+    """Test that non-increasing chapter timestamps raise FileInvalidFormatError."""
+    # Create a transcript where second chapter has same/earlier start time than first
+    transcript_with_bad_timestamps = """Chapter 1
 
-    # H:MM:SS format
-    assert timestamp_to_seconds("1:00:00") == 3600.0
-    assert timestamp_to_seconds("1:15:30") == 4530.0
-    assert timestamp_to_seconds("10:15:30") == 36930.0
+0:30
+First chapter content
 
-    # High hour and whitespace cases
-    assert timestamp_to_seconds("999:59:59") == 3599999.0
-    assert timestamp_to_seconds(" 0:05 ") == 5.0
+Chapter 2
 
+0:30
+Second chapter content with same timestamp
 
-def test_seconds_to_timestamp_conversion() -> None:
-    """Test conversion from float seconds to timestamp string."""
-    # Less than an hour - M:SS format
-    assert seconds_to_timestamp(0.0) == "0:00"
-    assert seconds_to_timestamp(150.0) == "2:30"
-    assert seconds_to_timestamp(3599.0) == "59:59"
+Chapter 3
 
-    # Hour or more - H:MM:SS format
-    assert seconds_to_timestamp(3600.0) == "1:00:00"
-    assert seconds_to_timestamp(4530.0) == "1:15:30"
-    assert seconds_to_timestamp(36930.0) == "10:15:30"
+0:25
+Third chapter content with earlier timestamp"""
 
-
-def test_seconds_to_timestamp_fractional_floors() -> None:
-    """Fractional seconds are floored when formatting."""
-    assert seconds_to_timestamp(2.9) == "0:02"
-    assert seconds_to_timestamp(59.999) == "0:59"
-
-
-def test_timestamp_to_seconds_raises_error_for_invalid_format() -> None:
-    """Test that invalid timestamp formats raise FileInvalidFormatError."""
-    invalid_timestamps = [
-        "invalid",
-        "1:2:3:4",  # too many parts
-        "25:61",  # invalid minutes/seconds
-        "1:60:30",  # invalid minutes
-        "",  # empty string
-        "abc:def",  # non-numeric
-    ]
-
-    for invalid_ts in invalid_timestamps:
-        with pytest.raises(FileInvalidFormatError, match="Invalid timestamp format"):
-            timestamp_to_seconds(invalid_ts)
+    with pytest.raises(
+        FileInvalidFormatError,
+        match="Subsequent chapter timestamps must be strictly increasing",
+    ):
+        parse_transcript_file(transcript_with_bad_timestamps)
