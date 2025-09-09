@@ -51,10 +51,10 @@ options = {
 
 **Rate limiting protection**: Relies on yt-dlp's built-in intelligence and default behaviour rather than overriding with potentially invalid options.
 
-**CLI-only rate limiting options**: The following options are available in CLI but **not documented for Python API**:
-- `--extractor-retries` → No Python API equivalent found
-- `--socket-timeout` → No Python API equivalent found  
-- `--extractor-args` → Available in Python API but not needed for unauthenticated access
+**Rate limiting options available but unused**: The following options are supported in both CLI and Python API but not used in our implementation:
+- `--extractor-retries` → `extractor_retries` key (default: 3 retries)
+- `--socket-timeout` → `socket_timeout` key (configures network timeout)
+- `--extractor-args` → `extractor_args` key (available but typically unnecessary for unauthenticated access)
 
 **Template approach**: Uses complex template `"%(title)s [%(id)s].%(ext)s"` with glob pattern matching for robust file handling.
 
