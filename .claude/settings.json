@@ -8,6 +8,8 @@
       "Bash(mkdir:*)",
       "Bash(echo:*)",
       "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(uv --help:*)",
       "Bash(uv run:*)",
       "Bash(uv sync:*)",
       "Bash(uv tree:*)"

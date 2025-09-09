@@ -2,6 +2,9 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
+[options]
+prerelease-mode = "allow"
+
 [[package]]
 name = "cfgv"
 version = "3.4.0"
@@ -217,9 +220,9 @@ dev = [
 
 [[package]]
 name = "yt-dlp"
-version = "2025.9.5"
+version = "2025.9.7.232816.dev0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/50/b2/fb255d991857a6a8b2539487ed6063e7bf318f19310d81f039dedb3c2ad6/yt_dlp-2025.9.5.tar.gz", hash = "sha256:9ce080f80b2258e872fe8a75f4707ea2c644e697477186e20b9a04d9a9ea37cf", size = 3045982, upload-time = "2025-09-05T23:07:53.962Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/59/a5ce2a4855f06dc9ae4af754088f5be77550787596b067b6c11e06910637/yt_dlp-2025.9.7.232816.dev0.tar.gz", hash = "sha256:e07dd6129a2ac48411c88d70ae98a2742e683f0fa661d917a6545bf2523477d3", size = 3050985, upload-time = "2025-09-07T23:32:36.079Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/06/64/b3cc116e4f209c493f23d6af033c60ba32df74e086190fbed2bdc0073d12/yt_dlp-2025.9.5-py3-none-any.whl", hash = "sha256:68a03b5c50e3d0f6af7244bd4bf491c1b12e4e2112b051cde05cdfd2647eb9a8", size = 3272317, upload-time = "2025-09-05T23:07:51.396Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/c6/6971f010d4f17fb8bf28d7f62aec27028972cbfe53abd9f866b92552e0ed/yt_dlp-2025.9.7.232816.dev0-py3-none-any.whl", hash = "sha256:727773d889f0d5cb929d17b44a8911fb32c114a967512e72288a77feb97577f2", size = 3261150, upload-time = "2025-09-07T23:32:33.447Z" },
 ]

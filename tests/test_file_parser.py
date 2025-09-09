@@ -4,6 +4,8 @@ Following TDD principles with modern pytest patterns.
 Uses fixtures to reduce duplication and improve maintainability.
 """
 
+import math
+
 import pytest
 
 from youtube_to_xml.exceptions import (
@@ -11,10 +13,12 @@ from youtube_to_xml.exceptions import (
     FileInvalidFormatError,
 )
 from youtube_to_xml.file_parser import (
-    TIMESTAMP_PATTERN,
     find_timestamps,
     parse_transcript_file,
     validate_transcript_format,
+)
+from youtube_to_xml.time_utils import (
+    seconds_to_timestamp,
 )
 
 # ============= FIXTURES =============
@@ -61,20 +65,6 @@ Chapter 3
 
 
 # ============= TIMESTAMP TESTS =============
-
-
-@pytest.mark.parametrize(
-    "timestamp", ["0:00", "2:45", "00:00", "12:59", "1:23:45", "10:15:30", "999:59:59"]
-)
-def test_valid_timestamps(timestamp: str) -> None:
-    """Verify regex matches valid timestamp formats."""
-    assert TIMESTAMP_PATTERN.match(timestamp)
-
-
-@pytest.mark.parametrize("invalid", ["", "Chapter Title", "1:2:3", "123:45", "12:60"])
-def test_invalid_timestamps(invalid: str) -> None:
-    """Verify regex rejects invalid patterns."""
-    assert not TIMESTAMP_PATTERN.match(invalid)
 
 
 def test_finds_all_timestamp_indices(simple_transcript: str) -> None:
@@ -191,7 +181,7 @@ def test_finds_first_chapter_from_opening_line(simple_transcript: str) -> None:
 
     assert len(chapters) == 1
     assert chapters[0].title == "Introduction"
-    assert chapters[0].start_time == "0:00"
+    assert chapters[0].start_time == 0.0
 
 
 def test_finds_subsequent_chapter_with_boundary_rule(two_chapter_transcript: str) -> None:
@@ -201,7 +191,7 @@ def test_finds_subsequent_chapter_with_boundary_rule(two_chapter_transcript: str
     assert len(chapters) == 2
     assert chapters[0].title == "Introduction"
     assert chapters[1].title == "Chapter Two"
-    assert chapters[1].start_time == "5:00"
+    assert chapters[1].start_time == 300.0
 
 
 @pytest.mark.parametrize(
@@ -254,7 +244,7 @@ Final"""
 
     assert len(chapters) == 3
     assert [ch.title for ch in chapters] == ["First", "Second", "Third"]
-    assert [ch.start_time for ch in chapters] == ["0:00", "5:00", "10:00"]
+    assert [ch.start_time for ch in chapters] == [0.0, 300.0, 600.0]
 
 
 # ============= CONTENT EXTRACTION TESTS =============
@@ -336,7 +326,7 @@ def test_parses_complex_transcript_end_to_end(complex_transcript: str) -> None:
 
     for i, (expected_title, expected_start) in enumerate(expected_chapters):
         assert chapters[i].title == expected_title
-        assert chapters[i].start_time == expected_start
+        assert seconds_to_timestamp(chapters[i].start_time) == expected_start
 
     # Test content behavior (sufficient boundary checking)
     ch1_content = chapters[0].content_lines
@@ -381,3 +371,73 @@ def test_removes_blank_lines_during_processing() -> None:
         line for ch in chapters for line in ch.content_lines
     ]
     assert "" not in all_content
+
+
+# ============= TIMESTAMP TYPE REFACTORING TESTS =============
+
+
+def test_chapter_has_end_time_field(simple_transcript: str) -> None:
+    """Chapter dataclass should have an end_time field."""
+    chapters = parse_transcript_file(simple_transcript)
+    assert hasattr(chapters[0], "end_time")
+
+
+def test_chapter_timestamps_are_floats_with_duration(two_chapter_transcript: str) -> None:
+    """Chapter timestamps should be floats with correct duration calculation."""
+    chapters = parse_transcript_file(two_chapter_transcript)
+
+    # First chapter: 0:00 = 0.0 seconds, ends at 5:00 = 300.0 seconds
+    assert isinstance(chapters[0].start_time, float)
+    assert chapters[0].start_time == 0.0
+    assert chapters[0].end_time == 300.0
+    assert chapters[0].duration == 300.0  # 300.0 - 0.0
+
+    # Second chapter: 5:00 = 300.0 seconds, unknown end
+    assert isinstance(chapters[1].start_time, float)
+    assert chapters[1].start_time == 300.0
+    assert math.isinf(chapters[1].end_time)
+    assert math.isinf(chapters[1].duration)  # inf - 300.0
+
+
+def test_complex_timestamps_as_floats(complex_transcript: str) -> None:
+    """Complex H:MM:SS timestamps should convert to float seconds."""
+    chapters = parse_transcript_file(complex_transcript)
+
+    # 0:55 = 55 seconds
+    assert chapters[0].start_time == 55.0
+
+    # 1:15:30 = 4530 seconds
+    assert chapters[1].start_time == 4530.0
+
+    # 102:45:13 = 369913 seconds (102*3600 + 45*60 + 13)
+    assert chapters[2].start_time == 369913.0
+
+    # End times
+    assert chapters[0].end_time == 4530.0
+    assert chapters[1].end_time == 369913.0
+    assert math.isinf(chapters[2].end_time)
+
+
+def test_rejects_non_increasing_chapter_timestamps() -> None:
+    """Test that non-increasing chapter timestamps raise FileInvalidFormatError."""
+    # Create a transcript where second chapter has same/earlier start time than first
+    transcript_with_bad_timestamps = """Chapter 1
+
+0:30
+First chapter content
+
+Chapter 2
+
+0:30
+Second chapter content with same timestamp
+
+Chapter 3
+
+0:25
+Third chapter content with earlier timestamp"""
+
+    with pytest.raises(
+        FileInvalidFormatError,
+        match="Subsequent chapter timestamps must be strictly increasing",
+    ):
+        parse_transcript_file(transcript_with_bad_timestamps)

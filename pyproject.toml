@@ -29,17 +29,18 @@ dependencies = [
 youtube-to-xml = "youtube_to_xml.cli:main"
 url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experimental
 
-
-# ============================================================================
-# Development Dependencies
-# ============================================================================
-
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.4.2",
     "ruff>=0.12.12",
 ]
+
+# Allow nightly builds from PyPI (e.g., yt-dlp dev versions like 2025.9.7.232816)
+# Manual update still required: `uv lock --upgrade-package yt-dlp`
+[tool.uv]
+prerelease = "allow"
+
 
 
 # ============================================================================

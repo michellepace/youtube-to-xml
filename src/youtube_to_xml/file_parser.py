@@ -5,9 +5,12 @@ Based on structural patterns:
 - First line of transcript (if not timestamp) is the first chapter
 - When exactly 2 lines exist between consecutive timestamps, the line before
   the second timestamp is a new chapter title
+
+Timestamps are stored internally as float seconds for calculations, then
+converted back to "M:SS" or "H:MM:SS" format for XML output.
 """
 
-import re
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -15,10 +18,7 @@ from youtube_to_xml.exceptions import (
     FileEmptyError,
     FileInvalidFormatError,
 )
-
-# Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
-# Minutes and seconds must be 00-59, hours can be up to 999
-TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5]\d)$")
+from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
@@ -32,8 +32,14 @@ class Chapter:
     """Chapter with content for XML generation."""
 
     title: str
-    start_time: str
+    start_time: float  # seconds
+    end_time: float  # seconds (math.inf for last chapter)
     content_lines: list[str]
+
+    @property
+    def duration(self) -> float:
+        """Calculate chapter duration."""
+        return self.end_time - self.start_time
 
 
 def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
@@ -92,7 +98,7 @@ def _find_first_chapter(
     return {
         "title_index": 0,
         "title": transcript_lines[0],
-        "start_time": transcript_lines[timestamp_indices[0]],
+        "start_time": timestamp_to_seconds(transcript_lines[timestamp_indices[0]]),
         "content_start": timestamp_indices[0],
     }
 
@@ -112,7 +118,7 @@ def _find_subsequent_chapters(
                 {
                     "title_index": chapter_title_idx,
                     "title": transcript_lines[chapter_title_idx],
-                    "start_time": transcript_lines[next_idx],
+                    "start_time": timestamp_to_seconds(transcript_lines[next_idx]),
                     "content_start": next_idx,
                 }
             )
@@ -125,11 +131,17 @@ def _extract_content_for_chapters(
     """Extract content lines for each chapter and create Chapter objects."""
     result_chapters = []
     for i, chapter_data in enumerate(chapter_metadata):
-        # Determine content range for this chapter
+        # Determine content range and end time for this chapter
         if i < len(chapter_metadata) - 1:
             content_end = chapter_metadata[i + 1]["title_index"]
+            end_time = chapter_metadata[i + 1]["start_time"]
+            # Enforce monotonic chapter boundaries
+            if end_time <= chapter_data["start_time"]:
+                msg = "Subsequent chapter timestamps must be strictly increasing"
+                raise FileInvalidFormatError(msg)
         else:
             content_end = len(transcript_lines)
+            end_time = math.inf
 
         # Extract content from start timestamp to range end
         content_lines = transcript_lines[chapter_data["content_start"] : content_end]
@@ -138,6 +150,7 @@ def _extract_content_for_chapters(
             Chapter(
                 title=chapter_data["title"],
                 start_time=chapter_data["start_time"],
+                end_time=end_time,
                 content_lines=list(content_lines),
             )
         )

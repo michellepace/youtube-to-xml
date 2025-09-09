@@ -17,24 +17,24 @@ For a provided YouTube URL, the script will:
 4. Create and save an XML document with dynamic filename based on video title
 
 Subtitle priority:
-1. Manual subtitles uploaded by the video creator (highest quality)
+1. Manual English subtitles uploaded by the video creator (highest quality)
 2. Auto-generated English subtitles (fallback)
-3. Any available subtitles (last resort)
+No other languages are downloaded - English only.
 
 The output XML contains video metadata (video_title, upload_date, duration, video_url)
 and subtitles organised by chapter, with each individual subtitle timestamped.
 """
 
 import json
+import math
 import re
 import sys
+import tempfile
 import uuid
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
 
 import yt_dlp
 
@@ -44,30 +44,15 @@ from youtube_to_xml.exceptions import (
     URLVideoNotFoundError,
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
-
-# Constants
-MILLISECONDS_PER_SECOND = 1000.0
-HTTP_TOO_MANY_REQUESTS = 429
-SUBTITLE_LANGS = ["en.*", "all"]  # English preferred, any fallback
-YYYYMMDD_LENGTH = 8
-MIN_ARGS_REQUIRED = 2
-SECONDS_PER_HOUR = 3600
-SECONDS_PER_MINUTE = 60
+from youtube_to_xml.time_utils import (
+    MILLISECONDS_PER_SECOND,
+    SECONDS_PER_HOUR,
+    SECONDS_PER_MINUTE,
+    seconds_to_timestamp,
+)
 
 
-def seconds_to_timestamp(seconds: float, *, show_hours_if_zero: bool = False) -> str:
-    """Convert seconds to H:MM:SS or M:SS format."""
-    total_seconds = int(seconds)
-    hours = total_seconds // SECONDS_PER_HOUR
-    minutes = (total_seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
-    secs = total_seconds % SECONDS_PER_MINUTE
-
-    if hours > 0 or show_hours_if_zero:
-        return f"{hours}:{minutes:02d}:{secs:02d}"
-    return f"{minutes}:{secs:02d}"
-
-
-@dataclass
+@dataclass(frozen=True, slots=True)
 class VideoMetadata:
     """Video metadata needed for XML output."""
 
@@ -79,7 +64,7 @@ class VideoMetadata:
     subtitle_url: str | None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class IndividualSubtitle:
     """A single subtitle entry with timestamp and text."""
 
@@ -87,7 +72,7 @@ class IndividualSubtitle:
     text: str
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Chapter:
     """A video chapter containing individual subtitles within its time range."""
 
@@ -95,6 +80,11 @@ class Chapter:
     start_time: float
     end_time: float
     all_chapter_subtitles: list[IndividualSubtitle]
+
+    @property
+    def duration(self) -> float:
+        """Calculate chapter duration (may be inf for the final open-ended chapter)."""
+        return self.end_time - self.start_time
 
     def format_content(self) -> str:
         """Format individual subtitles as timestamped text for XML output."""
@@ -109,20 +99,23 @@ class Chapter:
         return "\n      ".join(lines)
 
 
-def fetch_video_metadata(url: str) -> VideoMetadata:
-    """Extract video metadata and subtitle URL from YouTube.
+def fetch_video_metadata_and_subtitles(
+    url: str,
+) -> tuple[VideoMetadata, list[IndividualSubtitle]]:
+    """Extract video metadata and download subtitles from YouTube using yt-dlp.
 
-    Uses yt-dlp to fetch video information without downloading.
-    Prioritizes English subtitles but falls back to any available.
+    Uses yt-dlp to fetch video information and subtitles, avoiding rate limits
+    by using yt-dlp's built-in subtitle handling instead of direct HTTP requests.
 
     Args:
         url: YouTube video URL
 
     Returns:
-        VideoMetadata object with video info and subtitle URL
+        Tuple of (VideoMetadata object, list of IndividualSubtitle objects)
 
     Raises:
         URLVideoNotFoundError: If video info cannot be extracted
+        URLSubtitlesNotFoundError: If no subtitles are available
     """
     options = {
         "quiet": True,
@@ -130,82 +123,57 @@ def fetch_video_metadata(url: str) -> VideoMetadata:
         "skip_download": True,
         "writesubtitles": True,
         "writeautomaticsub": True,
-        "subtitleslangs": SUBTITLE_LANGS,
+        "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
         "subtitlesformat": "json3",
+        "outtmpl": "%(title)s [%(id)s].%(ext)s",
     }
 
-    with yt_dlp.YoutubeDL(options) as ydl:
-        info = ydl.extract_info(url, download=False)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Change to temp directory for yt-dlp output
+        options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
 
-        if not info:
-            msg = f"Could not extract video info from {url}"
-            raise URLVideoNotFoundError(msg)
+        with yt_dlp.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
 
-        # Extract subtitle URL from available options
-        subtitle_url = extract_subtitle_url(info)
+            if not info:
+                msg = f"Could not extract video info from {url}"
+                raise URLVideoNotFoundError(msg)
 
-        return VideoMetadata(
-            video_title=info.get("title", "Untitled"),
-            upload_date=info.get("upload_date", ""),
-            duration=info.get("duration", 0),
-            video_url=info.get("webpage_url", url),
-            chapters_data=info.get("chapters", []),
-            subtitle_url=subtitle_url,
-        )
+            # Try to download subtitles using yt-dlp
+            try:
+                ydl.process_info(info)
+            except Exception as e:
+                # If subtitle download fails, still return metadata but empty subtitles
+                msg = f"Could not download subtitles: {e}"
+                raise URLSubtitlesNotFoundError(msg) from e
 
+            # Find downloaded subtitle file
+            video_id = info.get("id", "")
+            subtitle_files = [
+                p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
+            ]
 
-def extract_subtitle_url(info: dict) -> str | None:
-    """Extract subtitle URL from yt-dlp video info dictionary.
+            subtitles = []
+            if subtitle_files:
+                subtitle_file = subtitle_files[0]
+                subtitle_content = json.loads(subtitle_file.read_text(encoding="utf-8"))
+                subtitles = extract_subtitles_from_json3(
+                    subtitle_content.get("events", [])
+                )
+            else:
+                msg = "No subtitle URL found for video (there is no transcript)"
+                raise URLSubtitlesNotFoundError(msg)
 
-    yt-dlp automatically prioritizes manual subtitles (uploaded by creator)
-    over auto-generated subtitles when both are available.
+            metadata = VideoMetadata(
+                video_title=info.get("title", "Untitled"),
+                upload_date=info.get("upload_date", ""),
+                duration=info.get("duration", 0),
+                video_url=info.get("webpage_url", url),
+                chapters_data=info.get("chapters", []),
+                subtitle_url=None,  # No longer needed since we have subtitles directly
+            )
 
-    Args:
-        info: Video info dictionary from yt-dlp
-
-    Returns:
-        URL to JSON3 subtitle file, or None if no subtitles available
-    """
-    requested = info.get("requested_subtitles", {})
-    if requested:
-        first_lang = next(iter(requested))
-        subtitle_info = requested[first_lang]
-        return subtitle_info.get("url") if subtitle_info else None
-    return None
-
-
-def download_and_parse_subtitles(url: str) -> list[IndividualSubtitle]:
-    """Download and parse JSON3 subtitle data from YouTube.
-
-    Args:
-        url: URL to JSON3 subtitle file
-
-    Returns:
-        List of IndividualSubtitle objects parsed from JSON3 format
-
-    Raises:
-        URLRateLimitError: When rate limited by YouTube (HTTP 429)
-        URLVideoNotFoundError: When HTTP error occurs
-        URLSubtitlesNotFoundError: When network or JSON parsing fails
-    """
-    if not url:
-        return []
-
-    try:
-        with urlopen(url) as response:  # noqa: S310
-            json_text = response.read().decode("utf-8")
-
-        data = json.loads(json_text)
-        return extract_subtitles_from_json3(data.get("events", []))
-    except HTTPError as e:
-        if e.code == HTTP_TOO_MANY_REQUESTS:
-            msg = f"Rate limited: {e}"
-            raise URLRateLimitError(msg) from e
-        msg = f"HTTP {e.code}: {e}"
-        raise URLVideoNotFoundError(msg) from e
-    except (URLError, json.JSONDecodeError) as e:
-        msg = f"Subtitle fetch failed: {e}"
-        raise URLSubtitlesNotFoundError(msg) from e
+            return metadata, subtitles
 
 
 def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
@@ -240,7 +208,7 @@ def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
     return subtitles
 
 
-def parse_transcript_api(
+def assign_subtitles_to_chapters(
     metadata: VideoMetadata, subtitles: list[IndividualSubtitle]
 ) -> list[Chapter]:
     """Parse API transcript data into chapters.
@@ -258,7 +226,7 @@ def parse_transcript_api(
             Chapter(
                 title=metadata.video_title,
                 start_time=0,
-                end_time=float("inf"),
+                end_time=math.inf,
                 all_chapter_subtitles=subtitles,
             )
         ]
@@ -273,7 +241,7 @@ def parse_transcript_api(
         if i + 1 < len(chapter_list):
             end = float(chapter_list[i + 1]["start_time"])
         else:
-            end = float("inf")
+            end = math.inf
 
         # Filter subtitles within this chapter's time range
         chapter_subtitles = [sub for sub in subtitles if start <= sub.start_time < end]
@@ -291,15 +259,8 @@ def parse_transcript_api(
 
 
 def format_date(date_string: str) -> str:
-    """Convert YYYYMMDD to yyyy-mm-dd format.
-
-    Args:
-        date_string: Date in YYYYMMDD format from yt-dlp
-
-    Returns:
-        Formatted date like "2024-07-23", or original string if invalid
-    """
-    if len(date_string) == YYYYMMDD_LENGTH:
+    """Convert YYYYMMDD to yyyy-mm-dd format."""
+    if len(date_string) == len("20250101"):
         try:
             date = datetime.strptime(date_string, "%Y%m%d").replace(tzinfo=None)  # noqa: DTZ007
             return date.strftime("%Y-%m-%d")
@@ -311,11 +272,7 @@ def format_date(date_string: str) -> str:
 def format_duration(seconds: int) -> str:
     """Convert seconds to human-readable duration.
 
-    Args:
-        seconds: Duration in seconds
-
-    Returns:
-        Formatted string like "21m 34s" or "1h 5m 12s"
+    Formatted string like "21m 34s" or "1h 5m 12s"
     """
     if seconds <= 0:
         return "0s"
@@ -371,50 +328,13 @@ def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str
 
 
 def format_xml_output(element: ET.Element) -> str:
-    """Format XML element with proper indentation.
-
-    Args:
-        element: XML Element to format
-
-    Returns:
-        Pretty-printed XML string with declaration
-    """
+    """Format XML element with proper indentation."""
     ET.indent(element, space="  ")
     return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
 
 
-def fetch_and_parse_subtitles(metadata: VideoMetadata) -> list[IndividualSubtitle]:
-    """Download and parse subtitles if available.
-
-    Wrapper function that handles console output for subtitle downloading.
-
-    Args:
-        metadata: Video metadata containing subtitle URL
-
-    Returns:
-        List of individual subtitles
-
-    Raises:
-        URLSubtitlesNotFoundError: When no subtitle URL is found
-        URLRateLimitError: When rate limited by YouTube
-        URLVideoNotFoundError: When HTTP error occurs
-    """
-    if not metadata.subtitle_url:
-        msg = "No subtitle URL found for video (there is no transcript)"
-        raise URLSubtitlesNotFoundError(msg)
-
-    print("📝 Downloading subtitles...")
-    subtitles = download_and_parse_subtitles(metadata.subtitle_url)
-    print(f"   Parsed {len(subtitles)} subtitles")
-    return subtitles
-
-
 def generate_summary_stats(chapters: list[Chapter]) -> None:
-    """Print summary statistics for the processed transcript.
-
-    Args:
-        chapters: List of chapters with subtitles
-    """
+    """Print summary statistics for the processed transcript."""
     total_subtitles = sum(len(ch.all_chapter_subtitles) for ch in chapters)
     print("\n📈 Summary:")
     print(f"   Chapters: {len(chapters)}")
@@ -443,10 +363,9 @@ def convert_youtube_to_xml(
     """Convert YouTube video to XML transcript with metadata.
 
     Core business logic that:
-    1. Fetches video metadata
-    2. Downloads and parses subtitles
-    3. Assigns subtitles to chapters
-    4. Creates XML document
+    1. Fetches video metadata and downloads subtitles using yt-dlp
+    2. Assigns subtitles to chapters
+    3. Creates XML document
 
     Args:
         video_url: YouTube video URL
@@ -459,15 +378,13 @@ def convert_youtube_to_xml(
     print(f"🎬 Processing: {video_url}")
     logger.info("[%s] Processing video: %s", execution_id, video_url)
 
-    # Step 1: Fetch all metadata
+    # Step 1: Fetch metadata and download subtitles using yt-dlp
     print("📊 Fetching video metadata...")
-    metadata = fetch_video_metadata(video_url)
-    print(f"   Title: {metadata.video_title}")
-    print(f"   Duration: {format_duration(metadata.duration)}")
-
-    # Step 2: Download and parse subtitles
     try:
-        subtitles = fetch_and_parse_subtitles(metadata)
+        metadata, subtitles = fetch_video_metadata_and_subtitles(video_url)
+        print(f"   Title: {metadata.video_title}")
+        print(f"   Duration: {format_duration(metadata.duration)}")
+        print(f"📝 Downloaded {len(subtitles)} subtitles")
     except URLSubtitlesNotFoundError:
         logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
@@ -476,12 +393,12 @@ def convert_youtube_to_xml(
         logger.exception("[%s] URLRateLimitError", execution_id)
         raise  # Re-raise to prevent file creation
 
-    # Step 3: Assign subtitles to chapters
+    # Step 2: Assign subtitles to chapters
     chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
     print(f"📑 Organising into {chapters_count} chapter(s)...")
-    chapters = parse_transcript_api(metadata, subtitles)
+    chapters = assign_subtitles_to_chapters(metadata, subtitles)
 
-    # Step 4: Create XML
+    # Step 3: Create XML
     print("🔧 Building XML document...")
     xml_content = create_xml_document(metadata, chapters)
 
@@ -514,32 +431,18 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
 
-def parse_arguments(args: list[str]) -> str | None:
-    """Parse command-line arguments.
-
-    Args:
-        args: Command-line arguments (typically sys.argv)
-
-    Returns:
-        Video URL if valid, None if invalid
-    """
-    if len(args) < MIN_ARGS_REQUIRED:
-        return None
-
-    return args[1]
-
-
 def main() -> None:
     """Command-line interface entry point."""
     setup_logging()
     logger = get_logger(__name__)
     execution_id = str(uuid.uuid4())[:8]
 
-    video_url = parse_arguments(sys.argv)
-    if video_url is None:
-        print("YouTube to XML Converter with Metadata")
-        print("Usage: uv run scripts/url_to_transcript.py <YouTube_URL>")
-        print("Example: uv run scripts/url_to_transcript.py https://youtu.be/VIDEO_ID")
+    try:
+        video_url = sys.argv[1]
+    except IndexError:
+        print("YouTube URL to XML Converter")
+        print("  Usage: include the YouTube URL as an argument")
+        print("  E.g.: url_to_transcript.py https://www.youtube.com/watch?v=Q4gsvJvRjCU")
         sys.exit(1)
 
     logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
