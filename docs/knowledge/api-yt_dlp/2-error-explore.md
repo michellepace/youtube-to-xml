@@ -1,10 +1,16 @@
 # yt-dlp Error Classification Investigation
 
-## Testing Scenarios to Understand Error Types
+## Run Test Scenarios
 
-### Scenario 1: Rate Limited Network
+Test scenario results obtained from runing Python directly against `yt-dlp` API to determine true behaviour (independent of `scripts/url_to_transcript.py`).
+
+To retest scenario against script behaivour use: `uv run scripts/url_to_transcript.py <URL>`
+
+## Test Scenario Results to Understand Error Types
+
+### Scenario 1: Bot Protection Network (Not Traditional Rate Limiting)
 **URL:** https://www.youtube.com/watch?v=Q4gsvJvRjCU
-**Expected:** Some form of rate limiting error
+**Expected:** Bot protection error (often confused with rate limiting)
 **Actual Error:**
 ```
 ERROR: [youtube] Q4gsvJvRjCU: Sign in to confirm you're not a bot. Use --cookies-from-browser or --cookies for the authentication.
@@ -15,10 +21,12 @@ ERROR: [youtube] Q4gsvJvRjCU: Sign in to confirm you're not a bot. Use --cookies
 - Suggests authentication solution, not "try again later"
 - Occurs during video info extraction phase, not subtitle download
 - Error message focuses on bot protection, not rate limiting
+- Frequently occurs after extensive running of integration tests (hitting API)
+- Resolved when I switch to a new network (New IP)
 
 ---
 
-### Scenario 2: Non-Rate Limited Network (New IP)
+### Scenario 2: Clean Network (New IP, No Bot Protection)
 **URL:** https://www.youtube.com/watch?v=Q4gsvJvRjCU  
 **Expected:** Should work normally
 **Network Status:** ✅ Switched to new network/IP address
@@ -34,11 +42,11 @@ Duration: 2m 43s
 - Same URL works perfectly on clean network
 - Downloads subtitles successfully
 - Creates XML file as expected
-- Confirms the "Sign in to confirm you're not a bot" was network/IP specific
+- Confirms the "Sign in to confirm you're not a bot" was network/IP specific (scenario 1)
 
 ---
 
-### Scenario 3: Video with No Transcript (Clean Network)
+### Scenario 3: Video with No Transcript (New IP, Clean Network)
 **URL:** https://www.youtube.com/watch?v=6eBSHbLKuN0
 **Expected:** Should fail with "no subtitles" error
 **Network Status:** ✅ Still on new network/IP address
@@ -55,7 +63,7 @@ Duration: 2m 43s
 
 ---
 
-### Scenario 4: Empty URL Input
+### Scenario 4: Empty URL Input (New IP, Clean Network)
 **URL:** Empty
 **Network Status:** ✅ Still on new network/IP address
 **Purpose:** Test what exceptions yt-dlp throws for empty URL
@@ -76,7 +84,7 @@ ERROR: [generic] '' is not a valid URL
 
 ---
 
-### Scenario 5: Malformed URL Format  
+### Scenario 5: Malformed URL Format (New IP, Clean Network)
 **URL:** `invalid-url`
 **Network Status:** ✅ Still on new network/IP address
 **Purpose:** Test what exceptions yt-dlp throws for completely malformed URL
@@ -97,7 +105,7 @@ ERROR: [youtube] invalid-url: Video unavailable
 
 ---
 
-### Scenario 6: Non-YouTube URL
+### Scenario 6: Non-YouTube URL (New IP, Clean Network)
 **URL:** https://www.google.com/
 **Network Status:** ✅ Still on new network/IP address
 **Purpose:** Test what exceptions yt-dlp throws for valid URL but wrong domain
@@ -118,7 +126,7 @@ ERROR: Unsupported URL: https://www.google.com/
 
 ---
 
-### Scenario 7: Truncated YouTube URL
+### Scenario 7: Truncated YouTube URL (New IP, Clean Network)
 **URL:** https://www.youtube.com/watch?v=VvkhYW
 **Network Status:** ✅ Still on new network/IP address
 **Purpose:** Test what exceptions yt-dlp throws for truncated YouTube video ID
@@ -157,10 +165,10 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 
 ### Key Findings:
 
-1. **Your previous "rate limiting" was actually bot protection** - different concept entirely
-2. **Bot protection is network/IP specific** - switching networks resolves it
-3. **Current script behavior is mostly correct** for genuine "no transcript" cases
-4. **The problem**: Bot protection errors are being misclassified as subtitle errors
+1. **Bot protection is NOT traditional rate limiting** - "Sign in to confirm you're not a bot" is IP-based bot detection, not HTTP 429
+2. **Bot protection is network/IP specific** - switching networks resolves it temporarily
+3. **HTTP 429 can still occur** - Traditional rate limiting happens during download operations (process_info), not metadata extraction
+4. **The problem**: Bot protection errors during extract_info() are currently unhandled and cause crashes
 
 ### Recommendations:
 
@@ -181,7 +189,7 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 | **Malformed URL** | Scenario 5 | `DownloadError` | "Video unavailable" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
 | **Non-YouTube URL** | Scenario 6 | `DownloadError` | "Unsupported URL" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
 | **Truncated YouTube URL** | Scenario 7 | `DownloadError` | "Incomplete YouTube ID" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
-| **HTTP 429** | Not tested | `DownloadError` | "HTTP Error 429" / "429" | ✅ `URLRateLimitError` | ✅ Keep as-is |
+| **HTTP 429 (True Rate Limit)** | Not tested but possible | `DownloadError` | "HTTP Error 429" / "429" | ✅ `URLRateLimitError` | ✅ Keep as-is |
 
 ## Action Plan
 
@@ -194,8 +202,9 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 
 ## Key Insights
 
-- **Bot protection (Scenario 1)** occurs during video metadata extraction, not subtitle processing
-- **Success case (Scenario 2)** confirms bot protection is network/IP specific
-- **No transcript (Scenario 3)** is correctly handled by existing logic
-- **Invalid URLs (Scenarios 4, 5, 6 & 7)** need proper classification as video not found errors
-- **HTTP 429 detection** remains valid for genuine rate limiting (though not encountered in testing)
+- **Bot protection (Scenario 1)** occurs during video metadata extraction (`extract_info()`), NOT during subtitle download
+- **Success case (Scenario 2)** confirms bot protection is network/IP specific, not time-based
+- **No transcript (Scenario 3)** is correctly handled by existing logic in `process_info()`
+- **Invalid URLs (Scenarios 4, 5, 6 & 7)** currently crash - need proper mapping to URLVideoNotFoundError
+- **HTTP 429 (true rate limiting)** can still occur during `process_info()` - keep existing detection
+- **Important distinction**: Bot protection ≠ Rate limiting (different mechanisms, different solutions)
