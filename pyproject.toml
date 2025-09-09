@@ -36,8 +36,8 @@ dev = [
     "ruff>=0.12.12",
 ]
 
-# Allow Nightly Builds from PyPI (e.g., yt-dlp dev versions like 2025.9.7.232816.dev0)
-# Still must manually run `uv lock --upgrade-package yt-dlp`
+# Allow nightly builds from PyPI (e.g., yt-dlp dev versions like 2025.9.7.232816)
+# Manual update still required: `uv lock --upgrade-package yt-dlp`
 [tool.uv]
 prerelease = "allow"
 

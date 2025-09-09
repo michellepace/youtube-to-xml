@@ -66,17 +66,17 @@ Per yt-dlp README: *"The `nightly` channel...is the **recommended channel for re
 ### Configuration Added
 **pyproject.toml**:
 ```toml
+[project]
+dependencies = [
+    "yt-dlp>=2025.9.5",
+]
+
 [tool.uv]
 prerelease = "allow"
-
-dependencies = [
-    "curl-cffi>=0.14.0b2",  # Browser impersonation support
-    "yt-dlp>=2025.9.5",     # Minimum version, nightly auto-available
-]
 ```
 
 **Update command**: `uv lock --upgrade-package yt-dlp && uv sync`
-- Upgrades from stable (`2025.9.5`) to latest nightly (`2025.9.7.232816.dev0`)
+- Upgrades from stable (`2025.9.5`) to latest nightly (`2025.09.07.232816`)
 - UV automatically adds `prerelease-mode = "allow"` to uv.lock
 
 ## Testing Results: Network vs Code Impact

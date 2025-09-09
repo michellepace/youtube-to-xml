@@ -149,7 +149,9 @@ def fetch_video_metadata_and_subtitles(
 
             # Find downloaded subtitle file
             video_id = info.get("id", "")
-            subtitle_files = list(Path(temp_dir).glob(f"*[{video_id}]*.json3"))
+            subtitle_files = [
+                p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
+            ]
 
             subtitles = []
             if subtitle_files:
