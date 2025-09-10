@@ -320,3 +320,27 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         assert abs(file_content_lines - url_content_lines) <= 2, (
             f"Chapter {i} ({file_titles[i]}) content volume differs significantly"
         )
+
+
+@pytest.mark.integration
+def test_url_unmapped_error_handling(tmp_path: Path) -> None:
+    """Test that URLUnknownUnmappedError is properly handled for unmapped yt-dlp errors.
+
+    Uses a private video that triggers a yt-dlp error message that doesn't match
+    any existing patterns in map_yt_dlp_exception().
+    """
+    result = run_youtube_script("https://youtu.be/15vClfaR35w", tmp_path)
+
+    assert result.returncode == 1
+    # Should show the actual yt-dlp error message (main() adds "❌ Error:" prefix)
+    assert "❌ Error: [youtube] 15vClfaR35w: Private video" in result.stdout, (
+        f"Expected yt-dlp error message in stdout, got: {result.stdout}"
+    )
+    # Should NOT have a traceback in stderr when properly handled
+    assert "Traceback" not in result.stderr, (
+        f"Should not crash with traceback, got: {result.stderr}"
+    )
+
+    # Verify no XML file was created
+    xml_files = list(tmp_path.glob("*.xml"))
+    assert len(xml_files) == 0, "No XML file should be created on unmapped errors"

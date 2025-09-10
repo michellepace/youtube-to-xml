@@ -12,6 +12,7 @@ from youtube_to_xml.exceptions import (
     URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
+    URLUnknownUnmappedError,
     URLVideoUnavailableError,
     map_yt_dlp_exception,
 )
@@ -26,6 +27,7 @@ ALL_EXCEPTION_CLASSES = [
     URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
+    URLUnknownUnmappedError,
     URLVideoUnavailableError,
 ]
 
@@ -113,6 +115,7 @@ class TestYtDlpExceptionMapping:
     def test_map_yt_dlp_exception_patterns(self) -> None:
         """Test that error patterns map to correct exception types with messages."""
         test_cases = [
+            ("HTTP Error 429", URLRateLimitError, "limiting"),
             (
                 "Sign in to confirm you're not a bot",
                 URLBotProtectionError,
@@ -127,7 +130,7 @@ class TestYtDlpExceptionMapping:
             ("'' is not a valid URL", URLIsInvalidError, "invalid"),
             ("[youtube] invalid-url: Video unavailable", URLIsInvalidError, "invalid"),
             ("Video unavailable", URLVideoUnavailableError, "unavailable"),
-            ("Some unknown error message", URLVideoUnavailableError, "unavailable"),
+            ("Some unknown error message", URLUnknownUnmappedError, "error"),
         ]
 
         for error_msg, expected_type, expected_text in test_cases:
@@ -146,3 +149,13 @@ class TestYtDlpExceptionMapping:
         assert isinstance(error, URLRateLimitError)
         assert isinstance(error, BaseTranscriptError)
         assert "bot protection" in str(error).lower()
+
+    def test_unmapped_error_uses_default_message(self) -> None:
+        """Test that unmapped errors use the default URLUnknownUnmappedError message."""
+        original_error = Exception("Some weird new yt-dlp error we haven't seen before")
+
+        result = map_yt_dlp_exception(original_error)
+
+        assert isinstance(result, URLUnknownUnmappedError)
+        assert isinstance(result, BaseTranscriptError)
+        assert "error" in str(result).lower()
