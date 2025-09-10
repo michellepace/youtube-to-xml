@@ -22,6 +22,13 @@ URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 URL_NO_TRANSCRIPT = "https://www.youtube.com/watch?v=6eBSHbLKuN0"
 URL_INVALID = "https://www.youtube.com/watch?v=play99invalid"
+
+# Error scenario URLs
+URL_EMPTY = ""
+URL_NON_YOUTUBE = "https://www.google.com/"
+URL_INCOMPLETE_ID = "https://www.youtube.com/watch?v=VvkhYW"
+URL_MALFORMED = "invalid-url"
+
 SUBPROCESS_TIMEOUT = 10
 
 
@@ -221,13 +228,10 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("url", "expected_error_message"),
     [
-        ("", "Invalid URL format"),  # URLIsInvalidError
-        ("https://www.google.com/", "URL is not a YouTube video"),  # URLNotYouTubeError
-        (
-            "https://www.youtube.com/watch?v=VvkhYW",
-            "YouTube URL is incomplete",
-        ),  # URLIncompleteError
-        ("invalid-url", "YouTube video unavailable"),  # URLVideoUnavailableError
+        (URL_EMPTY, "Invalid URL format"),  # URLIsInvalidError
+        (URL_NON_YOUTUBE, "URL is not a YouTube video"),  # URLNotYouTubeError
+        (URL_INCOMPLETE_ID, "YouTube URL is incomplete"),  # URLIncompleteError
+        (URL_MALFORMED, "YouTube video unavailable"),  # URLVideoUnavailableError
     ],
 )
 def test_url_error_scenarios(
