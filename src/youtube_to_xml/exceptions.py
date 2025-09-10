@@ -94,6 +94,16 @@ class URLBotProtectionError(BaseTranscriptError):
         super().__init__(message)
 
 
+class URLUnknownUnmappedError(BaseTranscriptError):
+    """Raised when YouTube processing fails for unknown/unmapped yt-dlp errors."""
+
+    def __init__(
+        self, message: str = "YouTube processing failed - unmapped error"
+    ) -> None:
+        """Initialize the exception with a custom message."""
+        super().__init__(message)
+
+
 def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     """Map yt-dlp exceptions to our custom exceptions based on error patterns.
 
@@ -103,21 +113,24 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     Returns:
         Appropriate custom exception for the error pattern
     """
-    error_msg = str(error)
+    error_msg = str(error).lower()
 
     # Map specific error patterns to appropriate exceptions
     error_patterns = [
-        ("Sign in to confirm you're not a bot", URLBotProtectionError),
-        ("Unsupported URL", URLNotYouTubeError),
-        ("Incomplete YouTube ID", URLIncompleteError),
-        ("is not a valid URL", URLIsInvalidError),
+        ("429", URLRateLimitError),
+        ("sign in to confirm you're not a bot", URLBotProtectionError),
+        ("unsupported url", URLNotYouTubeError),
+        ("incomplete youtube id", URLIncompleteError),
+        ("is not a valid url", URLIsInvalidError),
         ("[youtube] invalid-url:", URLIsInvalidError),
-        ("Video unavailable", URLVideoUnavailableError),
+        ("video unavailable", URLVideoUnavailableError),
     ]
 
     for pattern, exception_class in error_patterns:
         if pattern in error_msg:
             return exception_class()
 
-    # Default for unknown yt-dlp errors
-    return URLVideoUnavailableError()
+    # Default for unknown yt-dlp errors - preserve original yt-dlp message
+    original_msg = str(error)
+    clean_msg = original_msg.removeprefix("ERROR: ")
+    return URLUnknownUnmappedError(clean_msg)

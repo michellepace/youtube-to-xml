@@ -46,6 +46,7 @@ from youtube_to_xml.exceptions import (
     URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
+    URLUnknownUnmappedError,
     URLVideoUnavailableError,
     map_yt_dlp_exception,
 )
@@ -67,7 +68,6 @@ class VideoMetadata:
     duration: int  # seconds
     video_url: str
     chapters_data: list[dict]
-    subtitle_url: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,60 +143,48 @@ def fetch_video_metadata_and_subtitles(
         # Change to temp directory for yt-dlp output
         options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
 
+        # Phase 1: Use yt-dlp to get data for transcript
         with yt_dlp.YoutubeDL(options) as ydl:
             try:
-                info = ydl.extract_info(url, download=False)
+                # a) get complete video metadata from YouTube
+                raw_metadata = ydl.extract_info(url, download=False)
+                # b) download subtitle files to temp_dir (.json3 format)
+                ydl.process_info(raw_metadata)
             except (DownloadError, ExtractorError, UnsupportedError) as e:
                 mapped_exception = map_yt_dlp_exception(e)
                 raise mapped_exception from e
 
-            if not info:
-                raise URLVideoUnavailableError
+        # Phase 2: File processing (outside yt-dlp context)
+        # Note: raw_metadata is never None in practice - yt-dlp raises exceptions instead
+        assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
 
-            # Try to download subtitles using yt-dlp
-            try:
-                ydl.process_info(info)
-            except (DownloadError, ExtractorError) as e:
-                # Check if this is a rate limit error (HTTP 429)
-                error_msg = str(e).lower()
-                if (
-                    "http" in error_msg and "429" in error_msg
-                ) or "too many requests" in error_msg:
-                    msg = f"YouTube rate limit encountered: {e}"
-                    raise URLRateLimitError(msg) from e
-                msg = f"Could not download subtitles: {e}"
-                raise URLSubtitlesNotFoundError(msg) from e
-            except Exception as e:
-                # Catch any other unexpected exceptions
-                msg = f"Could not download subtitles: {e}"
-                raise URLSubtitlesNotFoundError(msg) from e
+        # a) Locate downloaded subtitle files
+        video_id = raw_metadata.get("id", "")
+        subtitle_files = [
+            p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
+        ]
 
-            # Find downloaded subtitle file
-            video_id = info.get("id", "")
-            subtitle_files = [
-                p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
-            ]
+        # b) Parse subtitle files into structured objects
+        subtitles = []
+        if subtitle_files:
+            subtitle_file = subtitle_files[0]
+            # Read JSON3 format from disk
+            subtitle_content = json.loads(subtitle_file.read_text(encoding="utf-8"))
+            # Extract events → IndividualSubtitle objects
+            subtitles = extract_subtitles_from_json3(subtitle_content.get("events", []))
+        else:
+            raise URLSubtitlesNotFoundError
 
-            subtitles = []
-            if subtitle_files:
-                subtitle_file = subtitle_files[0]
-                subtitle_content = json.loads(subtitle_file.read_text(encoding="utf-8"))
-                subtitles = extract_subtitles_from_json3(
-                    subtitle_content.get("events", [])
-                )
-            else:
-                raise URLSubtitlesNotFoundError
+        # Phase 3: Create structured metadata object from raw_metadata
+        metadata = VideoMetadata(
+            video_title=raw_metadata.get("title", "Untitled"),
+            upload_date=raw_metadata.get("upload_date", ""),
+            duration=raw_metadata.get("duration", 0),
+            video_url=raw_metadata.get("webpage_url", url),
+            chapters_data=raw_metadata.get("chapters", []),
+        )
 
-            metadata = VideoMetadata(
-                video_title=info.get("title", "Untitled"),
-                upload_date=info.get("upload_date", ""),
-                duration=info.get("duration", 0),
-                video_url=info.get("webpage_url", url),
-                chapters_data=info.get("chapters", []),
-                subtitle_url=None,  # No longer needed since we have subtitles directly
-            )
-
-            return metadata, subtitles
+        return metadata, subtitles
 
 
 def extract_subtitles_from_json3(events: list) -> list[IndividualSubtitle]:
@@ -482,10 +470,10 @@ def main() -> None:
         URLNotYouTubeError,
         URLSubtitlesNotFoundError,
         URLRateLimitError,
+        URLUnknownUnmappedError,
         URLVideoUnavailableError,
     ) as e:
         print(f"\n❌ Error: {e}")
-        logger.exception("[%s] Processing error", execution_id)
         sys.exit(1)
     except (ValueError, OSError) as e:
         print(f"\n❌ Unexpected error: {e}")
