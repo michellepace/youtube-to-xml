@@ -158,8 +158,10 @@ def fetch_video_metadata_and_subtitles(
                 ydl.process_info(info)
             except (DownloadError, ExtractorError) as e:
                 # Check if this is a rate limit error (HTTP 429)
-                error_msg = str(e)
-                if "HTTP Error 429" in error_msg or "429" in error_msg:
+                error_msg = str(e).lower()
+                if (
+                    "http" in error_msg and "429" in error_msg
+                ) or "too many requests" in error_msg:
                     msg = f"YouTube rate limit encountered: {e}"
                     raise URLRateLimitError(msg) from e
                 msg = f"Could not download subtitles: {e}"

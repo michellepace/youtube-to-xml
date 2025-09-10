@@ -232,7 +232,7 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
         (URL_EMPTY, "Invalid URL format"),  # URLIsInvalidError
         (URL_NON_YOUTUBE, "URL is not a YouTube video"),  # URLNotYouTubeError
         (URL_INCOMPLETE_ID, "YouTube URL is incomplete"),  # URLIncompleteError
-        (URL_MALFORMED, "YouTube video unavailable"),  # URLVideoUnavailableError
+        (URL_MALFORMED, "Invalid URL format"),  # URLIsInvalidError
     ],
 )
 def test_url_error_scenarios(

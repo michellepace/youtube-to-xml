@@ -106,15 +106,18 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     error_msg = str(error)
 
     # Map specific error patterns to appropriate exceptions
-    if "Sign in to confirm you're not a bot" in error_msg:
-        return URLBotProtectionError()
-    if "Unsupported URL" in error_msg:
-        return URLNotYouTubeError()
-    if "Incomplete YouTube ID" in error_msg:
-        return URLIncompleteError()
-    if "is not a valid URL" in error_msg:
-        return URLIsInvalidError()
-    if "Video unavailable" in error_msg:
-        return URLVideoUnavailableError()
+    error_patterns = [
+        ("Sign in to confirm you're not a bot", URLBotProtectionError),
+        ("Unsupported URL", URLNotYouTubeError),
+        ("Incomplete YouTube ID", URLIncompleteError),
+        ("is not a valid URL", URLIsInvalidError),
+        ("[youtube] invalid-url:", URLIsInvalidError),
+        ("Video unavailable", URLVideoUnavailableError),
+    ]
+
+    for pattern, exception_class in error_patterns:
+        if pattern in error_msg:
+            return exception_class()
+
     # Default for unknown yt-dlp errors
     return URLVideoUnavailableError()

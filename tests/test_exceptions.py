@@ -125,6 +125,7 @@ class TestYtDlpExceptionMapping:
             ),
             ("Incomplete YouTube ID VvkhYW", URLIncompleteError, "incomplete"),
             ("'' is not a valid URL", URLIsInvalidError, "invalid"),
+            ("[youtube] invalid-url: Video unavailable", URLIsInvalidError, "invalid"),
             ("Video unavailable", URLVideoUnavailableError, "unavailable"),
             ("Some unknown error message", URLVideoUnavailableError, "unavailable"),
         ]

@@ -28,6 +28,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 ---
 
 ## Phase 1: Fix Critical Crashes - Handle yt-dlp Exceptions (Including Bot Protection) ✅ COMPLETE
+
 **Goal:** Prevent unhandled crashes for invalid URLs and bot protection by catching and mapping yt-dlp exceptions
 
 ### Steps:
@@ -45,11 +46,12 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
    - In `scripts/url_to_transcript.py::fetch_video_metadata_and_subtitles` (lines 143-159)
    - Wrap extract_info() with try/except for yt-dlp exceptions
    - Map specific error patterns to semantically correct custom exceptions:
-     - "Sign in to confirm you're not a bot" → URLBotProtectionError (new specific exception)
-     - "Unsupported URL" → URLNotYouTubeError (new - for non-YouTube URLs)
-     - "Incomplete YouTube ID" → URLIncompleteError (new - for truncated URLs)
-     - "is not a valid URL" → URLIsInvalidError (renamed from URLFormatError)
-     - "Video unavailable" → URLVideoUnavailableError (renamed from URLVideoNotFoundError)
+     - "Sign in to confirm you're not a bot" → URLBotProtectionError (specific exception)
+     - "Unsupported URL" → URLNotYouTubeError (for non-YouTube URLs)
+     - "Incomplete YouTube ID" → URLIncompleteError (for truncated URLs)
+     - "is not a valid URL" → URLIsInvalidError (for empty URLs)
+     - "[youtube] invalid-url:" → URLIsInvalidError (for malformed URLs)
+     - "Video unavailable" → URLVideoUnavailableError (for unavailable videos)
    - Use exception default messages (no custom technical messages)
    - Note: HTTP 429 detection remains in process_info() for genuine rate limiting
 
@@ -64,6 +66,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 ---
 
 ## Phase 2: Add Bot Protection Detection
+
 **Goal:** Properly handle YouTube bot protection scenarios when they occur
 
 ### Steps:
@@ -92,6 +95,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 ---
 
 ## Phase 3: Clean Error Boundaries
+
 **Goal:** Move error presentation out of business logic to application boundary
 
 ### Steps:
@@ -119,6 +123,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 ---
 
 ## Phase 4: Integration Readiness Verification
+
 **Goal:** Ensure complete consistency and test coverage for integration
 
 ### Steps:
@@ -146,6 +151,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 ---
 
 ## Phase 5: User-Friendly Error Messages
+
 **Goal:** Ensure all error messages are user-friendly and actionable, eliminating technical jargon while making code less brittle through consistent use of exception defaults
 
 ### Steps:

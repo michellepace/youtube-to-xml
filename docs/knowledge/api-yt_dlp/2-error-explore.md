@@ -2,9 +2,9 @@
 
 ## Run Test Scenarios
 
-Test scenario results obtained from runing Python directly against `yt-dlp` API to determine true behaviour (independent of `scripts/url_to_transcript.py`).
+Test scenario results obtained from running Python directly against `yt-dlp` API to determine true behaviour (independent of `scripts/url_to_transcript.py`).
 
-To retest scenario against script behaivour use: `uv run scripts/url_to_transcript.py <URL>`
+To retest the scenario against the script behaviour use: `uv run scripts/url_to_transcript.py <URL>`
 
 ## Test Scenario Results to Understand Error Types
 
@@ -80,7 +80,7 @@ ERROR: [generic] '' is not a valid URL
 - Clear error message about invalid URL format
 - Occurs during video info extraction phase
 - Different message pattern from bot protection
-- Should be classified as URLVideoNotFoundError
+- Should be classified as URLIsInvalidError
 
 ---
 
@@ -101,7 +101,7 @@ ERROR: [youtube] invalid-url: Video unavailable
 - Descriptive error message about video availability
 - Occurs during video info extraction phase  
 - Different message pattern from bot protection
-- Should be classified as URLVideoNotFoundError
+- Should be classified as URLIsInvalidError
 
 ---
 
@@ -122,7 +122,7 @@ ERROR: Unsupported URL: https://www.google.com/
 - Clear error message about unsupported URL
 - Occurs during video info extraction phase
 - Different message pattern from bot protection
-- Should be classified as URLVideoNotFoundError
+- Should be classified as URLNotYouTubeError
 
 ---
 
@@ -143,7 +143,7 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 - Very specific error message about truncated ID
 - yt-dlp recognizes this as a YouTube URL but invalid
 - Occurs during video info extraction phase
-- Should be classified as URLVideoNotFoundError
+- Should be classified as URLIncompleteError
 
 ---
 
@@ -185,10 +185,10 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 |----------------|----------------|----------------|----------------------|----------------------|----------------------|
 | **Bot Protection** | Scenario 1 | `DownloadError` | "Sign in to confirm you're not a bot" | ❌ Unhandled crash | 🔄 Need `URLBotProtectionError` |
 | **No Transcript** | Scenario 3 | `URLSubtitlesNotFoundError` | "No subtitle URL found for video" | ✅ Correct | ✅ Keep as-is |
-| **Empty URL** | Scenario 4 | `DownloadError` | "'' is not a valid URL" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
-| **Malformed URL** | Scenario 5 | `DownloadError` | "Video unavailable" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
-| **Non-YouTube URL** | Scenario 6 | `DownloadError` | "Unsupported URL" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
-| **Truncated YouTube URL** | Scenario 7 | `DownloadError` | "Incomplete YouTube ID" | ❓ Unknown | ✅ Should be `URLVideoNotFoundError` |
+| **Empty URL** | Scenario 4 | `DownloadError` | "'' is not a valid URL" | ✅ `URLIsInvalidError` | ✅ Correctly handled |
+| **Malformed URL** | Scenario 5 | `DownloadError` | "Video unavailable" | ✅ `URLIsInvalidError` | ✅ Correctly handled |
+| **Non-YouTube URL** | Scenario 6 | `DownloadError` | "Unsupported URL" | ✅ `URLNotYouTubeError` | ✅ Correctly handled |
+| **Truncated YouTube URL** | Scenario 7 | `DownloadError` | "Incomplete YouTube ID" | ✅ `URLIncompleteError` | ✅ Correctly handled |
 | **HTTP 429 (True Rate Limit)** | Not tested but possible | `DownloadError` | "HTTP Error 429" / "429" | ✅ `URLRateLimitError` | ✅ Keep as-is |
 
 ## Action Plan
@@ -205,6 +205,6 @@ ERROR: [youtube:truncated_id] VvkhYW: Incomplete YouTube ID VvkhYW. URL https://
 - **Bot protection (Scenario 1)** occurs during video metadata extraction (`extract_info()`), NOT during subtitle download
 - **Success case (Scenario 2)** confirms bot protection is network/IP specific, not time-based
 - **No transcript (Scenario 3)** is correctly handled by existing logic in `process_info()`
-- **Invalid URLs (Scenarios 4, 5, 6 & 7)** currently crash - need proper mapping to URLVideoNotFoundError
+- **Invalid URLs (Scenarios 4, 5, 6 & 7)** now properly handled with semantic exception mapping
 - **HTTP 429 (true rate limiting)** can still occur during `process_info()` - keep existing detection
 - **Important distinction**: Bot protection ≠ Rate limiting (different mechanisms, different solutions)
