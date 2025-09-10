@@ -27,7 +27,7 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 
 ---
 
-## Phase 1: Fix Critical Crashes - Handle yt-dlp Exceptions (Including Bot Protection)
+## Phase 1: Fix Critical Crashes - Handle yt-dlp Exceptions (Including Bot Protection) ✅ COMPLETE
 **Goal:** Prevent unhandled crashes for invalid URLs and bot protection by catching and mapping yt-dlp exceptions
 
 ### Steps:
@@ -37,19 +37,20 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
    - Identify: test_url_invalid_format_error will start passing once we handle yt-dlp exceptions
 
 2. **TDD: Add Unit Test**
-   - Add test to verify yt-dlp exception mapping in a new test function
-   - Test that ExtractorError/DownloadError maps to URLVideoNotFoundError
-   - Test that bot protection maps to URLRateLimitError (temporarily, until Phase 2)
+   - Add test to verify yt-dlp exception mapping to specific exception types
+   - Test that new exception classes exist and have user-friendly default messages
+   - Test semantic correctness: different error types map to different exceptions
 
 3. **Implementation**
-   - In `scripts/url_to_transcript.py::fetch_video_metadata_and_subtitles` (lines 137-141)
+   - In `scripts/url_to_transcript.py::fetch_video_metadata_and_subtitles` (lines 143-159)
    - Wrap extract_info() with try/except for yt-dlp exceptions
-   - Map error patterns to appropriate custom exceptions:
-     - "Sign in to confirm you're not a bot" → URLRateLimitError (temporary, Phase 2 will create URLBotProtectionError)
-     - "not a valid URL" → URLVideoNotFoundError
-     - "Video unavailable" → URLVideoNotFoundError  
-     - "Incomplete YouTube ID" → URLVideoNotFoundError
-     - "Unsupported URL" → URLVideoNotFoundError
+   - Map specific error patterns to semantically correct custom exceptions:
+     - "Sign in to confirm you're not a bot" → URLBotProtectionError (new specific exception)
+     - "Unsupported URL" → URLNotYouTubeError (new - for non-YouTube URLs)
+     - "Incomplete YouTube ID" → URLIncompleteError (new - for truncated URLs)
+     - "is not a valid URL" → URLIsInvalidError (renamed from URLFormatError)
+     - "Video unavailable" → URLVideoUnavailableError (renamed from URLVideoNotFoundError)
+   - Use exception default messages (no custom technical messages)
    - Note: HTTP 429 detection remains in process_info() for genuine rate limiting
 
 4. **Quality Check**
@@ -57,6 +58,8 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
    - Run: `uv run pytest tests/test_end_to_end.py::test_url_invalid_format_error -v`
 
 5. 🛑 **Halt:** Assess implementation of phase 1 for completeness, elegance of approach, practical test coverage, code quality. Provide summarised report. Recommend if a git commit is justified as a standalone "chunk of value" or if additional tweaks are needed. Awaiting confirmation from Michelle.
+
+**✅ Phase 1 Status: COMPLETED**
 
 ---
 
@@ -142,6 +145,47 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 
 ---
 
+## Phase 5: User-Friendly Error Messages
+**Goal:** Ensure all error messages are user-friendly and actionable, eliminating technical jargon while making code less brittle through consistent use of exception defaults
+
+### Steps:
+1. **Test Review & Planning**
+   - Review current error message outputs from all scenarios (Phase 1 testing results)
+   - Identify messages containing technical yt-dlp internals or developer jargon
+   - Audit all `raise Exception("custom message")` calls throughout codebase for brittle patterns
+   - Review `test_end_to_end.py` - tests may expect specific error message patterns
+   - Identify: Tests checking error message content will need updates
+
+2. **TDD: Message Content Tests**
+   - Update exception default messages in `src/youtube_to_xml/exceptions.py` to be user-friendly
+   - Add tests validating new default messages are preserved
+   - Update integration tests to expect new user-friendly error patterns
+   - Test that all scenarios produce clear, actionable guidance
+
+3. **Implementation**
+   - Update exception default messages to be user-friendly:
+     - URLVideoNotFoundError: "Invalid YouTube URL or video not available (tbc)"
+     - URLSubtitlesNotFoundError: "This video doesn't have subtitles available (tbc)"
+     - URLRateLimitError: "YouTube is temporarily limiting requests - try again later (tbc)"
+     - URLBotProtectionError: "YouTube requires verification - try switching networks (tbc)"
+   - **Make code less brittle**: Replace hard-coded error messages with exception defaults throughout codebase
+     - Change `raise URLVideoNotFoundError("custom message")` to `raise URLVideoNotFoundError()`
+     - Change `raise URLSubtitlesNotFoundError("custom message")` to `raise URLSubtitlesNotFoundError()`
+     - Only keep custom messages when they add specific contextual value (e.g., bot protection guidance)
+   - Centralize all message content in exception class definitions
+   - Ensure consistent user-facing language across all error scenarios
+
+4. **Quality Check**
+   - Run: `uv run ruff check --fix && uv run ruff format`
+   - Run: `uv run pytest tests/ -v` (verify updated message expectations)
+   - Test all error scenarios manually to validate user-friendly output
+   - Verify no technical jargon appears in user-facing messages
+   - Confirm code is less brittle with centralized message management
+
+5. 🛑 **Halt:** Assess implementation of phase 5 for completeness, elegance of approach, practical test coverage, code quality. Evaluate if all error messages provide clear, actionable guidance without technical jargon. Assess if the codebase is less brittle through consistent use of exception defaults. Provide summarised report. Recommend if a git commit is justified as a standalone "chunk of value" or if additional tweaks are needed. Awaiting confirmation from Michelle.
+
+---
+
 ## TDD Quality Standards for Each Phase
 
 ### Before Implementation
@@ -169,5 +213,6 @@ This plan delivers incremental value:
 - **Phase 2:** Handles bot protection (improved user experience)
 - **Phase 3:** Clean architecture (integration ready)
 - **Phase 4:** Complete verification (production ready)
+- **Phase 5:** User-friendly messages (polished user experience)
 
 Each phase is independently valuable and committable, following TDD principles and maintaining code quality throughout.

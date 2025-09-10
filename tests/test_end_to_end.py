@@ -48,13 +48,20 @@ def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[
         timeout=SUBPROCESS_TIMEOUT,
     )
 
-    # Handle rate limiting - script now exits with error when rate limited
+    # Handle rate limiting and bot protection - skip test if encountered
     if result.returncode != 0:
         output = result.stderr + result.stdout
         if any(
-            pattern in output for pattern in ["429", "Rate limited", "Too Many Requests"]
+            pattern in output
+            for pattern in [
+                "429",
+                "Rate limited",
+                "Too Many Requests",
+                "bot protection triggered",  # Our custom message
+                "YouTube bot protection",  # Our custom message
+            ]
         ):
-            pytest.skip("YouTube rate limited")
+            pytest.skip("YouTube rate limited or bot protection triggered")
 
     return result
 
@@ -192,7 +199,7 @@ def test_url_no_subtitles_error(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "❌ Error:" in result.stdout
-    assert "No subtitle URL found for video" in result.stdout
+    assert "This video doesn't have subtitles available" in result.stdout
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 0, "No XML file should be created without subtitles"
@@ -207,6 +214,35 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
     error_patterns = ["truncated", "Incomplete YouTube ID", "Video unavailable"]
     assert any(pattern in result.stderr for pattern in error_patterns), (
         f"Expected error message not found in: {result.stderr}"
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("url", "expected_error_message"),
+    [
+        ("", "Invalid URL format"),  # URLIsInvalidError
+        ("https://www.google.com/", "URL is not a YouTube video"),  # URLNotYouTubeError
+        (
+            "https://www.youtube.com/watch?v=VvkhYW",
+            "YouTube URL is incomplete",
+        ),  # URLIncompleteError
+        ("invalid-url", "YouTube video unavailable"),  # URLVideoUnavailableError
+    ],
+)
+def test_url_error_scenarios(
+    url: str, expected_error_message: str, tmp_path: Path
+) -> None:
+    """Test various URL error scenarios produce correct error messages."""
+    result = run_youtube_script(url, tmp_path)
+
+    assert result.returncode == 1
+    assert (
+        expected_error_message in result.stdout or expected_error_message in result.stderr
+    ), (
+        f"Expected '{expected_error_message}' not found in output.\n"
+        f"stdout: {result.stdout}\n"
+        f"stderr: {result.stderr}"
     )
 
 
