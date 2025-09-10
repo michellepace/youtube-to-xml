@@ -37,11 +37,17 @@ from datetime import datetime
 from pathlib import Path
 
 import yt_dlp
+from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
 
 from youtube_to_xml.exceptions import (
+    URLBotProtectionError,
+    URLIncompleteError,
+    URLIsInvalidError,
+    URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
-    URLVideoNotFoundError,
+    URLVideoUnavailableError,
+    map_yt_dlp_exception,
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.time_utils import (
@@ -114,8 +120,13 @@ def fetch_video_metadata_and_subtitles(
         Tuple of (VideoMetadata object, list of IndividualSubtitle objects)
 
     Raises:
-        URLVideoNotFoundError: If video info cannot be extracted
+        URLBotProtectionError: If YouTube requires verification
+        URLNotYouTubeError: If URL is not a YouTube video
+        URLIncompleteError: If YouTube URL has incomplete video ID
+        URLIsInvalidError: If URL format is invalid
+        URLVideoUnavailableError: If YouTube video is unavailable
         URLSubtitlesNotFoundError: If no subtitles are available
+        URLRateLimitError: If YouTube rate limit is encountered
     """
     options = {
         "quiet": True,
@@ -133,17 +144,30 @@ def fetch_video_metadata_and_subtitles(
         options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
 
         with yt_dlp.YoutubeDL(options) as ydl:
-            info = ydl.extract_info(url, download=False)
+            try:
+                info = ydl.extract_info(url, download=False)
+            except (DownloadError, ExtractorError, UnsupportedError) as e:
+                mapped_exception = map_yt_dlp_exception(e)
+                raise mapped_exception from e
 
             if not info:
-                msg = f"Could not extract video info from {url}"
-                raise URLVideoNotFoundError(msg)
+                raise URLVideoUnavailableError
 
             # Try to download subtitles using yt-dlp
             try:
                 ydl.process_info(info)
+            except (DownloadError, ExtractorError) as e:
+                # Check if this is a rate limit error (HTTP 429)
+                error_msg = str(e).lower()
+                if (
+                    "http" in error_msg and "429" in error_msg
+                ) or "too many requests" in error_msg:
+                    msg = f"YouTube rate limit encountered: {e}"
+                    raise URLRateLimitError(msg) from e
+                msg = f"Could not download subtitles: {e}"
+                raise URLSubtitlesNotFoundError(msg) from e
             except Exception as e:
-                # If subtitle download fails, still return metadata but empty subtitles
+                # Catch any other unexpected exceptions
                 msg = f"Could not download subtitles: {e}"
                 raise URLSubtitlesNotFoundError(msg) from e
 
@@ -161,8 +185,7 @@ def fetch_video_metadata_and_subtitles(
                     subtitle_content.get("events", [])
                 )
             else:
-                msg = "No subtitle URL found for video (there is no transcript)"
-                raise URLSubtitlesNotFoundError(msg)
+                raise URLSubtitlesNotFoundError
 
             metadata = VideoMetadata(
                 video_title=info.get("title", "Untitled"),
@@ -453,9 +476,13 @@ def main() -> None:
         print("\n❌ Cancelled by user")
         sys.exit(1)
     except (
-        URLVideoNotFoundError,
+        URLBotProtectionError,
+        URLIncompleteError,
+        URLIsInvalidError,
+        URLNotYouTubeError,
         URLSubtitlesNotFoundError,
         URLRateLimitError,
+        URLVideoUnavailableError,
     ) as e:
         print(f"\n❌ Error: {e}")
         logger.exception("[%s] Processing error", execution_id)

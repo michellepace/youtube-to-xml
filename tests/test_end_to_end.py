@@ -22,6 +22,13 @@ URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 URL_NO_TRANSCRIPT = "https://www.youtube.com/watch?v=6eBSHbLKuN0"
 URL_INVALID = "https://www.youtube.com/watch?v=play99invalid"
+
+# Error scenario URLs
+URL_EMPTY = ""
+URL_NON_YOUTUBE = "https://www.google.com/"
+URL_INCOMPLETE_ID = "https://www.youtube.com/watch?v=VvkhYW"
+URL_MALFORMED = "invalid-url"
+
 SUBPROCESS_TIMEOUT = 10
 
 
@@ -48,13 +55,20 @@ def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[
         timeout=SUBPROCESS_TIMEOUT,
     )
 
-    # Handle rate limiting - script now exits with error when rate limited
+    # Handle rate limiting and bot protection - skip test if encountered
     if result.returncode != 0:
-        output = result.stderr + result.stdout
+        output = (result.stderr + result.stdout).lower()
         if any(
-            pattern in output for pattern in ["429", "Rate limited", "Too Many Requests"]
+            pattern.lower() in output
+            for pattern in [
+                "429",
+                "Rate limited",
+                "Too Many Requests",
+                "bot protection triggered",  # Our custom message
+                "YouTube bot protection",  # Our custom message
+            ]
         ):
-            pytest.skip("YouTube rate limited")
+            pytest.skip("YouTube rate limited or bot protection triggered")
 
     return result
 
@@ -63,7 +77,7 @@ def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
     """Copy reference file to tmp directory for testing."""
     source = EXAMPLES_DIR / reference_name
     target = tmp_path / reference_name
-    target.write_text(source.read_text(encoding="utf-8"))
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
     return target
 
 
@@ -192,7 +206,7 @@ def test_url_no_subtitles_error(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "❌ Error:" in result.stdout
-    assert "No subtitle URL found for video" in result.stdout
+    assert "This video doesn't have subtitles available" in result.stdout
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 0, "No XML file should be created without subtitles"
@@ -205,8 +219,35 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     error_patterns = ["truncated", "Incomplete YouTube ID", "Video unavailable"]
-    assert any(pattern in result.stderr for pattern in error_patterns), (
-        f"Expected error message not found in: {result.stderr}"
+    combined = result.stdout + result.stderr
+    assert any(pattern in combined for pattern in error_patterns), (
+        f"Expected error message not found in: {combined}"
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("url", "expected_error_message"),
+    [
+        (URL_EMPTY, "Invalid URL format"),  # URLIsInvalidError
+        (URL_NON_YOUTUBE, "URL is not a YouTube video"),  # URLNotYouTubeError
+        (URL_INCOMPLETE_ID, "YouTube URL is incomplete"),  # URLIncompleteError
+        (URL_MALFORMED, "Invalid URL format"),  # URLIsInvalidError
+    ],
+)
+def test_url_error_scenarios(
+    url: str, expected_error_message: str, tmp_path: Path
+) -> None:
+    """Test various URL error scenarios produce correct error messages."""
+    result = run_youtube_script(url, tmp_path)
+
+    assert result.returncode == 1
+    assert (
+        expected_error_message in result.stdout or expected_error_message in result.stderr
+    ), (
+        f"Expected '{expected_error_message}' not found in output.\n"
+        f"stdout: {result.stdout}\n"
+        f"stderr: {result.stderr}"
     )
 
 

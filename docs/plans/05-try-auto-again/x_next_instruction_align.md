@@ -8,12 +8,17 @@ The `scripts/url_to_transcript.py` script will soon be integrated into the main 
 
 ## Key Files to Analyze
 
-### 1. Main Application Architecture
-- **`src/youtube_to_xml/file_parser.py`** - Core parsing logic, timestamp handling, Chapter dataclass
-- **`src/youtube_to_xml/xml_builder.py`** - XML generation patterns
-- **`src/youtube_to_xml/exceptions.py`** - Custom exception hierarchy
+### Complete Project Analysis
+- **`PROJECT_INDEX.json`** - Complete structural analysis with function signatures, dataclass definitions, call relationships, and dependency patterns for systematic comparison
 
-### 2. Experimental Script
+### Main Application Architecture
+- **`src/youtube_to_xml/file_parser.py`** - Core parsing logic, Chapter dataclass
+- **`src/youtube_to_xml/xml_builder.py`** - XML generation patterns
+- **`src/youtube_to_xml/time_utils.py`** - Time stamp handling
+- **`src/youtube_to_xml/exceptions.py`** - Custom exception hierarchy
+- **`src/youtube_to_xml/cli.py`** - CLI for the main application
+
+### Experimental Script
 - **`scripts/url_to_transcript.py`** - YouTube API-based transcript processing
 
 ## Assessment Framework
@@ -33,13 +38,18 @@ Examine both codebases for:
 
 3. **Architectural Patterns**
    - Function organization and responsibility separation
-   - Error handling approaches
+   - Error handling approaches (especially yt-dlp error classification and user guidance)
    - Constant definitions and reuse
 
 4. **Code Quality Patterns**
    - Type annotations consistency
    - Docstring formats
    - Import organization
+
+5. **Exception Handling Patterns**
+   - Error classification and hierarchy usage
+   - yt-dlp error detection and mapping
+   - User-facing error messages and guidance
 
 ### B. Context Considerations
 
@@ -63,6 +73,7 @@ Consider:
 3. **Are there opportunities for shared utilities without forced alignment?**
 4. **What differences are intentional and should be preserved?**
 5. **What minor changes could ease future integration?**
+6. **Which approach handles edge cases better for each concern?**
 
 ## Output Requirements
 

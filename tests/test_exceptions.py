@@ -6,20 +6,27 @@ from youtube_to_xml.exceptions import (
     BaseTranscriptError,
     FileEmptyError,
     FileInvalidFormatError,
-    URLFormatError,
+    URLBotProtectionError,
+    URLIncompleteError,
+    URLIsInvalidError,
+    URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
-    URLVideoNotFoundError,
+    URLVideoUnavailableError,
+    map_yt_dlp_exception,
 )
 
 ALL_EXCEPTION_CLASSES = [
     # BaseTranscriptError excluded
     FileEmptyError,
     FileInvalidFormatError,
-    URLFormatError,
+    URLBotProtectionError,
+    URLIncompleteError,
+    URLIsInvalidError,
+    URLNotYouTubeError,
     URLRateLimitError,
     URLSubtitlesNotFoundError,
-    URLVideoNotFoundError,
+    URLVideoUnavailableError,
 ]
 
 
@@ -81,8 +88,8 @@ class TestExceptionUsagePatterns:
         with pytest.raises(FileEmptyError):
             raise FileEmptyError
 
-        with pytest.raises(URLFormatError):
-            raise URLFormatError
+        with pytest.raises(URLIsInvalidError):
+            raise URLIsInvalidError
 
     def test_raising_and_catching_base_exception(self) -> None:
         """Test raising and catching the base exception type."""
@@ -98,3 +105,44 @@ class TestExceptionUsagePatterns:
             assert str(error) == custom_message, (
                 f"{exception_class.__name__} failed to preserve custom message"
             )
+
+
+class TestYtDlpExceptionMapping:
+    """Tests for yt-dlp exception mapping to custom exceptions."""
+
+    def test_map_yt_dlp_exception_patterns(self) -> None:
+        """Test that error patterns map to correct exception types with messages."""
+        test_cases = [
+            (
+                "Sign in to confirm you're not a bot",
+                URLBotProtectionError,
+                "verification",
+            ),
+            (
+                "ERROR: Unsupported URL: https://example.com",
+                URLNotYouTubeError,
+                "not a youtube",
+            ),
+            ("Incomplete YouTube ID VvkhYW", URLIncompleteError, "incomplete"),
+            ("'' is not a valid URL", URLIsInvalidError, "invalid"),
+            ("[youtube] invalid-url: Video unavailable", URLIsInvalidError, "invalid"),
+            ("Video unavailable", URLVideoUnavailableError, "unavailable"),
+            ("Some unknown error message", URLVideoUnavailableError, "unavailable"),
+        ]
+
+        for error_msg, expected_type, expected_text in test_cases:
+            error = Exception(error_msg)
+            result = map_yt_dlp_exception(error)
+            assert isinstance(result, expected_type)
+            assert isinstance(result, BaseTranscriptError)
+            assert expected_text in str(result).lower()
+
+    def test_rate_limit_error_message(self) -> None:
+        """Test URLRateLimitError with custom message."""
+        bot_protection_msg = (
+            "YouTube bot protection triggered - try switching networks or using cookies"
+        )
+        error = URLRateLimitError(bot_protection_msg)
+        assert isinstance(error, URLRateLimitError)
+        assert isinstance(error, BaseTranscriptError)
+        assert "bot protection" in str(error).lower()
