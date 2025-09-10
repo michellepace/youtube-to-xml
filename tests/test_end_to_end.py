@@ -57,9 +57,9 @@ def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[
 
     # Handle rate limiting and bot protection - skip test if encountered
     if result.returncode != 0:
-        output = result.stderr + result.stdout
+        output = (result.stderr + result.stdout).lower()
         if any(
-            pattern in output
+            pattern.lower() in output
             for pattern in [
                 "429",
                 "Rate limited",
@@ -77,7 +77,7 @@ def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
     """Copy reference file to tmp directory for testing."""
     source = EXAMPLES_DIR / reference_name
     target = tmp_path / reference_name
-    target.write_text(source.read_text(encoding="utf-8"))
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
     return target
 
 
@@ -219,8 +219,9 @@ def test_url_invalid_format_error(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     error_patterns = ["truncated", "Incomplete YouTube ID", "Video unavailable"]
-    assert any(pattern in result.stderr for pattern in error_patterns), (
-        f"Expected error message not found in: {result.stderr}"
+    combined = result.stdout + result.stderr
+    assert any(pattern in combined for pattern in error_patterns), (
+        f"Expected error message not found in: {combined}"
     )
 
 
