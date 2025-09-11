@@ -60,6 +60,9 @@ from youtube_to_xml.time_utils import (
     seconds_to_timestamp,
 )
 
+# Module-level logger
+logger = get_logger(__name__)
+
 
 @dataclass(frozen=True, slots=True)
 class VideoMetadata:
@@ -384,7 +387,6 @@ def convert_youtube_to_xml(
         Tuple of (XML content as string, VideoMetadata object, list of chapters,
                  subtitle count)
     """
-    logger = get_logger(__name__)
     logger.info("[%s] Processing video: %s", execution_id, video_url)
 
     # Step 1: Fetch metadata and download subtitles using yt-dlp
@@ -426,12 +428,21 @@ def convert_and_save_youtube_xml(
         video_url, execution_id
     )
 
+    # Log processing results for operational visibility
+    logger.info(
+        "[%s] Generated XML with %d chapters and %d subtitles",
+        execution_id,
+        len(chapters),
+        subtitles_count,
+    )
+
     # Save to file
-    output_file = sanitize_title_for_filename(metadata.video_title)
-    output_path = Path(output_file)
+    output_filename = sanitize_title_for_filename(metadata.video_title)
+    if output_filename == ".xml":
+        output_filename = f"transcript-{execution_id}.xml"
+    output_path = Path(output_filename)
     output_path.write_text(xml_content, encoding="utf-8")
 
-    logger = get_logger(__name__)
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
     return output_path, metadata
@@ -440,7 +451,6 @@ def convert_and_save_youtube_xml(
 def main() -> None:
     """Command-line interface entry point."""
     setup_logging()
-    logger = get_logger(__name__)
     execution_id = str(uuid.uuid4())[:8]
 
     try:
@@ -451,15 +461,11 @@ def main() -> None:
         print("  E.g.: url_to_transcript.py https://www.youtube.com/watch?v=Q4gsvJvRjCU")
         sys.exit(1)
 
-    logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
-
     try:
         print(f"🎬 Processing: {video_url}")
         output_path, metadata = convert_and_save_youtube_xml(video_url, execution_id)
 
-        # Success message
-        print("✅ Created XML Transcript:")
-        print(f"   {output_path.absolute()}")
+        print(f"✅ Created: {output_path.absolute()}")
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
@@ -473,6 +479,7 @@ def main() -> None:
         URLUnknownUnmappedError,
         URLVideoUnavailableError,
     ) as e:
+        logger.info("[%s] Processing failed: %s", execution_id, e)
         print(f"\n❌ Error: {e}")
         sys.exit(1)
     except (ValueError, OSError) as e:
