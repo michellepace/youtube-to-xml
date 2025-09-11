@@ -4,12 +4,14 @@ description: Create a git commit with template
 
 ## Context
 
-**CRITICAL:** The commit message must relate ONLY to cached / staged changes. 
+Analyse staged changes to ensure an accurate git commit message:
 
 - Branch context: `git branch --show-current`
 - Files changed: `git diff --cached --name-status`
 - Change volume: `git diff --cached --stat`
 - Detailed changes: `git diff --cached`
+
+**Critical**: commit must be relevant to cached changes only.
 
 ## Your task
 
