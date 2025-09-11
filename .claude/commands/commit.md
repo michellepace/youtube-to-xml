@@ -15,21 +15,20 @@ Create a useful and representative commit message:
 [main_prefix]: [brief main summary in imperative mood]
 
 [Logical Group Name 1]:
-- [Signifiant changes and impact over minor details]
+- [Significant changes and impact over minor details]
 - ["Just enough detail" for collective project evolution]
 
 [Logical Group Name n (if needed)]:
 - [etc.]
 
-[2-3 terse sentences of why / benefit / impact. Strictly wrap each line at 90 characters
-for readability in any IDE]
+[2-3 terse sentences of why / benefit / impact. Wrap at 90 characters]
 </template>
 
 <main_prefix>
 - `feature:` New feature for users (adds functionality)
 - `fix:` Bug fixes (fixes broken functionality)
 - `docs:` Documentation changes only e.g. README.md
-- `rules: `CLAUDE.md` and files in `.claude/`
+- `rules:` `CLAUDE.md` and files in `.claude/`
 - `style:` Code formatting, white space, semicolons (no logic changes)
 - `refactor:` Code changes that neither fix bugs nor add features
 - `test:` Adding or updating tests
@@ -40,13 +39,13 @@ for readability in any IDE]
 </main_prefix>
 
 <rules>
-- Wrap terse statement ≤90 characters per line
 - Use British spelling
 - Use factual tone, avoid hyperbolic language
 - Use fitting amount of detail proportional to commit scope
+- Wrap the terse sentences so that no line exceeds 90 characters
 </rules>
 
 Process
 1. Analyse staged changes with commands in `<commit_context>` tags
 2. Apply commit template `<template>` with appropriate `<main_prefix>`
-2. Adhere to rules in `<rules>` tags 
+3. Adhere to rules in `<rules>` tags 
