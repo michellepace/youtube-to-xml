@@ -28,6 +28,7 @@ and subtitles organised by chapter, with each individual subtitle timestamped.
 import contextlib
 import json
 import math
+import os
 import re
 import sys
 import tempfile
@@ -146,7 +147,7 @@ def fetch_video_metadata_and_subtitles(
 
         # Phase 1: Use yt-dlp to get data for transcript
         with (
-            Path("/dev/null").open("w") as devnull,
+            open(os.devnull, "w") as devnull,  # noqa: PTH123 - os.devnull for cross-platform
             contextlib.redirect_stderr(devnull),
             yt_dlp.YoutubeDL(options) as ydl,
         ):
