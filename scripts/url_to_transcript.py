@@ -406,7 +406,9 @@ def convert_youtube_to_xml(
     return xml_content, metadata, chapters, len(subtitles)
 
 
-def save_transcript(video_url: str, execution_id: str) -> None:
+def convert_and_save_youtube_xml(
+    video_url: str, execution_id: str
+) -> tuple[Path, VideoMetadata]:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
@@ -415,19 +417,14 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     Args:
         video_url: YouTube video URL
         execution_id: Unique identifier for this execution
-    """
-    # Progress message
-    print(f"🎬 Processing: {video_url}")
 
+    Returns:
+        Tuple of (output file path, video metadata)
+    """
     # Generate XML content and get metadata for filename
-    print("📊 Getting video info and downloading subtitles...")
     xml_content, metadata, chapters, subtitles_count = convert_youtube_to_xml(
         video_url, execution_id
     )
-
-    # Progress messages
-    print("📑 Organising subtitles into chapter(s)...")
-    print("🔧 Building XML document...")
 
     # Save to file
     output_file = sanitize_title_for_filename(metadata.video_title)
@@ -435,9 +432,9 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     output_path.write_text(xml_content, encoding="utf-8")
 
     logger = get_logger(__name__)
-    print("✅ Created XML Transcript:")
-    print(f"   {output_path.absolute()}")
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
+
+    return output_path, metadata
 
 
 def main() -> None:
@@ -457,7 +454,12 @@ def main() -> None:
     logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
 
     try:
-        save_transcript(video_url, execution_id)
+        print(f"🎬 Processing: {video_url}")
+        output_path, metadata = convert_and_save_youtube_xml(video_url, execution_id)
+
+        # Success message
+        print("✅ Created XML Transcript:")
+        print(f"   {output_path.absolute()}")
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
