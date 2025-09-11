@@ -7,7 +7,7 @@ Tests complete successful workflows from user input to final output:
 
 Uses unified run_script() helper with automatic rate limiting protection.
 Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
-For error scenarios, see test_youtube_exception_scenarios.py.
+For error scenarios, see tests/test_exceptions_ytdlp.py.
 """
 
 import difflib

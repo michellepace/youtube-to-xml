@@ -405,8 +405,7 @@ def convert_youtube_to_xml(
     except URLSubtitlesNotFoundError:
         logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
-    except URLRateLimitError as e:
-        print(f"❌ {e}", file=sys.stderr)
+    except URLRateLimitError:
         logger.exception("[%s] URLRateLimitError", execution_id)
         raise  # Re-raise to prevent file creation
 
