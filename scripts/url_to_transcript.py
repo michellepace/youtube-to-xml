@@ -25,8 +25,10 @@ The output XML contains video metadata (video_title, upload_date, duration, vide
 and subtitles organised by chapter, with each individual subtitle timestamped.
 """
 
+import contextlib
 import json
 import math
+import os
 import re
 import sys
 import tempfile
@@ -144,7 +146,11 @@ def fetch_video_metadata_and_subtitles(
         options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
 
         # Phase 1: Use yt-dlp to get data for transcript
-        with yt_dlp.YoutubeDL(options) as ydl:
+        with (
+            open(os.devnull, "w") as devnull,  # noqa: PTH123 - os.devnull for cross-platform
+            contextlib.redirect_stderr(devnull),
+            yt_dlp.YoutubeDL(options) as ydl,
+        ):
             try:
                 # a) get complete video metadata from YouTube
                 raw_metadata = ydl.extract_info(url, download=False)
@@ -399,8 +405,7 @@ def convert_youtube_to_xml(
     except URLSubtitlesNotFoundError:
         logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
-    except URLRateLimitError as e:
-        print(f"❌ {e}", file=sys.stderr)
+    except URLRateLimitError:
         logger.exception("[%s] URLRateLimitError", execution_id)
         raise  # Re-raise to prevent file creation
 
