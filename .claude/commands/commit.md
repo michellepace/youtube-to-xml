@@ -2,55 +2,50 @@
 description: Create a git commit with template
 ---
 
-## Context
+Create a useful and representative commit message:
 
-Analyse staged changes to ensure an accurate git commit message:
-
+<commit_context>
 - Branch context: `git branch --show-current`
 - Files changed: `git diff --cached --name-status`
 - Change volume: `git diff --cached --stat`
 - Detailed changes: `git diff --cached`
+</commit_context>
 
-**Critical**: commit must be relevant to cached changes only.
+<template>
+[main_prefix]: [brief main summary in imperative mood]
 
-## Your task
+[Logical Group Name 1]:
+- [Significant changes and impact over minor details]
+- ["Just enough detail" for collective project evolution]
 
-Create a git commit message using this template:
-
-**Template:**
-[commit_type]: [brief main summary]
-
-[Logical Group Name]:
-- [detail about what changed and why]
-- [more details as needed]
-
-[Another Group if justified]:
+[Logical Group Name n (if needed)]:
 - [etc.]
 
-[Terse statement of benefit/impact: 2-3 sentences, wrap lines ≤90 characters]
+[2-3 terse sentences of why / benefit / impact. Wrap at 90 characters]
+</template>
 
-**Commit Types:**
-- feature: New feature for users (adds functionality)
-- fix: Bug fixes (fixes broken functionality)
-- docs: Documentation changes only e.g. README.md
-- rules: `CLAUDE.md` and files in `.claude/`
-- style: Code formatting, white space, semicolons (no logic changes)
-- refactor: Code changes that neither fix bugs nor add features
-- test: Adding or updating tests
-- chore: Development workflow, workspace config, dependency updates, dev tools
-- build: Build system changes, compilation process, how code gets packaged
-- ci: CI/CD pipeline changes, automated workflows, deployment automation
-- perf: Performance improvements
+<main_prefix>
+- `feature:` New feature for users (adds functionality)
+- `fix:` Bug fixes (fixes broken functionality)
+- `docs:` Documentation changes only e.g. README.md
+- `rules:` `CLAUDE.md` and files in `.claude/`
+- `style:` Code formatting, white space, semicolons (no logic changes)
+- `refactor:` Code changes that neither fix bugs nor add features
+- `test:` Adding or updating tests
+- `chore:` Development workflow, workspace config, dependency updates, dev tools
+- `build:` Build system changes, compilation process, how code gets packaged
+- `ci:` CI/CD pipeline changes, automated workflows, deployment automation
+- `perf:` Performance improvements
+</main_prefix>
 
-**Guidelines:**
-- Group related changes logically
-- Main summary should use imperative mood
-- Content details
-   - Focus on meaningful changes over exhaustive details
-   - Provide context that helps understand the project's evolution
-   - Give proper explanation for significant changes
-
-**Strict Rules:**
-- Wrap terse statement ≤90 characters
+<rules>
 - Use British spelling
 - Use factual tone, avoid hyperbolic language
+- Use fitting amount of detail proportional to commit scope
+- Wrap the terse sentences so that no line exceeds 90 characters
+</rules>
+
+Process
+1. Analyse staged changes with commands in `<commit_context>` tags
+2. Apply commit template `<template>` with appropriate `<main_prefix>`
+3. Adhere to rules in `<rules>` tags 

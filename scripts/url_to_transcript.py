@@ -60,6 +60,9 @@ from youtube_to_xml.time_utils import (
     seconds_to_timestamp,
 )
 
+# Module-level logger
+logger = get_logger(__name__)
+
 
 @dataclass(frozen=True, slots=True)
 class VideoMetadata:
@@ -350,14 +353,6 @@ def format_xml_output(element: ET.Element) -> str:
     return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
 
 
-def generate_summary_stats(chapters: list[Chapter]) -> None:
-    """Print summary statistics for the processed transcript."""
-    total_subtitles = sum(len(ch.all_chapter_subtitles) for ch in chapters)
-    print("\n📈 Summary:")
-    print(f"   Chapters: {len(chapters)}")
-    print(f"   Individual subtitles: {total_subtitles}")
-
-
 def sanitize_title_for_filename(title: str) -> str:
     """Convert video title to safe filename.
 
@@ -376,7 +371,7 @@ def sanitize_title_for_filename(title: str) -> str:
 
 def convert_youtube_to_xml(
     video_url: str, execution_id: str
-) -> tuple[str, VideoMetadata]:
+) -> tuple[str, VideoMetadata, list[Chapter], int]:
     """Convert YouTube video to XML transcript with metadata.
 
     Core business logic that:
@@ -389,19 +384,14 @@ def convert_youtube_to_xml(
         execution_id: Unique identifier for this execution
 
     Returns:
-        Tuple of (XML content as string, VideoMetadata object)
+        Tuple of (XML content as string, VideoMetadata object, list of chapters,
+                 subtitle count)
     """
-    logger = get_logger(__name__)
-    print(f"🎬 Processing: {video_url}")
     logger.info("[%s] Processing video: %s", execution_id, video_url)
 
     # Step 1: Fetch metadata and download subtitles using yt-dlp
-    print("📊 Fetching video metadata...")
     try:
         metadata, subtitles = fetch_video_metadata_and_subtitles(video_url)
-        print(f"   Title: {metadata.video_title}")
-        print(f"   Duration: {format_duration(metadata.duration)}")
-        print(f"📝 Downloaded {len(subtitles)} subtitles")
     except URLSubtitlesNotFoundError:
         logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
@@ -410,21 +400,17 @@ def convert_youtube_to_xml(
         raise  # Re-raise to prevent file creation
 
     # Step 2: Assign subtitles to chapters
-    chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
-    print(f"📑 Organising into {chapters_count} chapter(s)...")
     chapters = assign_subtitles_to_chapters(metadata, subtitles)
 
     # Step 3: Create XML
-    print("🔧 Building XML document...")
     xml_content = create_xml_document(metadata, chapters)
 
-    # Summary statistics
-    generate_summary_stats(chapters)
-
-    return xml_content, metadata
+    return xml_content, metadata, chapters, len(subtitles)
 
 
-def save_transcript(video_url: str, execution_id: str) -> None:
+def convert_and_save_youtube_xml(
+    video_url: str, execution_id: str
+) -> tuple[Path, VideoMetadata]:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
@@ -433,24 +419,38 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     Args:
         video_url: YouTube video URL
         execution_id: Unique identifier for this execution
+
+    Returns:
+        Tuple of (output file path, video metadata)
     """
     # Generate XML content and get metadata for filename
-    xml_content, metadata = convert_youtube_to_xml(video_url, execution_id)
-    output_file = sanitize_title_for_filename(metadata.video_title)
+    xml_content, metadata, chapters, subtitles_count = convert_youtube_to_xml(
+        video_url, execution_id
+    )
+
+    # Log processing results for operational visibility
+    logger.info(
+        "[%s] Generated XML with %d chapters and %d subtitles",
+        execution_id,
+        len(chapters),
+        subtitles_count,
+    )
 
     # Save to file
-    output_path = Path(output_file)
+    output_filename = sanitize_title_for_filename(metadata.video_title)
+    if output_filename == ".xml":
+        output_filename = f"transcript-{execution_id}.xml"
+    output_path = Path(output_filename)
     output_path.write_text(xml_content, encoding="utf-8")
 
-    logger = get_logger(__name__)
-    print(f"✅ Created: {output_path.absolute()}")
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
+
+    return output_path, metadata
 
 
 def main() -> None:
     """Command-line interface entry point."""
     setup_logging()
-    logger = get_logger(__name__)
     execution_id = str(uuid.uuid4())[:8]
 
     try:
@@ -461,10 +461,11 @@ def main() -> None:
         print("  E.g.: url_to_transcript.py https://www.youtube.com/watch?v=Q4gsvJvRjCU")
         sys.exit(1)
 
-    logger.info("[%s] Starting script execution for: %s", execution_id, video_url)
-
     try:
-        save_transcript(video_url, execution_id)
+        print(f"🎬 Processing: {video_url}")
+        output_path, metadata = convert_and_save_youtube_xml(video_url, execution_id)
+
+        print(f"✅ Created: {output_path.absolute()}")
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
@@ -478,6 +479,7 @@ def main() -> None:
         URLUnknownUnmappedError,
         URLVideoUnavailableError,
     ) as e:
+        logger.info("[%s] Processing failed: %s", execution_id, e)
         print(f"\n❌ Error: {e}")
         sys.exit(1)
     except (ValueError, OSError) as e:

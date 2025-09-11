@@ -138,7 +138,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     exit_code, output = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)
 
     assert exit_code == 0
-    assert "✅ Created:" in output
+    assert "✅ Created" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
@@ -155,7 +155,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     exit_code, output = run_script("url-to-transcript", URL_CHAPTERS_SHARED, tmp_path)
 
     assert exit_code == 0
-    assert "✅ Created:" in output
+    assert "✅ Created" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
@@ -172,7 +172,7 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
     exit_code, output = run_script("url-to-transcript", URL_NO_CHAPTERS, tmp_path)
 
     assert exit_code == 0
-    assert "✅ Created:" in output
+    assert "✅ Created" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
