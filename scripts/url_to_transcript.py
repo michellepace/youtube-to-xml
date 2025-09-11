@@ -350,14 +350,6 @@ def format_xml_output(element: ET.Element) -> str:
     return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
 
 
-def generate_summary_stats(chapters: list[Chapter]) -> None:
-    """Print summary statistics for the processed transcript."""
-    total_subtitles = sum(len(ch.all_chapter_subtitles) for ch in chapters)
-    print("\n📈 Summary:")
-    print(f"   Chapters: {len(chapters)}")
-    print(f"   Individual subtitles: {total_subtitles}")
-
-
 def sanitize_title_for_filename(title: str) -> str:
     """Convert video title to safe filename.
 
@@ -376,7 +368,7 @@ def sanitize_title_for_filename(title: str) -> str:
 
 def convert_youtube_to_xml(
     video_url: str, execution_id: str
-) -> tuple[str, VideoMetadata]:
+) -> tuple[str, VideoMetadata, list[Chapter], int]:
     """Convert YouTube video to XML transcript with metadata.
 
     Core business logic that:
@@ -389,19 +381,15 @@ def convert_youtube_to_xml(
         execution_id: Unique identifier for this execution
 
     Returns:
-        Tuple of (XML content as string, VideoMetadata object)
+        Tuple of (XML content as string, VideoMetadata object, list of chapters,
+                 subtitle count)
     """
     logger = get_logger(__name__)
-    print(f"🎬 Processing: {video_url}")
     logger.info("[%s] Processing video: %s", execution_id, video_url)
 
     # Step 1: Fetch metadata and download subtitles using yt-dlp
-    print("📊 Fetching video metadata...")
     try:
         metadata, subtitles = fetch_video_metadata_and_subtitles(video_url)
-        print(f"   Title: {metadata.video_title}")
-        print(f"   Duration: {format_duration(metadata.duration)}")
-        print(f"📝 Downloaded {len(subtitles)} subtitles")
     except URLSubtitlesNotFoundError:
         logger.warning("[%s] No subtitles available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
@@ -410,18 +398,12 @@ def convert_youtube_to_xml(
         raise  # Re-raise to prevent file creation
 
     # Step 2: Assign subtitles to chapters
-    chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
-    print(f"📑 Organising into {chapters_count} chapter(s)...")
     chapters = assign_subtitles_to_chapters(metadata, subtitles)
 
     # Step 3: Create XML
-    print("🔧 Building XML document...")
     xml_content = create_xml_document(metadata, chapters)
 
-    # Summary statistics
-    generate_summary_stats(chapters)
-
-    return xml_content, metadata
+    return xml_content, metadata, chapters, len(subtitles)
 
 
 def save_transcript(video_url: str, execution_id: str) -> None:
@@ -434,11 +416,26 @@ def save_transcript(video_url: str, execution_id: str) -> None:
         video_url: YouTube video URL
         execution_id: Unique identifier for this execution
     """
+    # Progress message
+    print(f"🎬 Processing: {video_url}")
+
     # Generate XML content and get metadata for filename
-    xml_content, metadata = convert_youtube_to_xml(video_url, execution_id)
-    output_file = sanitize_title_for_filename(metadata.video_title)
+    print("📊 Fetching video metadata...")
+    xml_content, metadata, chapters, subtitles_count = convert_youtube_to_xml(
+        video_url, execution_id
+    )
+
+    # Progress messages using returned data
+    print(f"   Title: {metadata.video_title}")
+    print(f"   Duration: {format_duration(metadata.duration)}")
+    print(f"📝 Downloaded {subtitles_count} subtitles")
+
+    chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
+    print(f"📑 Organising into {chapters_count} chapter(s)...")
+    print("🔧 Building XML document...")
 
     # Save to file
+    output_file = sanitize_title_for_filename(metadata.video_title)
     output_path = Path(output_file)
     output_path.write_text(xml_content, encoding="utf-8")
 
