@@ -420,18 +420,13 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     print(f"🎬 Processing: {video_url}")
 
     # Generate XML content and get metadata for filename
-    print("📊 Fetching video metadata...")
+    print("📊 Getting video info and downloading subtitles...")
     xml_content, metadata, chapters, subtitles_count = convert_youtube_to_xml(
         video_url, execution_id
     )
 
-    # Progress messages using returned data
-    print(f"   Title: {metadata.video_title}")
-    print(f"   Duration: {format_duration(metadata.duration)}")
-    print(f"📝 Downloaded {subtitles_count} subtitles")
-
-    chapters_count = len(metadata.chapters_data) if metadata.chapters_data else 1
-    print(f"📑 Organising into {chapters_count} chapter(s)...")
+    # Progress messages
+    print("📑 Organising subtitles into chapter(s)...")
     print("🔧 Building XML document...")
 
     # Save to file
@@ -440,7 +435,8 @@ def save_transcript(video_url: str, execution_id: str) -> None:
     output_path.write_text(xml_content, encoding="utf-8")
 
     logger = get_logger(__name__)
-    print(f"✅ Created: {output_path.absolute()}")
+    print("✅ Created XML Transcript:")
+    print(f"   {output_path.absolute()}")
     logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
 
 

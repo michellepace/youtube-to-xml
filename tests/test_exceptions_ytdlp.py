@@ -137,7 +137,7 @@ def test_valid_video_with_subtitles(tmp_path: Path) -> None:
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path
     )
     assert exit_code == 0
-    assert "✅ Created:" in output
+    assert "✅ Created" in output
     # Verify XML file was created in tmp directory
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
