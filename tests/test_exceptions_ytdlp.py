@@ -31,76 +31,80 @@ def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
 
 # Basic input validation
 @pytest.mark.integration
-def test_empty_url() -> None:
+def test_empty_url(tmp_path: Path) -> None:
     """Empty URL should be rejected."""
-    exit_code, output = run_script("")
+    exit_code, output = run_script("", tmp_path)
     assert exit_code == 1
     assert "Invalid URL format" in output
 
 
 @pytest.mark.integration
-def test_not_a_url() -> None:
+def test_not_a_url(tmp_path: Path) -> None:
     """Malformed text should be rejected."""
-    exit_code, output = run_script("not_a_url_at_all")
+    exit_code, output = run_script("not_a_url_at_all", tmp_path)
     assert exit_code == 1
     assert "Invalid URL format" in output
 
 
 # URL format validation
 @pytest.mark.integration
-def test_wrong_website() -> None:
+def test_wrong_website(tmp_path: Path) -> None:
     """Non-YouTube URL should be rejected."""
-    exit_code, output = run_script("https://www.google.com/")
+    exit_code, output = run_script("https://www.google.com/", tmp_path)
     assert exit_code == 1
     assert "URL is not a YouTube video" in output
 
 
 @pytest.mark.integration
-def test_youtube_url_too_short() -> None:
+def test_youtube_url_too_short(tmp_path: Path) -> None:
     """Truncated YouTube ID should be rejected."""
-    exit_code, output = run_script("https://www.youtube.com/watch?v=Q4g")
+    exit_code, output = run_script("https://www.youtube.com/watch?v=Q4g", tmp_path)
     assert exit_code == 1
     assert "YouTube URL is incomplete" in output
 
 
 # YouTube video issues
 @pytest.mark.integration
-def test_youtube_video_not_found() -> None:
+def test_youtube_video_not_found(tmp_path: Path) -> None:
     """Invalid YouTube video ID should be rejected."""
-    exit_code, output = run_script("https://www.youtube.com/watch?v=invalid-url")
+    exit_code, output = run_script(
+        "https://www.youtube.com/watch?v=invalid-url", tmp_path
+    )
     assert exit_code == 1
     assert "Invalid URL format" in output
 
 
 @pytest.mark.integration
-def test_deleted_youtube_video() -> None:
+def test_deleted_youtube_video(tmp_path: Path) -> None:
     """Deleted/removed video should be rejected."""
-    exit_code, output = run_script("https://youtu.be/ai_HGCf2w_w")
+    exit_code, output = run_script("https://youtu.be/ai_HGCf2w_w", tmp_path)
     assert exit_code == 1
     assert "YouTube video unavailable" in output
 
 
 @pytest.mark.integration
-def test_video_without_captions() -> None:
+def test_video_without_captions(tmp_path: Path) -> None:
     """Video without subtitles should be rejected."""
-    exit_code, output = run_script("https://www.youtube.com/watch?v=6eBSHbLKuN0")
+    exit_code, output = run_script(
+        "https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path
+    )
     assert exit_code == 1
     assert "This video doesn't have subtitles available" in output
 
 
 @pytest.mark.integration
-def test_private_video_blocked() -> None:
+def test_private_video_blocked(tmp_path: Path) -> None:
     """Private video should be rejected."""
-    exit_code, output = run_script("https://youtu.be/15vClfaR35w")
+    exit_code, output = run_script("https://youtu.be/15vClfaR35w", tmp_path)
     assert exit_code == 1
     assert "Private video" in output
 
 
 # Network/access issues
 @pytest.mark.integration
-def test_unreachable_website() -> None:
+def test_unreachable_website(tmp_path: Path) -> None:
     """Invalid domain should be rejected."""
-    exit_code, output = run_script("https://ailearnlog")
+    exit_code, output = run_script("https://ailearnlog", tmp_path)
     assert exit_code == 1
     assert "Unable to download webpage" in output
 
