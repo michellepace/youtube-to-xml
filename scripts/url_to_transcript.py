@@ -25,6 +25,7 @@ The output XML contains video metadata (video_title, upload_date, duration, vide
 and subtitles organised by chapter, with each individual subtitle timestamped.
 """
 
+import contextlib
 import json
 import math
 import re
@@ -144,7 +145,11 @@ def fetch_video_metadata_and_subtitles(
         options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
 
         # Phase 1: Use yt-dlp to get data for transcript
-        with yt_dlp.YoutubeDL(options) as ydl:
+        with (
+            Path("/dev/null").open("w") as devnull,
+            contextlib.redirect_stderr(devnull),
+            yt_dlp.YoutubeDL(options) as ydl,
+        ):
             try:
                 # a) get complete video metadata from YouTube
                 raw_metadata = ydl.extract_info(url, download=False)

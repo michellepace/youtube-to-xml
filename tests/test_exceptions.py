@@ -117,19 +117,31 @@ class TestYtDlpExceptionMapping:
         test_cases = [
             ("HTTP Error 429", URLRateLimitError, "limiting"),
             (
-                "Sign in to confirm you're not a bot",
+                "ERROR: [youtube] Q4gsvJvRjCU: Sign in to confirm you're not a bot",
                 URLBotProtectionError,
                 "verification",
             ),
             (
-                "ERROR: Unsupported URL: https://example.com",
+                "ERROR: Unsupported URL: https://www.google.com/",
                 URLNotYouTubeError,
                 "not a youtube",
             ),
-            ("Incomplete YouTube ID VvkhYW", URLIncompleteError, "incomplete"),
-            ("'' is not a valid URL", URLIsInvalidError, "invalid"),
-            ("[youtube] invalid-url: Video unavailable", URLIsInvalidError, "invalid"),
-            ("Video unavailable", URLVideoUnavailableError, "unavailable"),
+            (
+                "ERROR: [youtube:truncated_id] Q4g: Incomplete YouTube ID Q4g",
+                URLIncompleteError,
+                "incomplete",
+            ),
+            ("ERROR: [generic] '' is not a valid URL", URLIsInvalidError, "invalid"),
+            (
+                "ERROR: [youtube] invalid-url: Video unavailable",
+                URLIsInvalidError,
+                "invalid",
+            ),
+            (
+                "ERROR: [youtube] ai_HGCf2w_w: Video unavailable",
+                URLVideoUnavailableError,
+                "unavailable",
+            ),
             ("Some unknown error message", URLUnknownUnmappedError, "error"),
         ]
 

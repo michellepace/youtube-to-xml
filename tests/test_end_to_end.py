@@ -1,11 +1,13 @@
-"""End-to-end tests for complete user workflows.
+"""End-to-end workflow tests for successful user scenarios.
 
-Tests the full application stack from user input to final output:
+Tests complete successful workflows from user input to final output:
 - File-based workflow: transcript file → CLI → XML output
-- URL-based workflow: YouTube URL → experimental url_to_transcript.py → YouTube API →
-  XML output
+- URL-based workflow: YouTube URL → url_to_transcript.py → YouTube API → XML output
+- File vs URL equivalence verification
 
+Uses unified run_script() helper with automatic rate limiting protection.
 Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
+For error scenarios, see test_youtube_exception_scenarios.py.
 """
 
 import difflib
@@ -20,57 +22,39 @@ EXAMPLES_DIR = Path("example_transcripts")
 URL_CHAPTERS = "https://www.youtube.com/watch?v=Q4gsvJvRjCU"
 URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
-URL_NO_TRANSCRIPT = "https://www.youtube.com/watch?v=6eBSHbLKuN0"
-URL_INVALID = "https://www.youtube.com/watch?v=play99invalid"
-
-# Error scenario URLs
-URL_EMPTY = ""
-URL_NON_YOUTUBE = "https://www.google.com/"
-URL_INCOMPLETE_ID = "https://www.youtube.com/watch?v=VvkhYW"
-URL_MALFORMED = "invalid-url"
-
-SUBPROCESS_TIMEOUT = 10
 
 
-def run_cli_command(args: list[str], tmp_path: Path) -> subprocess.CompletedProcess[str]:
-    """Run the main CLI command."""
-    return subprocess.run(  # noqa: S603
-        ["uv", "run", "youtube-to-xml", *args],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-        timeout=SUBPROCESS_TIMEOUT,
-    )
+def run_script(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, str]:
+    """Run script and return (exit_code, output).
 
+    Args:
+        command: Either 'youtube-to-xml' or 'url-to-transcript'
+        args: List of arguments or single URL string
+        tmp_path: Working directory for the command
+    """
+    if isinstance(args, str):
+        # Single URL for url-to-transcript
+        cmd_args = ["uv", "run", command, args]
+    else:
+        # List of args for youtube-to-xml
+        cmd_args = ["uv", "run", command, *args]
 
-def run_youtube_script(url: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
-    """Run experimental YouTube script."""
     result = subprocess.run(  # noqa: S603
-        ["uv", "run", "url-to-transcript", url],
+        cmd_args,
         capture_output=True,
         text=True,
         cwd=tmp_path,
+        timeout=15,
         check=False,
-        timeout=SUBPROCESS_TIMEOUT,
     )
 
-    # Handle rate limiting and bot protection - skip test if encountered
+    # Handle rate limiting - skip test if encountered
     if result.returncode != 0:
         output = (result.stderr + result.stdout).lower()
-        if any(
-            pattern.lower() in output
-            for pattern in [
-                "429",
-                "Rate limited",
-                "Too Many Requests",
-                "bot protection triggered",  # Our custom message
-                "YouTube bot protection",  # Our custom message
-            ]
-        ):
+        if any(pattern in output for pattern in ["429", "rate limit", "bot protection"]):
             pytest.skip("YouTube rate limited or bot protection triggered")
 
-    return result
+    return result.returncode, result.stdout + result.stderr
 
 
 def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
@@ -106,10 +90,10 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x4-chapters.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    result = run_cli_command(["input.txt"], tmp_path)
+    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
-    assert result.returncode == 0
-    assert "Created:" in result.stdout
+    assert exit_code == 0
+    assert "Created:" in output
 
     # Verify output matches reference file exactly
     output_file = tmp_path / "input.xml"
@@ -124,10 +108,10 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    result = run_cli_command(["input.txt"], tmp_path)
+    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
-    assert result.returncode == 0
-    assert "Created:" in result.stdout
+    assert exit_code == 0
+    assert "Created:" in output
 
     output_file = tmp_path / "input.xml"
     reference_file = setup_reference_file(tmp_path, "x3-chapters-with-blanks.xml")
@@ -141,20 +125,20 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    result = run_cli_command(["input.txt"], tmp_path)
+    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
-    assert result.returncode == 1
-    assert "Wrong format" in result.stdout
-    assert "youtube-to-xml --help" in result.stdout
+    assert exit_code == 1
+    assert "Wrong format" in output
+    assert "youtube-to-xml --help" in output
 
 
 @pytest.mark.integration
 def test_url_multi_chapters_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with multi-chapter video."""
-    result = run_youtube_script(URL_CHAPTERS, tmp_path)
+    exit_code, output = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)
 
-    assert result.returncode == 0
-    assert "✅ Created:" in result.stdout
+    assert exit_code == 0
+    assert "✅ Created:" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
@@ -168,10 +152,10 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with shared URL format containing parameters."""
-    result = run_youtube_script(URL_CHAPTERS_SHARED, tmp_path)
+    exit_code, output = run_script("url-to-transcript", URL_CHAPTERS_SHARED, tmp_path)
 
-    assert result.returncode == 0
-    assert "✅ Created:" in result.stdout
+    assert exit_code == 0
+    assert "✅ Created:" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
@@ -185,10 +169,10 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_url_single_chapter_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with single-chapter video."""
-    result = run_youtube_script(URL_NO_CHAPTERS, tmp_path)
+    exit_code, output = run_script("url-to-transcript", URL_NO_CHAPTERS, tmp_path)
 
-    assert result.returncode == 0
-    assert "✅ Created:" in result.stdout
+    assert exit_code == 0
+    assert "✅ Created:" in output
 
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
@@ -200,71 +184,19 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
 
 
 @pytest.mark.integration
-def test_url_no_subtitles_error(tmp_path: Path) -> None:
-    """Test YouTube fetcher exits with error when video has no subtitles."""
-    result = run_youtube_script(URL_NO_TRANSCRIPT, tmp_path)
-
-    assert result.returncode == 1
-    assert "❌ Error:" in result.stdout
-    assert "This video doesn't have subtitles available" in result.stdout
-
-    xml_files = list(tmp_path.glob("*.xml"))
-    assert len(xml_files) == 0, "No XML file should be created without subtitles"
-
-
-@pytest.mark.integration
-def test_url_invalid_format_error(tmp_path: Path) -> None:
-    """Test YouTube fetcher error handling for invalid URL."""
-    result = run_youtube_script(URL_INVALID, tmp_path)
-
-    assert result.returncode == 1
-    error_patterns = ["truncated", "Incomplete YouTube ID", "Video unavailable"]
-    combined = result.stdout + result.stderr
-    assert any(pattern in combined for pattern in error_patterns), (
-        f"Expected error message not found in: {combined}"
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    ("url", "expected_error_message"),
-    [
-        (URL_EMPTY, "Invalid URL format"),  # URLIsInvalidError
-        (URL_NON_YOUTUBE, "URL is not a YouTube video"),  # URLNotYouTubeError
-        (URL_INCOMPLETE_ID, "YouTube URL is incomplete"),  # URLIncompleteError
-        (URL_MALFORMED, "Invalid URL format"),  # URLIsInvalidError
-    ],
-)
-def test_url_error_scenarios(
-    url: str, expected_error_message: str, tmp_path: Path
-) -> None:
-    """Test various URL error scenarios produce correct error messages."""
-    result = run_youtube_script(url, tmp_path)
-
-    assert result.returncode == 1
-    assert (
-        expected_error_message in result.stdout or expected_error_message in result.stderr
-    ), (
-        f"Expected '{expected_error_message}' not found in output.\n"
-        f"stdout: {result.stdout}\n"
-        f"stderr: {result.stderr}"
-    )
-
-
-@pytest.mark.integration
 def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     """Test URL vs file processing equivalence using direct XML parsing."""
     # Process file method
     input_file = EXAMPLES_DIR / "how-claude-code-hooks-save-me-hours-daily.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    file_result = run_cli_command(["input.txt"], tmp_path)
+    file_exit_code, file_output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
     # Process URL method
-    url_result = run_youtube_script(URL_CHAPTERS, tmp_path)
+    url_exit_code, url_output = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)
 
-    assert file_result.returncode == 0
-    assert url_result.returncode == 0
+    assert file_exit_code == 0
+    assert url_exit_code == 0
 
     # Get output files
     file_xml = tmp_path / "input.xml"
@@ -320,27 +252,3 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         assert abs(file_content_lines - url_content_lines) <= 2, (
             f"Chapter {i} ({file_titles[i]}) content volume differs significantly"
         )
-
-
-@pytest.mark.integration
-def test_url_unmapped_error_handling(tmp_path: Path) -> None:
-    """Test that URLUnknownUnmappedError is properly handled for unmapped yt-dlp errors.
-
-    Uses a private video that triggers a yt-dlp error message that doesn't match
-    any existing patterns in map_yt_dlp_exception().
-    """
-    result = run_youtube_script("https://youtu.be/15vClfaR35w", tmp_path)
-
-    assert result.returncode == 1
-    # Should show the actual yt-dlp error message (main() adds "❌ Error:" prefix)
-    assert "❌ Error: [youtube] 15vClfaR35w: Private video" in result.stdout, (
-        f"Expected yt-dlp error message in stdout, got: {result.stdout}"
-    )
-    # Should NOT have a traceback in stderr when properly handled
-    assert "Traceback" not in result.stderr, (
-        f"Should not crash with traceback, got: {result.stderr}"
-    )
-
-    # Verify no XML file was created
-    xml_files = list(tmp_path.glob("*.xml"))
-    assert len(xml_files) == 0, "No XML file should be created on unmapped errors"
