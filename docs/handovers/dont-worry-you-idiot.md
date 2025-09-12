@@ -1,6 +1,8 @@
 # Comprehensive Project Analysis: youtube-to-xml 📊
 
-*A stone-cold assessment of your codebase, minus the American cheerleading on September 9th, 2025*
+*A stone-cold assessment of your codebase, minus the American cheerleading*
+
+*Assessment date: September 9th, 2025*
 
 ## Executive Summary 🎯
 
