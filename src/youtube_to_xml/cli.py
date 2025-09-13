@@ -32,7 +32,7 @@ def parse_arguments() -> argparse.Namespace:
 🔧 REQUIREMENTS:
    - 1st line: (non-timestamp) → becomes first chapter
    - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
-   - 3rd line: (non-timestamp) → first content line of first chapter
+   - 3rd line: (non-timestamp) → first transcript line of first chapter
 
 💡 Check that your transcript follows this basic pattern
 """,
@@ -58,7 +58,7 @@ def main() -> None:
 
     # Read the input file
     try:
-        raw_content = transcript_path.read_text(encoding="utf-8")
+        raw_transcript_text = transcript_path.read_text(encoding="utf-8")
     except FileNotFoundError:
         print(f"❌ We couldn't find your file: {transcript_path}")
         logger.error("[%s] FileNotFoundError: %s", execution_id, transcript_path)
@@ -74,7 +74,7 @@ def main() -> None:
 
     # Parse the transcript
     try:
-        chapters = parse_transcript_file(raw_content)
+        chapters = parse_transcript_file(raw_transcript_text)
     except FileEmptyError:
         print(f"❌ Your file is empty: {transcript_path}")
         logger.error("[%s] FileEmptyError: %s", execution_id, transcript_path)
@@ -85,14 +85,14 @@ def main() -> None:
         sys.exit(1)
 
     # Generate XML
-    xml_content = chapters_to_xml(chapters)
+    xml_output = chapters_to_xml(chapters)
 
     # Create output file in current directory
     output_filename = transcript_path.stem + ".xml"
     output_path = Path(output_filename)
 
     try:
-        output_path.write_text(xml_content, encoding="utf-8")
+        output_path.write_text(xml_output, encoding="utf-8")
     except PermissionError:
         print(f"❌ Cannot write to: {output_path}")
         logger.error("[%s] PermissionError writing: %s", execution_id, output_path)

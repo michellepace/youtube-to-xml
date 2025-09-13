@@ -11,8 +11,8 @@ from youtube_to_xml.exceptions import (
     URLIsInvalidError,
     URLNotYouTubeError,
     URLRateLimitError,
-    URLSubtitlesNotFoundError,
-    URLUnknownUnmappedError,
+    URLTranscriptNotFoundError,
+    URLUnmappedError,
     URLVideoUnavailableError,
     map_yt_dlp_exception,
 )
@@ -26,8 +26,8 @@ ALL_EXCEPTION_CLASSES = [
     URLIsInvalidError,
     URLNotYouTubeError,
     URLRateLimitError,
-    URLSubtitlesNotFoundError,
-    URLUnknownUnmappedError,
+    URLTranscriptNotFoundError,
+    URLUnmappedError,
     URLVideoUnavailableError,
 ]
 
@@ -142,7 +142,7 @@ class TestYtDlpExceptionMapping:
                 URLVideoUnavailableError,
                 "unavailable",
             ),
-            ("Some unknown error message", URLUnknownUnmappedError, "error"),
+            ("Some unknown error message", URLUnmappedError, "error"),
         ]
 
         for error_msg, expected_type, expected_text in test_cases:
@@ -168,6 +168,6 @@ class TestYtDlpExceptionMapping:
 
         result = map_yt_dlp_exception(original_error)
 
-        assert isinstance(result, URLUnknownUnmappedError)
+        assert isinstance(result, URLUnmappedError)
         assert isinstance(result, BaseTranscriptError)
         assert "error" in str(result).lower()

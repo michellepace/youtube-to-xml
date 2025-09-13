@@ -1,6 +1,6 @@
 """YouTube transcript parser module.
 
-Parses YouTube transcript text files and extracts chapters with their content.
+Parses YouTube transcript text files and extracts chapters with their transcript lines.
 Based on structural patterns:
 - First line of transcript (if not timestamp) is the first chapter
 - When exactly 2 lines exist between consecutive timestamps, the line before
@@ -29,12 +29,12 @@ MINIMUM_LINES_REQUIRED = 3
 
 @dataclass(frozen=True, slots=True)
 class Chapter:
-    """Chapter with content for XML generation."""
+    """Chapter with transcript lines for XML generation."""
 
     title: str
     start_time: float  # seconds
     end_time: float  # seconds (math.inf for last chapter)
-    content_lines: list[str]
+    transcript_lines: list[str]
 
     @property
     def duration(self) -> float:
@@ -57,7 +57,7 @@ def validate_transcript_format(raw_transcript: str) -> None:
     Requirements
     - 1st line: (non-timestamp) → becomes first chapter
     - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
-    - 3rd line: (non-timestamp) → first content line of first chapter
+    - 3rd line: (non-timestamp) → first transcript line of first chapter
     """
     if not raw_transcript.strip():
         raise FileEmptyError
@@ -69,7 +69,7 @@ def validate_transcript_format(raw_transcript: str) -> None:
 
     # Must have at least 3 lines for minimum format
     if len(non_empty_lines) < MINIMUM_LINES_REQUIRED:
-        msg = "File must have at least 3 lines: chapter title, timestamp, content"
+        msg = "File must have at least 3 lines: chapter title, timestamp, transcript"
         raise FileInvalidFormatError(msg)
 
     # Line 1: Must be chapter title (non-timestamp)
@@ -82,9 +82,9 @@ def validate_transcript_format(raw_transcript: str) -> None:
         msg = "Second line must be a timestamp"
         raise FileInvalidFormatError(msg)
 
-    # Line 3: Must be content (non-timestamp)
+    # Line 3: Must be transcript text (non-timestamp)
     if TIMESTAMP_PATTERN.match(non_empty_lines[2].strip()):
-        msg = "Third line must be content, not timestamp"
+        msg = "Third line must be transcript text, not timestamp"
         raise FileInvalidFormatError(msg)
 
 
@@ -99,7 +99,7 @@ def _find_first_chapter(
         "title_index": 0,
         "title": transcript_lines[0],
         "start_time": timestamp_to_seconds(transcript_lines[timestamp_indices[0]]),
-        "content_start": timestamp_indices[0],
+        "transcript_start": timestamp_indices[0],
     }
 
 
@@ -119,39 +119,40 @@ def _find_subsequent_chapters(
                     "title_index": chapter_title_idx,
                     "title": transcript_lines[chapter_title_idx],
                     "start_time": timestamp_to_seconds(transcript_lines[next_idx]),
-                    "content_start": next_idx,
+                    "transcript_start": next_idx,
                 }
             )
     return chapters
 
 
-def _extract_content_for_chapters(
+def _extract_transcript_lines_for_chapters(
     transcript_lines: list[str], chapter_metadata: list[dict]
 ) -> list[Chapter]:
-    """Extract content lines for each chapter and create Chapter objects."""
+    """Extract transcript lines for each chapter and create Chapter objects."""
     result_chapters = []
     for i, chapter_data in enumerate(chapter_metadata):
-        # Determine content range and end time for this chapter
+        # Determine transcript range and end time for this chapter
         if i < len(chapter_metadata) - 1:
-            content_end = chapter_metadata[i + 1]["title_index"]
+            transcript_end = chapter_metadata[i + 1]["title_index"]
             end_time = chapter_metadata[i + 1]["start_time"]
             # Enforce monotonic chapter boundaries
             if end_time <= chapter_data["start_time"]:
                 msg = "Subsequent chapter timestamps must be strictly increasing"
                 raise FileInvalidFormatError(msg)
         else:
-            content_end = len(transcript_lines)
+            transcript_end = len(transcript_lines)
             end_time = math.inf
 
-        # Extract content from start timestamp to range end
-        content_lines = transcript_lines[chapter_data["content_start"] : content_end]
+        # Extract transcript lines from start timestamp to range end
+        start_idx = chapter_data["transcript_start"]
+        transcript_chapter_lines = transcript_lines[start_idx:transcript_end]
 
         result_chapters.append(
             Chapter(
                 title=chapter_data["title"],
                 start_time=chapter_data["start_time"],
                 end_time=end_time,
-                content_lines=list(content_lines),
+                transcript_lines=list(transcript_chapter_lines),
             )
         )
 
@@ -159,13 +160,13 @@ def _extract_content_for_chapters(
 
 
 def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
-    """Parse transcript file contents and return chapters with content.
+    """Parse transcript file contents and return chapters with transcript lines.
 
     Args:
-        raw_transcript: Raw transcript text content from file
+        raw_transcript: Raw transcript text from file
 
     Returns:
-        List of Chapter objects with titles, timestamps, and content
+        List of Chapter objects with titles, timestamps, and transcript lines
 
     Raises:
         FileEmptyError: If transcript file is empty
@@ -188,5 +189,5 @@ def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
         _find_subsequent_chapters(transcript_lines, timestamp_indices)
     )
 
-    # Extract content for chapters (order is already correct)
-    return _extract_content_for_chapters(transcript_lines, chapters_metadata)
+    # Extract transcript lines for chapters (order is already correct)
+    return _extract_transcript_lines_for_chapters(transcript_lines, chapters_metadata)

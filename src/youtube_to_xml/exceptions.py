@@ -5,7 +5,7 @@ class BaseTranscriptError(Exception):
     """Base exception for all transcript processing failures."""
 
     def __init__(self, message: str) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -13,21 +13,18 @@ class FileEmptyError(BaseTranscriptError):
     """Raised when attempting to parse an empty transcript file."""
 
     def __init__(self, message: str = "Cannot parse an empty transcript file") -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
 class FileInvalidFormatError(BaseTranscriptError):
-    """Raised when transcript file doesn't follow expected manual format.
-
-    File must start with chapter title, not a timestamp.
-    """
+    """Raised when transcript file doesn't follow expected manual format."""
 
     def __init__(
         self,
         message: str = "Transcript file must start with a chapter title, not a timestamp",
     ) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -35,7 +32,7 @@ class URLIsInvalidError(BaseTranscriptError):
     """Raised when URL format is invalid (empty or malformed text)."""
 
     def __init__(self, message: str = "Invalid URL format") -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -43,17 +40,17 @@ class URLVideoUnavailableError(BaseTranscriptError):
     """Raised when YouTube video exists but is unavailable."""
 
     def __init__(self, message: str = "YouTube video unavailable") -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
-class URLSubtitlesNotFoundError(BaseTranscriptError):
-    """Raised when YouTube video has no available subtitles."""
+class URLTranscriptNotFoundError(BaseTranscriptError):
+    """Raised when YouTube video has no available transcript."""
 
     def __init__(
-        self, message: str = "This video doesn't have subtitles available"
+        self, message: str = "This video doesn't have a transcript available"
     ) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -64,7 +61,7 @@ class URLRateLimitError(BaseTranscriptError):
         self,
         message: str = "YouTube is temporarily limiting requests - try again later",
     ) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -72,7 +69,7 @@ class URLNotYouTubeError(BaseTranscriptError):
     """Raised when URL is not a YouTube video URL."""
 
     def __init__(self, message: str = "URL is not a YouTube video") -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -80,7 +77,7 @@ class URLIncompleteError(BaseTranscriptError):
     """Raised when YouTube URL has incomplete video ID."""
 
     def __init__(self, message: str = "YouTube URL is incomplete") -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -90,17 +87,17 @@ class URLBotProtectionError(BaseTranscriptError):
     def __init__(
         self, message: str = "YouTube requires verification - try switching networks"
     ) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
-class URLUnknownUnmappedError(BaseTranscriptError):
+class URLUnmappedError(BaseTranscriptError):
     """Raised when YouTube processing fails for unknown/unmapped yt-dlp errors."""
 
     def __init__(
         self, message: str = "YouTube processing failed - unmapped error"
     ) -> None:
-        """Initialize the exception with a custom message."""
+        """Initialise with custom message."""
         super().__init__(message)
 
 
@@ -133,4 +130,4 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     # Default for unknown yt-dlp errors - preserve original yt-dlp message
     original_msg = str(error)
     clean_msg = original_msg.removeprefix("ERROR: ")
-    return URLUnknownUnmappedError(clean_msg)
+    return URLUnmappedError(clean_msg)

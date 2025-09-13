@@ -67,13 +67,6 @@ First, we'll start with the patches
 url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
-📊 Fetching video metadata...
-   Title: How Claude Code Hooks Save Me HOURS Daily
-   Duration: 2m 43s
-📝 Downloading subtitles...
-   Parsed 75 subtitles
-📑 Organising into 4 chapter(s)...
-🔧 Building XML document...
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
@@ -105,11 +98,13 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 > 📁 **[View complete XML output →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
 
 **Features:**
-- ✅ Downloads video metadata and subtitles (transcript content)
+- ✅ Downloads video metadata and transcript lines
 - ✅ Output XML structure matches the file method
 - ✅ The attributes are all populated with video metadata
 
 ## 📊 Technical Details
+
+**Terminology**: This application uses consistent **TRANSCRIPT** terminology throughout (transcript, chapters, transcript lines, etc.) to align with YouTube's user-facing "Show transcript" feature while remaining source-agnostic. See **[terminology guide →](docs/terminology.md)** for detailed explanations.
 
 Built with Test-Driven Development using:
 - **Key Modules**

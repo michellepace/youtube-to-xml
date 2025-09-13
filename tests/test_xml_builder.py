@@ -23,7 +23,7 @@ def single_chapter() -> list[Chapter]:
             title='Introduction & "Getting Started" <Overview>',
             start_time=0.0,
             end_time=math.inf,
-            content_lines=[
+            transcript_lines=[
                 "0:00",
                 "Welcome to today's session",
                 "2:28",
@@ -41,7 +41,7 @@ def multiple_chapters() -> list[Chapter]:
             title="Introduction",
             start_time=0.0,
             end_time=4530.0,
-            content_lines=[
+            transcript_lines=[
                 "0:00",
                 "Welcome to today's session",
                 "2:28",
@@ -56,7 +56,7 @@ def multiple_chapters() -> list[Chapter]:
             title="Getting Started Guide",
             start_time=4530.0,
             end_time=36930.0,
-            content_lines=[
+            transcript_lines=[
                 "1:15:30",
                 "Download the software",
                 "2:45:12",
@@ -67,7 +67,7 @@ def multiple_chapters() -> list[Chapter]:
             title="Advanced Features & Tips",
             start_time=36930.0,
             end_time=math.inf,
-            content_lines=["10:15:30", "Final thoughts on implementation"],
+            transcript_lines=["10:15:30", "Final thoughts on implementation"],
         ),
     ]
 
@@ -130,13 +130,13 @@ def test_builds_correct_xml_structure(multiple_chapters: list[Chapter]) -> None:
     assert chapters[2].get("title") == "Advanced Features & Tips"
     assert chapters[2].get("start_time") == "10:15:30"
 
-    # Content line counts (structure validation)
+    # Transcript line counts (structure validation)
     ch0_text = chapters[0].text or ""
     ch1_text = chapters[1].text or ""
     ch2_text = chapters[2].text or ""
-    assert len(ch0_text.strip().split("\n")) == 8  # Introduction content lines
-    assert len(ch1_text.strip().split("\n")) == 4  # Getting Started content lines
-    assert len(ch2_text.strip().split("\n")) == 2  # Advanced Features content lines
+    assert len(ch0_text.strip().split("\n")) == 8  # Introduction transcript lines
+    assert len(ch1_text.strip().split("\n")) == 4  # Getting Started transcript lines
+    assert len(ch2_text.strip().split("\n")) == 2  # Advanced Features transcript lines
 
 
 # ============= ESCAPING TESTS =============
@@ -164,7 +164,7 @@ def test_includes_xml_declaration(single_chapter: list[Chapter]) -> None:
 
 
 def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
-    """XML output follows template indentation: 2 spaces per level, 6 for content."""
+    """XML output follows template indentation: 2 spaces per level, 6 for transcript."""
     xml_string = chapters_to_xml(single_chapter)
     lines = xml_string.split("\n")
 
@@ -175,7 +175,7 @@ def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
     assert lines[2] == "  <chapters>"  # 2 spaces - level 1
     assert lines[3].startswith("    <chapter")  # 4 spaces - level 2
 
-    # Content indentation (6 spaces = 3 levels deep x 2 spaces per level)
+    # Transcript text indentation (6 spaces = 3 levels deep x 2 spaces per level)
     assert lines[4].startswith("      0:00")  # 6 spaces
     assert lines[5].startswith("      Welcome to today's session")  # 6 spaces
 
