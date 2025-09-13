@@ -69,8 +69,8 @@ class VideoMetadata:
     """Video metadata needed for XML output."""
 
     video_title: str
-    upload_date: str  # YYYYMMDD format from yt-dlp
-    duration: int  # seconds
+    upload_date: str  # YYYY-MM-DD formatted string
+    duration: str  # "2m 43s" formatted string
     video_url: str
     chapters_data: list[dict]
 
@@ -187,8 +187,8 @@ def fetch_video_metadata_and_subtitles(
         # Phase 3: Create structured metadata object from raw_metadata
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
-            upload_date=raw_metadata.get("upload_date", ""),
-            duration=raw_metadata.get("duration", 0),
+            upload_date=format_date(raw_metadata.get("upload_date", "")),
+            duration=format_duration(raw_metadata.get("duration", 0)),
             video_url=raw_metadata.get("webpage_url", url),
             chapters_data=raw_metadata.get("chapters", []),
         )
@@ -290,12 +290,9 @@ def format_date(date_string: str) -> str:
 
 
 def format_duration(seconds: int) -> str:
-    """Convert seconds to human-readable duration.
-
-    Formatted string like "21m 34s" or "1h 5m 12s"
-    """
+    """Convert seconds to human-readable duration e.g., "1h 5m 12s"."""
     if seconds <= 0:
-        return "0s"
+        return ""
 
     hours = seconds // SECONDS_PER_HOUR
     minutes = (seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
@@ -325,8 +322,8 @@ def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str
     # Create root element with metadata attributes
     root = ET.Element("transcript")
     root.set("video_title", metadata.video_title)
-    root.set("upload_date", format_date(metadata.upload_date))
-    root.set("duration", format_duration(metadata.duration))
+    root.set("upload_date", metadata.upload_date)
+    root.set("duration", metadata.duration)
     root.set("video_url", metadata.video_url)
 
     # Add chapters container
