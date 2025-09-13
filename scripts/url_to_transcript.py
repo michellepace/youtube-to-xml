@@ -188,7 +188,7 @@ def fetch_video_metadata_and_subtitles(
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
             upload_date=format_date(raw_metadata.get("upload_date", "")),
-            duration=format_duration(raw_metadata.get("duration", 0)),
+            duration=format_duration(float(raw_metadata.get("duration", 0))),
             video_url=raw_metadata.get("webpage_url", url),
             chapters_data=raw_metadata.get("chapters", []),
         )
@@ -289,14 +289,15 @@ def format_date(date_string: str) -> str:
     return date_string
 
 
-def format_duration(seconds: int) -> str:
+def format_duration(seconds: float) -> str:
     """Convert seconds to human-readable duration e.g., "1h 5m 12s"."""
     if seconds <= 0:
         return ""
 
-    hours = seconds // SECONDS_PER_HOUR
-    minutes = (seconds % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE
-    secs = seconds % SECONDS_PER_MINUTE
+    total_seconds = int(seconds)
+
+    hours, remainder = divmod(total_seconds, SECONDS_PER_HOUR)
+    minutes, secs = divmod(remainder, SECONDS_PER_MINUTE)
 
     parts = []
     if hours > 0:
@@ -440,7 +441,7 @@ def convert_and_save_youtube_xml(
     output_path = Path(output_filename)
     output_path.write_text(xml_content, encoding="utf-8")
 
-    logger.info("[%s] Successfully created: %s", execution_id, output_path.absolute())
+    logger.info("[%s] Successfully created: %s", execution_id, output_path.name)
 
     return output_path, metadata
 
@@ -462,7 +463,7 @@ def main() -> None:
         print(f"🎬 Processing: {video_url}")
         output_path, metadata = convert_and_save_youtube_xml(video_url, execution_id)
 
-        print(f"✅ Created: {output_path.absolute()}")
+        print(f"✅ Created: {output_path.name}")
     except KeyboardInterrupt:
         print("\n❌ Cancelled by user")
         sys.exit(1)
