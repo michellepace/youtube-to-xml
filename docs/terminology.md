@@ -22,7 +22,7 @@ When you click "Show Transcript" on YouTube, this is what you see:
 
 YouTube displays each transcript line as timestamp + text on one line (as shown in image above). But when copy-pasted, these get separated onto consecutive lines:
 
-```
+```text
 Intro
 0:00
 Hooks are hands down one of the best
@@ -52,10 +52,10 @@ To create your first hook, use the hooks
 
 This contains:
 - **Transcript**: The complete text (excerpt shown here)
-- **Chapter Titles**: Section headers like "Intro" and "Hooks" 
+- **Chapter Titles**: Section headers like "Intro" and "Hooks"
 - **Transcript Lines**: Words spoken at a given point in time (each consists of a timestamp + text pair)
-   - **Timestamp**: Time marker (e.g., "0:00")
-   - **Text**: The spoken words (e.g., "Hooks are hands down one of the best")
+  - **Timestamp**: Time marker (e.g., "0:00")
+  - **Text**: The spoken words (e.g., "Hooks are hands down one of the best")
 - **Chapters**: Sections bounded by chapter titles, containing multiple transcript lines. These are optional on YouTube and created by the publisher.
 
 **Example interpretation:** "This excerpt transcript contains two chapters. The Intro chapter has 10 transcript lines (from 0:00 to 0:18). The Hooks chapter begins with the transcript line at 0:20: 'To create your first hook, use the hooks'"
@@ -66,7 +66,7 @@ This contains:
 
 ## Data Flow Explanation
 
-```
+```text
 YouTube Video
     ├── Via yt-dlp → Downloads subtitle file → Parsed as transcript lines
     └── Via Copy → User copies transcript text → Parsed as transcript lines

@@ -1,4 +1,8 @@
-# 🔥 OUTDATED DOCUMENTATION (🎯 SPEC — YouTube Transcript to XML Converter)
+# ⚠️ OUTDATED DOCUMENTATION (🎯 SPEC — YouTube Transcript to XML Converter)
+
+> This document is superseded. See:
+> - README.md (current usage and examples)
+> - docs/terminology.md (standardised terms)
 
 **A UV Packaged Application with CLI entry point** that converts YouTube transcript text files into structured XML format with chapter elements.
 
