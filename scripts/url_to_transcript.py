@@ -175,6 +175,9 @@ def fetch_video_metadata_and_transcript(
             p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
         ]
 
+        # Implement transcript priority: manual English (.en.json3) over auto-generated
+        transcript_files.sort(key=lambda p: ".en-orig.json3" in p.name)
+
         # b) Parse transcript files into structured objects
         transcript_lines = []
         if transcript_files:
