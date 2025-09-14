@@ -6,7 +6,7 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
 
-![Description](docs/images/youtube-to-xml-narrow.jpg)
+![Description](docs/images/readme.cover.skinny.md)
 
 ## 🚀 Quick Start
 
@@ -141,6 +141,13 @@ uv run ruff check                 # Lint
 uv run ruff format                # Format
 uv run pre-commit run --all-files # All hooks
 ```
+
+<figure align="center">
+  <a href="docs/terminology.md">
+    <img src="docs/images/terminology.youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
+  </a>
+  <figcaption>YouTube transcript terminology used throughout code: (click to read)</figcaption>
+</figure>
 
 ## 📕 Notes
 
