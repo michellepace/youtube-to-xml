@@ -54,7 +54,7 @@ First, we'll start with the patches
 </transcript>
 ```
 
-> 📁 **[View example files →](example_transcripts/introduction-to-cows.txt)** | **[Generated XML →](example_transcripts/introduction-to-cows.xml)**
+> 📁 **[View example files →](example_transcripts/introduction-to-cows.txt)** | **[Output XML →](example_transcripts/introduction-to-cows.xml)**
 
 ### Option 2: URL Method (Experimental)
 
@@ -93,18 +93,15 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 </transcript>
 ```
 
-> 📁 **[View Generated XML →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
+> 📁 **[View Output XML →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
 
-**Features:**
-- ✅ Downloads video metadata and transcript lines
-- ✅ Output XML structure matches the file method
-- ✅ The attributes are all populated with video metadata
+✅ *Downloads video metadata and transcript lines. Output XML structure matches the file method but with attributes populated with metadata (title, duration, etc.)*
 
 ## 📊 Technical Details
 
 **Terminology**: Code uses consistent TRANSCRIPT terminology. **[View terminology guide →](docs/terminology.md)**
 
-**Python Package & Project Management**: UV Package Application
+**Package & Project Management**: [UV Package Application](https://docs.astral.sh/uv/concepts/projects/)
 
 **Architecture**: Pure functions with clear module separation
 
