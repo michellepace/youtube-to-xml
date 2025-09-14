@@ -83,13 +83,13 @@ def test_deleted_youtube_video(tmp_path: Path) -> None:
 
 
 @pytest.mark.integration
-def test_video_without_captions(tmp_path: Path) -> None:
-    """Video without subtitles should be rejected."""
+def test_video_without_transcript(tmp_path: Path) -> None:
+    """Video without transcript should be rejected."""
     exit_code, output = run_script(
         "https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path
     )
     assert exit_code == 1
-    assert "This video doesn't have subtitles available" in output
+    assert "This video doesn't have a transcript available" in output
 
 
 @pytest.mark.integration
@@ -130,8 +130,8 @@ def test_bot_protection_intermittent(tmp_path: Path) -> None:
 
 # Success case for completeness
 @pytest.mark.integration
-def test_valid_video_with_subtitles(tmp_path: Path) -> None:
-    """Known good video should succeed."""
+def test_valid_video_with_transcript(tmp_path: Path) -> None:
+    """Known good video with transcript should succeed."""
     # Using Rick Astley - Never Gonna Give You Up (stable, public video)
     exit_code, output = run_script(
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path

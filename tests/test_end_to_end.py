@@ -252,3 +252,53 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         assert abs(file_content_lines - url_content_lines) <= 2, (
             f"Chapter {i} ({file_titles[i]}) content volume differs significantly"
         )
+
+
+@pytest.mark.integration
+def test_url_manual_transcript_priority(tmp_path: Path) -> None:
+    """Test manual transcripts are prioritised over auto-generated (higher quality)."""
+    test_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+    exit_code, output = run_script("url-to-transcript", test_url, tmp_path)
+
+    assert exit_code == 0
+    assert "✅ Created" in output
+
+    xml_files = list(tmp_path.glob("*.xml"))
+    assert len(xml_files) == 1
+
+    # Parse XML and get first chapter content
+    tree = ET.parse(xml_files[0])
+    root = tree.getroot()
+    first_chapter = root.find(".//chapter")
+    assert first_chapter is not None
+
+    content = first_chapter.text or ""
+    content_lines = [line.strip() for line in content.split("\n") if line.strip()]
+    first_6_lines = content_lines[:6]
+
+    # Expect to use manual transcripts as priorty
+    expected_manual_version = [
+        "0:01",
+        "[♪♪♪]",
+        "0:18",
+        "♪ We're no strangers to love ♪",
+        "0:22",
+        "♪ You know the rules and so do I ♪",
+    ]
+    assert first_6_lines == expected_manual_version, (
+        f"Expected clean manual transcript, got: {first_6_lines}"
+    )
+
+    # Auto generated transcript (messier)
+    autogen_version = [
+        "0:00",
+        "[Music]",
+        "0:18",
+        "We're no strangers to",
+        "0:21",
+        "love. You know the rules and so do",
+    ]
+    assert first_6_lines != autogen_version, (
+        "Should not match messy auto-generated transcript"
+    )

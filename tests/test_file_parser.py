@@ -147,20 +147,20 @@ def test_rejects_consecutive_timestamps_after_title() -> None:
 You're CTO of Meta and and co-CEO of..."""
 
     with pytest.raises(
-        FileInvalidFormatError, match="Third line must be content, not timestamp"
+        FileInvalidFormatError, match="Third line must be transcript text, not timestamp"
     ):
         parse_transcript_file(consecutive_timestamps)
 
 
-def test_rejects_content_before_first_timestamp() -> None:
-    """Content before first timestamp should fail format validation."""
-    content_before_timestamp = """Introduction to Bret Taylor
-content line should break
+def test_rejects_transcript_before_first_timestamp() -> None:
+    """Transcript text before first timestamp should fail format validation."""
+    transcript_before_timestamp = """Introduction to Bret Taylor
+transcript line should break
 00:04
 You're CTO of Meta and and co-CEO of..."""
 
     with pytest.raises(FileInvalidFormatError, match="Second line must be a timestamp"):
-        parse_transcript_file(content_before_timestamp)
+        parse_transcript_file(transcript_before_timestamp)
 
 
 def test_rejects_file_with_insufficient_lines() -> None:
@@ -168,7 +168,8 @@ def test_rejects_file_with_insufficient_lines() -> None:
     too_short = """Chapter Title
 00:04"""
 
-    with pytest.raises(FileInvalidFormatError, match="File must have at least 3 lines"):
+    expected_msg = "File must have at least 3 lines: chapter title, timestamp, transcript"
+    with pytest.raises(FileInvalidFormatError, match=expected_msg):
         parse_transcript_file(too_short)
 
 
@@ -247,11 +248,11 @@ Final"""
     assert [ch.start_time for ch in chapters] == [0.0, 300.0, 600.0]
 
 
-# ============= CONTENT EXTRACTION TESTS =============
+# ============= TRANSCRIPT EXTRACTION TESTS =============
 
 
-def test_extracts_all_content_for_single_chapter() -> None:
-    """Single chapter includes all content to end."""
+def test_extracts_all_transcript_lines_for_single_chapter() -> None:
+    """Single chapter includes all transcript lines to end."""
     text = """Only Chapter
 0:00
 Line 1
@@ -260,7 +261,7 @@ Line 2
 Final line"""
 
     chapters = parse_transcript_file(text)
-    assert chapters[0].content_lines == [
+    assert chapters[0].transcript_lines == [
         "0:00",
         "Line 1",
         "2:30",
@@ -269,14 +270,14 @@ Final line"""
     ]
 
 
-def test_extracts_correct_content_ranges_for_chapters(
+def test_extracts_correct_transcript_ranges_for_chapters(
     two_chapter_transcript: str,
 ) -> None:
-    """Multiple chapters have correct content ranges."""
+    """Multiple chapters have correct transcript line ranges."""
     chapters = parse_transcript_file(two_chapter_transcript)
 
     # First chapter: from timestamp to before second chapter title
-    assert chapters[0].content_lines == [
+    assert chapters[0].transcript_lines == [
         "0:00",
         "First content",
         "2:30",
@@ -284,11 +285,11 @@ def test_extracts_correct_content_ranges_for_chapters(
     ]
 
     # Second chapter: from timestamp to end
-    assert chapters[1].content_lines == ["5:00", "Chapter Two content"]
+    assert chapters[1].transcript_lines == ["5:00", "Chapter Two content"]
 
 
-def test_includes_multiple_timestamps_in_chapter_content() -> None:
-    """Chapter content includes multiple timestamps."""
+def test_includes_multiple_timestamps_in_chapter_transcript() -> None:
+    """Chapter transcript lines include multiple timestamps."""
     text = """Long Chapter
 0:00
 Start
@@ -300,11 +301,11 @@ More
 Final"""
 
     chapters = parse_transcript_file(text)
-    content = chapters[0].content_lines
+    transcript_lines = chapters[0].transcript_lines
 
-    # All timestamps and content should be included
-    assert all(ts in content for ts in ["0:00", "5:30", "10:15", "15:45"])
-    assert "Final" in content
+    # All timestamps and transcript text should be included
+    assert all(ts in transcript_lines for ts in ["0:00", "5:30", "10:15", "15:45"])
+    assert "Final" in transcript_lines
 
 
 # ============= INTEGRATION TESTS =============
@@ -328,21 +329,21 @@ def test_parses_complex_transcript_end_to_end(complex_transcript: str) -> None:
         assert chapters[i].title == expected_title
         assert seconds_to_timestamp(chapters[i].start_time) == expected_start
 
-    # Test content behavior (sufficient boundary checking)
-    ch1_content = chapters[0].content_lines
-    assert "0:55" in ch1_content
-    assert "2:28" in ch1_content
-    assert "content" in ch1_content
-    assert len(ch1_content) == 4  # ← This catches boundary issues
+    # Test transcript lines behavior (sufficient boundary checking)
+    ch1_transcript = chapters[0].transcript_lines
+    assert "0:55" in ch1_transcript
+    assert "2:28" in ch1_transcript
+    assert "content" in ch1_transcript  # Note: this is test data, not terminology
+    assert len(ch1_transcript) == 4  # ← This catches boundary issues
 
-    ch2_content = chapters[1].content_lines
-    assert "1:15:30" in ch2_content
-    assert "102:45:12" in ch2_content
-    assert len(ch2_content) == 4  # ← This catches boundary issues
+    ch2_transcript = chapters[1].transcript_lines
+    assert "1:15:30" in ch2_transcript
+    assert "102:45:12" in ch2_transcript
+    assert len(ch2_transcript) == 4  # ← This catches boundary issues
 
-    ch3_content = chapters[2].content_lines
-    assert "102:45:13" in ch3_content
-    assert len(ch3_content) == 1  # ← This catches boundary issues
+    ch3_transcript = chapters[2].transcript_lines
+    assert "102:45:13" in ch3_transcript
+    assert len(ch3_transcript) == 1  # ← This catches boundary issues
 
 
 def test_handles_special_characters_in_titles() -> None:
@@ -355,7 +356,7 @@ Multi-hour timestamp"""
 
     chapters = parse_transcript_file(text)
     assert chapters[0].title == """Special & "Characters" <XML>"""
-    assert "10:15:30" in chapters[0].content_lines
+    assert "10:15:30" in chapters[0].transcript_lines
 
 
 def test_removes_blank_lines_during_processing() -> None:
@@ -366,11 +367,11 @@ def test_removes_blank_lines_during_processing() -> None:
 
     chapters = parse_transcript_file(text_with_blanks)
 
-    # Single assert: no blank lines in any chapter title or content
-    all_content = [ch.title for ch in chapters] + [
-        line for ch in chapters for line in ch.content_lines
+    # Single assert: no blank lines in any chapter title or transcript lines
+    all_transcript_text = [ch.title for ch in chapters] + [
+        line for ch in chapters for line in ch.transcript_lines
     ]
-    assert "" not in all_content
+    assert "" not in all_transcript_text
 
 
 # ============= TIMESTAMP TYPE REFACTORING TESTS =============

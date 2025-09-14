@@ -27,9 +27,9 @@ def chapters_to_xml(chapters: list[Chapter]) -> str:
         chapter_elem.set("title", chapter.title)
         chapter_elem.set("start_time", seconds_to_timestamp(chapter.start_time))
 
-        # Add content as text with proper indentation (6 spaces per line)
-        if chapter.content_lines:
-            indented_lines = [f"      {line}" for line in chapter.content_lines]
+        # Add transcript lines as text with proper indentation (6 spaces per line)
+        if chapter.transcript_lines:
+            indented_lines = [f"      {line}" for line in chapter.transcript_lines]
             chapter_elem.text = "\n" + "\n".join(indented_lines) + "\n    "
 
     # Indent XML tag elements recursively (2 spaces per level)

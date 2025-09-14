@@ -7,7 +7,7 @@ from pathlib import Path
 def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
     # Create test file in tmp directory
     test_file = tmp_path / "test.txt"
-    test_file.write_text("Chapter One\n0:00\nContent here", encoding="utf-8")
+    test_file.write_text("Chapter One\n0:00\nTranscript text here", encoding="utf-8")
 
     # Run CLI from tmp directory to isolate all file operations
     result = subprocess.run(
@@ -60,7 +60,7 @@ def test_empty_file_shows_error(tmp_path: Path) -> None:
 def test_invalid_format_shows_error(tmp_path: Path) -> None:
     # Create invalid test file (starts with timestamp)
     test_file = tmp_path / "invalid.txt"
-    test_file.write_text("0:22\nContent", encoding="utf-8")
+    test_file.write_text("0:22\nTranscript text", encoding="utf-8")
 
     result = subprocess.run(
         ["uv", "run", "youtube-to-xml", "invalid.txt"],
