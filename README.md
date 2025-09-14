@@ -2,9 +2,9 @@
 
 Convert YouTube transcripts to structured XML format with automatic chapter detection.
 
-**Problem**: Raw YouTube transcripts are unstructured text that LLMs struggle to parse effectively, degrading AI chat responses about video content.
+**Problem**: Raw YouTube transcripts are unstructured text that LLMs struggle to parse, degrading AI chat responses about video content.
 
-**Solution**: Converts transcripts to XML with semantic chapter elements for improved AI comprehension.
+**Solution**: Converts transcripts to XML with chapter elements for improved AI comprehension.
 
 ![Description](docs/images/readme.cover.skinny.md)
 
@@ -14,8 +14,7 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 ### Option 1: File Method
 
-> [!TIP]  
-> This installs **both** `youtube-to-xml` and `url-to-transcript` commands globally. Both commands work fully after installation.
+💡 This installs **both** `youtube-to-xml` and `url-to-transcript` commands globally.
 
 ```bash
 # Install CLI tool globally
@@ -26,7 +25,7 @@ youtube-to-xml my_transcript.txt
 # ✅ Created: my_transcript.xml
 ```
 
-**Required Format for `my_transcript.txt`:**
+**Copy-Paste Exact YT Format for `my_transcript.txt`:**
 ```text
 Introduction to Cows
 0:02
@@ -59,8 +58,7 @@ First, we'll start with the patches
 
 ### Option 2: URL Method (Experimental)
 
-> [!CAUTION]  
-> Experimental script pending integration. YouTube rate limits may require updating yt-dlp: `uv lock --upgrade-package yt-dlp && uv sync` then manually update the version in `pyproject.toml` to this version as a minimum, run `uv sync` again.
+🔥 Experimental script pending integration. YouTube rate limits may require updating yt-dlp: Run `uv lock --upgrade-package yt-dlp && uv sync`.
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
@@ -104,21 +102,25 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 ## 📊 Technical Details
 
-**Terminology**: This application uses consistent **TRANSCRIPT** terminology throughout (transcript, chapters, transcript lines, etc.) to align with YouTube's user-facing "Show transcript" feature while remaining source-agnostic. See **[terminology guide →](docs/terminology.md)** for detailed explanations.
+**Terminology**: This application uses consistent **TRANSCRIPT** terminology throughout (transcript, chapters, transcript lines). **[View terminology guide →](docs/terminology.md)**
 
-Built with Test-Driven Development using:
-- **Key Modules**
-   - **[cli.py](src/youtube_to_xml/cli.py)** — Argparse with error handling and structured logging
-   - **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
-   - **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
-   - **[exceptions.py](src/youtube_to_xml/exceptions.py)** — Custom error hierarchy for clean error handling
-- **Architecture**: Pure functions with clear module separation
-- **Dependencies**:
-  - Runtime Dependencies: `yt-dlp` (fetch transcript and metadata from YouTube URL)
-  - Dev Dependencies: `pytest`, `ruff`, `pre-commit`
-- **Package Management**: UV Package Application
+**Python Package & Project Management**: UV Package Application
 
-Performance tested with transcripts up to 15,000 lines completing in 0.02 seconds
+**Architecture**: Pure functions with clear module separation
+
+**Built with Test-Driven Development**: 74 tests (17 integration, 57 unit, takes 62 seconds)
+
+**Dependencies**:
+- Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
+- Dev Dependencies: `pytest`, `ruff`, `pre-commit`
+
+**Key Modules**
+- **[cli.py](src/youtube_to_xml/cli.py)** — Argparse with error handling and structured logging
+- **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
+- **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
+- **[exceptions.py](src/youtube_to_xml/exceptions.py)** — Custom error hierarchy for clean error handling
+- **[test_end_to_end.py](tests/test_end_to_end.py)** — Workflow tests for file and URL processing
+- **[scripts/url_to_transcript.py](scripts/url_to_transcript.py)** — Experimental script pending integration
 
 ## 🛠️ Development
 
@@ -149,13 +151,16 @@ uv run pre-commit run --all-files # All hooks
   <figcaption>YouTube transcript terminology used throughout code: (click to read)</figcaption>
 </figure>
 
-## 📕 Notes
+---
 
-**What I Learnt**
+## 📕 *Notes*
+
+**Learning Notes**
+- [Code Rabbit for PR review](https://www.anthropic.com/customers/coderabbit)
+- [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs)
+- [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index)
 - [Manage MCPs Nicely](docs/knowledge/manage-mcps-nicely.md)
 - [Git Branch Workflow](docs/knowledge/git-branch-flow.md)
-- [Code Rabbit for PR review](https://www.anthropic.com/customers/coderabbit)
-- Next time: [Claude Code Docs](https://github.com/ericbuess/claude-code-docs) & [Project Index](https://github.com/ericbuess/claude-code-project-index) (see [chat](https://claude.ai/chat/c70ff077-6ebb-4c75-bf2b-74e31d2cb649))
 
 **Outstanding Questions**
 - **Q1.** Is there something I could have done better with UV?
@@ -166,6 +171,6 @@ uv run pre-commit run --all-files # All hooks
 - **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
 
 **To Do**
-1. Evals to prove XML format vs plain (myself here, then Braintrust)
-2. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). I don't think so, disjoint.
-3. Integrate experimental [scripts/url_to_transcript.py](scripts/url_to_transcript.py) functionality into main CLI, then remove the standalone script.
+1. Integrate experimental [scripts/url_to_transcript.py](scripts/url_to_transcript.py) functionality into main CLI, then remove the standalone script.
+2. Evals to prove XML format vs plain (Use Hamels [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
+3. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?
