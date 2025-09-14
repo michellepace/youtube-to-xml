@@ -132,7 +132,7 @@ def fetch_video_metadata_and_transcript(
         URLIncompleteError: If YouTube URL has incomplete video ID
         URLIsInvalidError: If URL format is invalid
         URLVideoUnavailableError: If YouTube video is unavailable
-        URLSubtitlesNotFoundError: If no transcript is available
+        URLTranscriptNotFoundError: If no transcript is available
         URLRateLimitError: If YouTube rate limit is encountered
     """
     options = {

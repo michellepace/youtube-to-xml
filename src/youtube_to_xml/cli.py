@@ -40,6 +40,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "transcript",
         metavar="transcript.txt",
+        type=Path,
         help="YouTube transcript text file to convert",
     )
     return parser.parse_args()
@@ -52,7 +53,7 @@ def main() -> None:
     execution_id = str(uuid.uuid4())[:8]
 
     args = parse_arguments()
-    transcript_path = Path(args.transcript)
+    transcript_path = args.transcript
 
     logger.info("[%s] Starting CLI execution for: %s", execution_id, transcript_path)
 

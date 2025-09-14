@@ -163,7 +163,7 @@ class TestYtDlpExceptionMapping:
         assert "bot protection" in str(error).lower()
 
     def test_unmapped_error_uses_default_message(self) -> None:
-        """Test that unmapped errors use the default URLUnknownUnmappedError message."""
+        """Test that unmapped errors use the default URLUnmappedError message."""
         original_error = Exception("Some weird new yt-dlp error we haven't seen before")
 
         result = map_yt_dlp_exception(original_error)
