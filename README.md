@@ -58,7 +58,7 @@ First, we'll start with the patches
 
 ### Option 2: URL Method (Experimental)
 
-🔥 Experimental script pending integration. YouTube rate limits may require updating yt-dlp: Run `uv lock --upgrade-package yt-dlp && uv sync`.
+🔥 Experimental script pending integration. If YouTube rate limits apply run `uv lock --upgrade-package yt-dlp && uv sync`.
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
@@ -93,7 +93,7 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 </transcript>
 ```
 
-> 📁 **[View complete XML output →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
+> 📁 **[View Generated XML →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
 
 **Features:**
 - ✅ Downloads video metadata and transcript lines
@@ -102,13 +102,13 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 ## 📊 Technical Details
 
-**Terminology**: This application uses consistent **TRANSCRIPT** terminology throughout (transcript, chapters, transcript lines). **[View terminology guide →](docs/terminology.md)**
+**Terminology**: Code uses consistent TRANSCRIPT terminology. **[View terminology guide →](docs/terminology.md)**
 
 **Python Package & Project Management**: UV Package Application
 
 **Architecture**: Pure functions with clear module separation
 
-**Built with Test-Driven Development**: 74 tests (17 integration, 57 unit, takes 62 seconds)
+**Test-Driven Development**: 74 tests (17 integration, 57 unit, takes 62 seconds)
 
 **Dependencies**:
 - Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
@@ -153,7 +153,7 @@ uv run pre-commit run --all-files # All hooks
 
 ---
 
-## 📕 *Notes*
+## 📕 *Own Notes*
 
 **Learning Notes**
 - [Code Rabbit for PR review](https://www.anthropic.com/customers/coderabbit)
