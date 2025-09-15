@@ -14,8 +14,8 @@ def chapters_to_xml(chapters: list[Chapter]) -> str:
     # Create root XML tag element <transcript>
     root = ET.Element("transcript")
     root.set("video_title", "")
-    root.set("upload_date", "")
-    root.set("duration", "")
+    root.set("video_published", "")
+    root.set("video_duration", "")
     root.set("video_url", "")
 
     # Add XML container tag element <chapters>

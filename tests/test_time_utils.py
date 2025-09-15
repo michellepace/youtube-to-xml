@@ -11,7 +11,7 @@ from youtube_to_xml.exceptions import FileInvalidFormatError
 from youtube_to_xml.time_utils import (
     TIMESTAMP_PATTERN,
     format_video_duration,
-    format_video_upload_date,
+    format_video_published,
     seconds_to_timestamp,
     timestamp_to_seconds,
 )
@@ -127,21 +127,21 @@ def test_timestamp_pattern_rejects_invalid_formats() -> None:
         assert not TIMESTAMP_PATTERN.match(timestamp), f"Should not match: {timestamp}"
 
 
-def test_format_video_upload_date_yyyymmdd_to_iso() -> None:
+def test_format_video_published_yyyymmdd_to_iso() -> None:
     """Test conversion from YYYYMMDD to YYYY-MM-DD format."""
-    assert format_video_upload_date("") == ""
-    assert format_video_upload_date("20250101") == "2025-01-01"
-    assert format_video_upload_date("19991231") == "1999-12-31"
-    assert format_video_upload_date("20240229") == "2024-02-29"  # leap year
+    assert format_video_published("") == ""
+    assert format_video_published("20250101") == "2025-01-01"
+    assert format_video_published("19991231") == "1999-12-31"
+    assert format_video_published("20240229") == "2024-02-29"  # leap year
 
 
-def test_format_video_upload_date_invalid_format_passthrough() -> None:
+def test_format_video_published_invalid_format_passthrough() -> None:
     """Test that invalid date formats pass through unchanged."""
-    assert format_video_upload_date("2025-01-01") == "2025-01-01"  # already formatted
-    assert format_video_upload_date("not-a-date") == "not-a-date"
-    assert format_video_upload_date("202501") == "202501"  # too short
-    assert format_video_upload_date("2025013100") == "2025013100"  # too long
-    assert format_video_upload_date("20251301") == "20251301"  # invalid month
+    assert format_video_published("2025-01-01") == "2025-01-01"  # already formatted
+    assert format_video_published("not-a-date") == "not-a-date"
+    assert format_video_published("202501") == "202501"  # too short
+    assert format_video_published("2025013100") == "2025013100"  # too long
+    assert format_video_published("20251301") == "20251301"  # invalid month
 
 
 def test_format_video_duration_seconds_to_human() -> None:

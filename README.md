@@ -40,7 +40,7 @@ First, we'll start with the patches
 **Output XML:**
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
-<transcript video_title="" upload_date="" duration="" video_url="">
+<transcript video_title="" video_published="" video_duration="" video_url="">
   <chapters>
     <chapter title="Introduction to Cows" start_time="0:02">
       0:02
@@ -72,8 +72,8 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily" 
-            upload_date="2025-07-12" 
-            duration="2m 43s" 
+            video_published="2025-07-12" 
+            video_duration="2m 43s" 
             video_url="https://www.youtube.com/watch?v=Q4gsvJvRjCU">
   <chapters>
     <chapter title="Intro" start_time="0:00">
@@ -105,7 +105,7 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 **Architecture**: Pure functions with clear module separation
 
-**Test-Driven Development**: 74 tests (17 integration, 57 unit, takes 62 seconds)
+**Test-Driven Development**: 78 tests (17 integration, 61 unit, takes 59 seconds)
 
 **Dependencies**:
 - Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)

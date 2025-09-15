@@ -95,7 +95,7 @@ def seconds_to_timestamp(seconds: float) -> str:
     return f"{minutes}:{secs:02d}"
 
 
-def format_video_upload_date(date_string: str) -> str:
+def format_video_published(date_string: str) -> str:
     """Convert YYYYMMDD to yyyy-mm-dd format."""
     if len(date_string) == len("20250101"):
         try:

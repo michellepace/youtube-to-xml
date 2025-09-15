@@ -12,7 +12,7 @@ Example:
     uv run scripts/url_to_transcript.py https://youtu.be/Q4gsvJvRjCU
 
 For a provided YouTube URL, the script will:
-1. Fetch the video metadata (title, upload date, duration)
+1. Fetch the video metadata (title, published date, duration)
 2. Download and parse transcript lines (the timestamped text from YouTube's transcript)
 3. Assign transcript lines to chapters (using YouTube's chapter markers if available)
 4. Create and save an XML document with dynamic filename based on video title
@@ -22,9 +22,9 @@ Transcript priority:
 2. Auto-generated English transcript (fallback)
 No other languages are downloaded - English only.
 
-The output XML contains video metadata (video_title, upload_date, duration, video_url)
-and transcript lines organised by chapter, with each individual transcript line
-timestamped.
+The output XML contains video metadata (video_title, video_published,
+video_duration, video_url) and transcript lines organised by chapter, with each
+individual transcript line timestamped.
 """
 
 import contextlib
@@ -57,7 +57,7 @@ from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.time_utils import (
     MILLISECONDS_PER_SECOND,
     format_video_duration,
-    format_video_upload_date,
+    format_video_published,
     seconds_to_timestamp,
 )
 
@@ -70,8 +70,8 @@ class VideoMetadata:
     """Video metadata needed for XML output."""
 
     video_title: str
-    upload_date: str  # YYYY-MM-DD formatted string
-    duration: str  # "2m 43s" formatted string
+    video_published: str  # YYYY-MM-DD formatted string
+    video_duration: str  # "2m 43s" formatted string
     video_url: str
     chapters_data: list[dict]
 
@@ -192,8 +192,8 @@ def fetch_video_metadata_and_transcript(
         # Phase 3: Create structured metadata object from raw_metadata
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
-            upload_date=format_video_upload_date(raw_metadata.get("upload_date", "")),
-            duration=format_video_duration(float(raw_metadata.get("duration", 0))),
+            video_published=format_video_published(raw_metadata.get("upload_date", "")),
+            video_duration=format_video_duration(float(raw_metadata.get("duration", 0))),
             video_url=raw_metadata.get("webpage_url", url),
             chapters_data=raw_metadata.get("chapters", []),
         )
@@ -298,8 +298,8 @@ def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str
     # Create root element with metadata attributes
     root = ET.Element("transcript")
     root.set("video_title", metadata.video_title)
-    root.set("upload_date", metadata.upload_date)
-    root.set("duration", metadata.duration)
+    root.set("video_published", metadata.video_published)
+    root.set("video_duration", metadata.video_duration)
     root.set("video_url", metadata.video_url)
 
     # Add chapters container

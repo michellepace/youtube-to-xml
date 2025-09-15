@@ -216,7 +216,7 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     assert file_lines == url_lines, "Line count must be the same"
 
     # 2. Assert transcript element attributes
-    expected_attrs = ["video_title", "upload_date", "duration", "video_url"]
+    expected_attrs = ["video_title", "video_published", "video_duration", "video_url"]
 
     # File transcript should have empty metadata
     assert len(file_root.attrib) == 4, (
