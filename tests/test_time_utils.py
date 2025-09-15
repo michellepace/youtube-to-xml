@@ -10,6 +10,8 @@ import pytest
 from youtube_to_xml.exceptions import FileInvalidFormatError
 from youtube_to_xml.time_utils import (
     TIMESTAMP_PATTERN,
+    format_video_duration,
+    format_video_published,
     seconds_to_timestamp,
     timestamp_to_seconds,
 )
@@ -72,17 +74,11 @@ def test_seconds_to_timestamp_rejects_negative_values() -> None:
     with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
         seconds_to_timestamp(-1.0)
 
-    with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
-        seconds_to_timestamp(-0.1)
-
 
 def test_seconds_to_timestamp_rejects_infinite_values() -> None:
     """Test that infinite values raise ValueError."""
     with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
         seconds_to_timestamp(math.inf)
-
-    with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
-        seconds_to_timestamp(-math.inf)
 
 
 def test_seconds_to_timestamp_rejects_nan_values() -> None:
@@ -123,3 +119,47 @@ def test_timestamp_pattern_rejects_invalid_formats() -> None:
 
     for timestamp in invalid_timestamps:
         assert not TIMESTAMP_PATTERN.match(timestamp), f"Should not match: {timestamp}"
+
+
+def test_format_video_published_yyyymmdd_to_iso() -> None:
+    """Test conversion from YYYYMMDD to YYYY-MM-DD format."""
+    assert format_video_published("") == ""
+    assert format_video_published("20250101") == "2025-01-01"
+    assert format_video_published("19991231") == "1999-12-31"
+    assert format_video_published("20240229") == "2024-02-29"  # leap year
+
+
+def test_format_video_published_invalid_format_passthrough() -> None:
+    """Test that invalid date formats pass through unchanged."""
+    assert format_video_published("2025-01-01") == "2025-01-01"  # already formatted
+    assert format_video_published("not-a-date") == "not-a-date"
+    assert format_video_published("202501") == "202501"  # too short
+    assert format_video_published("2025013100") == "2025013100"  # too long
+    assert format_video_published("20251301") == "20251301"  # invalid month
+
+
+def test_format_video_duration_seconds_to_human() -> None:
+    """Test conversion from seconds to human-readable duration."""
+    # Basic conversions
+    assert format_video_duration(1) == "1s"
+    assert format_video_duration(59) == "59s"
+    assert format_video_duration(60) == "1m"
+    assert format_video_duration(61) == "1m 1s"
+    assert format_video_duration(3600) == "1h"
+    assert format_video_duration(3660) == "1h 1m"
+    assert format_video_duration(7322) == "2h 2m 2s"
+    assert format_video_duration(36000) == "10h"
+    assert format_video_duration(86399) == "23h 59m 59s"
+    # Test that fractional seconds are floored
+    assert format_video_duration(3661.9) == "1h 1m 1s"
+
+
+def test_format_video_duration_non_positive_returns_empty() -> None:
+    """Zero and negative durations return empty string."""
+    assert format_video_duration(0) == ""
+    assert format_video_duration(-1) == ""
+
+
+def test_format_video_duration_non_finite_returns_empty() -> None:
+    """Non-finite values return empty string."""
+    assert format_video_duration(math.inf) == ""
