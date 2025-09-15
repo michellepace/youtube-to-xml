@@ -96,10 +96,10 @@ def seconds_to_timestamp(seconds: float) -> str:
 
 
 def format_video_published(date_string: str) -> str:
-    """Convert YYYYMMDD to yyyy-mm-dd format."""
+    """Convert YYYYMMDD to YYYY-MM-DD format."""
     if len(date_string) == len("20250101"):
         try:
-            date = datetime.strptime(date_string, "%Y%m%d").replace(tzinfo=None)  # noqa: DTZ007
+            date = datetime.strptime(date_string, "%Y%m%d")  # noqa: DTZ007
             return date.strftime("%Y-%m-%d")
         except ValueError:
             return date_string
@@ -108,7 +108,7 @@ def format_video_published(date_string: str) -> str:
 
 def format_video_duration(seconds: float) -> str:
     """Convert seconds to human-readable duration e.g., "1h 5m 12s"."""
-    if seconds <= 0:
+    if not math.isfinite(seconds) or seconds <= 0:
         return ""
 
     total_seconds = int(seconds)

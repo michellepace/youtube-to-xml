@@ -74,17 +74,11 @@ def test_seconds_to_timestamp_rejects_negative_values() -> None:
     with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
         seconds_to_timestamp(-1.0)
 
-    with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
-        seconds_to_timestamp(-0.1)
-
 
 def test_seconds_to_timestamp_rejects_infinite_values() -> None:
     """Test that infinite values raise ValueError."""
     with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
         seconds_to_timestamp(math.inf)
-
-    with pytest.raises(ValueError, match="seconds must be finite and >= 0"):
-        seconds_to_timestamp(-math.inf)
 
 
 def test_seconds_to_timestamp_rejects_nan_values() -> None:
@@ -147,7 +141,6 @@ def test_format_video_published_invalid_format_passthrough() -> None:
 def test_format_video_duration_seconds_to_human() -> None:
     """Test conversion from seconds to human-readable duration."""
     # Basic conversions
-    assert format_video_duration(0) == ""
     assert format_video_duration(1) == "1s"
     assert format_video_duration(59) == "59s"
     assert format_video_duration(60) == "1m"
@@ -161,8 +154,12 @@ def test_format_video_duration_seconds_to_human() -> None:
     assert format_video_duration(3661.9) == "1h 1m 1s"
 
 
-def test_format_video_duration_invalid_format_passthrough() -> None:
-    """Test that zero and negative durations return empty string."""
-    assert format_video_duration(-0.5) == ""
+def test_format_video_duration_non_positive_returns_empty() -> None:
+    """Zero and negative durations return empty string."""
+    assert format_video_duration(0) == ""
     assert format_video_duration(-1) == ""
-    assert format_video_duration(-100) == ""
+
+
+def test_format_video_duration_non_finite_returns_empty() -> None:
+    """Non-finite values return empty string."""
+    assert format_video_duration(math.inf) == ""

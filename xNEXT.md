@@ -68,7 +68,7 @@ Per `docs/terminology.md`, transcript lines are defined as timestamp + text pair
 
 ### High-Level Design
 
-```
+```text
                     ┌─────────────────────┐
                     │     models.py       │
                     │  ┌───────────────┐  │
@@ -112,19 +112,19 @@ Per `docs/terminology.md`, transcript lines are defined as timestamp + text pair
 
 1. **`models.py`**: Unified data structures
    ```python
-   @dataclass
+   @dataclass(frozen=True)
    class VideoMetadata:
        video_title: str = ""
        video_published: str = ""  # YYYYMMDD raw format or empty
        video_duration: int = 0      # seconds (0 for file method)
        video_url: str = ""
 
-   @dataclass
+   @dataclass(frozen=True)
    class TranscriptLine:
        timestamp: float  # seconds
        text: str
 
-   @dataclass
+   @dataclass(frozen=True)
    class Chapter:
        title: str
        start_time: float
@@ -133,8 +133,8 @@ Per `docs/terminology.md`, transcript lines are defined as timestamp + text pair
    ```
 
 2. **`time_utils.py`**: All temporal utilities
-   - Existing: `timestamp_to_seconds()`, `seconds_to_timestamp()`
-   - Existing: `format_video_published()`, `format_video_duration()`
+   - Provided by time_utils.py: `timestamp_to_seconds()`, `seconds_to_timestamp()`
+   - Provided by time_utils.py: `format_video_published()`, `format_video_duration()`
 
 3. **`xml_builder.py`**: Enhanced with metadata support
    - Accepts `VideoMetadata` and `list[Chapter]`
@@ -180,7 +180,7 @@ Per `docs/terminology.md`, transcript lines are defined as timestamp + text pair
 **Risk:** Medium - significant refactoring but comprehensive test coverage ensures safety
 **Dependencies:** None
 
-### PR 3: `refactor/xml-builder-metadata-support`
+### PR 2: `refactor/xml-builder-metadata-support`
 
 **PR Contents:**
 - Import `VideoMetadata`, `Chapter`, `TranscriptLine` from `models.py`
