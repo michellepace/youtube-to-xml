@@ -6,6 +6,7 @@ Used by both file parser and URL-based transcript processors.
 
 import math
 import re
+from datetime import datetime
 
 from youtube_to_xml.exceptions import FileInvalidFormatError
 
@@ -92,3 +93,35 @@ def seconds_to_timestamp(seconds: float) -> str:
     if hours > 0:
         return f"{hours}:{minutes:02d}:{secs:02d}"
     return f"{minutes}:{secs:02d}"
+
+
+def format_video_upload_date(date_string: str) -> str:
+    """Convert YYYYMMDD to yyyy-mm-dd format."""
+    if len(date_string) == len("20250101"):
+        try:
+            date = datetime.strptime(date_string, "%Y%m%d").replace(tzinfo=None)  # noqa: DTZ007
+            return date.strftime("%Y-%m-%d")
+        except ValueError:
+            return date_string
+    return date_string
+
+
+def format_video_duration(seconds: float) -> str:
+    """Convert seconds to human-readable duration e.g., "1h 5m 12s"."""
+    if seconds <= 0:
+        return ""
+
+    total_seconds = int(seconds)
+
+    hours, remainder = divmod(total_seconds, SECONDS_PER_HOUR)
+    minutes, secs = divmod(remainder, SECONDS_PER_MINUTE)
+
+    parts = []
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    if secs > 0 or not parts:
+        parts.append(f"{secs}s")
+
+    return " ".join(parts)

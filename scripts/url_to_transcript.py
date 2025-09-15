@@ -37,7 +37,6 @@ import tempfile
 import uuid
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
 import yt_dlp
@@ -57,8 +56,8 @@ from youtube_to_xml.exceptions import (
 from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.time_utils import (
     MILLISECONDS_PER_SECOND,
-    SECONDS_PER_HOUR,
-    SECONDS_PER_MINUTE,
+    format_video_duration,
+    format_video_upload_date,
     seconds_to_timestamp,
 )
 
@@ -193,8 +192,8 @@ def fetch_video_metadata_and_transcript(
         # Phase 3: Create structured metadata object from raw_metadata
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
-            upload_date=format_date(raw_metadata.get("upload_date", "")),
-            duration=format_duration(float(raw_metadata.get("duration", 0))),
+            upload_date=format_video_upload_date(raw_metadata.get("upload_date", "")),
+            duration=format_video_duration(float(raw_metadata.get("duration", 0))),
             video_url=raw_metadata.get("webpage_url", url),
             chapters_data=raw_metadata.get("chapters", []),
         )
@@ -284,38 +283,6 @@ def assign_transcript_lines_to_chapters(
         )
 
     return chapters
-
-
-def format_date(date_string: str) -> str:
-    """Convert YYYYMMDD to yyyy-mm-dd format."""
-    if len(date_string) == len("20250101"):
-        try:
-            date = datetime.strptime(date_string, "%Y%m%d").replace(tzinfo=None)  # noqa: DTZ007
-            return date.strftime("%Y-%m-%d")
-        except ValueError:
-            return date_string
-    return date_string
-
-
-def format_duration(seconds: float) -> str:
-    """Convert seconds to human-readable duration e.g., "1h 5m 12s"."""
-    if seconds <= 0:
-        return ""
-
-    total_seconds = int(seconds)
-
-    hours, remainder = divmod(total_seconds, SECONDS_PER_HOUR)
-    minutes, secs = divmod(remainder, SECONDS_PER_MINUTE)
-
-    parts = []
-    if hours > 0:
-        parts.append(f"{hours}h")
-    if minutes > 0:
-        parts.append(f"{minutes}m")
-    if secs > 0 or not parts:
-        parts.append(f"{secs}s")
-
-    return " ".join(parts)
 
 
 def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str:
