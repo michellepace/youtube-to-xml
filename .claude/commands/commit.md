@@ -41,6 +41,7 @@ Create a useful and representative commit message:
 <rules>
 - Use British spelling
 - Use factual tone, avoid hyperbolic language
+- Avoid marketing adjectives (comprehensive, complete, enhanced, improved, etc.)
 - Use fitting amount of detail proportional to commit scope
 - Wrap the terse sentences so that no line exceeds 90 characters
 </rules>
