@@ -1,8 +1,8 @@
 # PR Strategy: YouTube Transcript to XML Integration
 
-## Executive Summary
+## Executive Summary: Goal
 
-This integration merges the experimental URL-based transcript fetcher into the main application architecture. The strategy follows TDD principles, delivers incremental value with each PR, and maintains 100% backward compatibility while enabling new functionality.
+This integration merges the experimental URL-based transcript fetcher into the main application architecture. The strategy follows TDD principles, delivers incremental value with each PR, and maintains 100% backward compatibility through a dual-path approach that enables safe verification before legacy removal.
 
 ## Target Architecture
 
@@ -21,6 +21,38 @@ Presentation
 ├── xml_builder.py (accepts TranscriptDocument)
 └── cli.py (handles both file and URL workflows)
 ```
+
+### Data Flow Architecture
+
+**Key insight:** The CLI orchestrates the complete flow - it doesn't just call one component, but chains them together: Parser → TranscriptDocument → XML Builder → File
+
+```text
+        ┌─────────┐
+        │   CLI   │ (orchestrator)
+        └────┬────┘
+             │ reads input
+             ▼
+        ┌─────────┐
+        │ Parser  │ (file_parser.py or url_parser.py)
+        └────┬────┘
+             │ produces
+             ▼
+    ┌───────────────────┐
+    │TranscriptDocument │ (shared model from models.py)
+    └────────┬──────────┘
+             │ consumed by
+             ▼
+        ┌─────────────┐
+        │ XML Builder │ (xml_builder.py)
+        └─────┬───────┘
+              │ generates
+              ▼
+        ┌──────────┐
+        │ XML File │ (output)
+        └──────────┘
+```
+
+*Note: See key insight above diagram.*
 
 ### Shared Models
 
@@ -169,37 +201,71 @@ The integration must preserve this exact XML structure for backward compatibilit
 
 ---
 
-### PR 4: `feat/cli-uses-new-interfaces`
+### PR 4: `feat/cli-dual-interface-with-legacy-flag`
 
 **PR Contents:**
-- Update `cli.py` to:
-  - Use `parse_transcript_document()` instead of `parse_transcript_file()`
-  - Use `transcript_to_xml()` instead of `chapters_to_xml()`
-  - Rest of CLI logic unchanged
-- Update CLI tests
-- Verify end-to-end tests pass with identical XML output
+- Add `--legacy` flag to CLI argument parser:
+  ```python
+  parser.add_argument(
+      "--legacy",
+      action="store_true",
+      help="Use legacy file parser (for compatibility verification)"
+  )
+  ```
+- Update `cli.py` imports to include both functions:
+  ```python
+  from youtube_to_xml.file_parser import parse_transcript_file, parse_transcript_document
+  from youtube_to_xml.xml_builder import chapters_to_xml, transcript_to_xml
+  ```
+- Implement dual-path logic (lines 78-89):
+  ```python
+  if args.legacy:
+      chapters = parse_transcript_file(raw_transcript_text)
+      xml_output = chapters_to_xml(chapters)
+      logger.info("[%s] Used legacy parser path", execution_id)
+  else:
+      document = parse_transcript_document(raw_transcript_text)
+      xml_output = transcript_to_xml(document)
+      logger.info("[%s] Used new parser path", execution_id)
+  ```
+- Add tests tp `tests/cli.py` for new default path (using TDD: run to fail first)
+- Run `uv run ruff check --fix` > fix problems > run `uv run ruff format`
+- Run entire test module to confirm all new tests fail and existing pass
+- Implement code in CLI to make the new tests pass
+- Add tests to `tests/test_end_to_end.py` that alternate and mirror existing applicable legacy tests (`parse_transcript_file`) - be smart and using the same fixtures and if needed, add flag handling to the existing helper function and calls
+- Run `uv run ruff check --fix` > fix problems > run `uv run ruff format`
+- Run all of `pytest`
+- Last check: write a temporary script that compares the output of  `--legacy` vs default outputs using all the .txt files in `example_transcripts/`. Create a summary report on matches and deviations.
 
-**Value:** File workflow fully migrated to new architecture. Ready for URL integration.
+**Value:** True backward compatibility with safe migration path. Users can verify identical outputs and fall back if needed. **Enables confident removal in PR 5** because both paths are proven equivalent.
 
-**Risk:** [Small] - Simple function call changes
+**Risk:** [Very Small] - Additive change only, existing behavior preserved
 
 **Dependencies:** PRs 1-3
 
 ---
 
-### PR 5: `refactor/remove-deprecated-interfaces`
+### PR 5: `refactor/remove-legacy-flag-and-deprecated-interfaces`
 
 **PR Contents:**
+- Remove `--legacy` flag from CLI argument parser
+- Remove imports and dual-path logic from `cli.py`:
+  ```python
+  # REMOVE: from youtube_to_xml.file_parser import parse_transcript_file
+  # REMOVE: from youtube_to_xml.xml_builder import chapters_to_xml
+  # REMOVE: if/else legacy logic
+  ```
 - Remove deprecated functions:
   - `file_parser.parse_transcript_file()`
   - `xml_builder.chapters_to_xml()`
-  - Old `file_parser.Chapter` class
-- Remove imports of old Chapter from xml_builder
-- Update any remaining tests
+  - Legacy `file_parser.Chapter` class
+- Remove imports of legacy Chapter from xml_builder
+- Remove legacy-specific tests added in PR 4
+- Update any remaining references in documentation
 
-**Value:** Clean codebase, single source of truth for models
+**Value:** Clean codebase with single source of truth. **Migration confidence** established by PR 4's verification phase.
 
-**Risk:** [Small] - Removing unused code
+**Risk:** [Small] - Removing verified-equivalent code paths
 
 **Dependencies:** PR 4
 
@@ -280,10 +346,10 @@ The integration must preserve this exact XML structure for backward compatibilit
 
 **Foundation & File Migration**
 - ✅ PR 1: **Shared models foundation**: Create `models.py` with TranscriptDocument, VideoMetadata, Chapter, TranscriptLine
-- ✅ PR 2: **XML builder dual interface**: Add new transcript_to_xml function + keep old chapters_to_xml
-- ✅ PR 3: **File parser dual output**: Add new parse_transcript_document function + keep old function
-- PR 4: **CLI migrates to new interfaces**: Uses parse_transcript_document and transcript_to_xml, file workflow fully migrated
-- PR 5: **Remove deprecated interfaces**: Remove deprecated file parser functions and old file_parser.Chapter class
+- ✅ PR 2: **XML builder dual interface**: Add new transcript_to_xml function + keep legacy chapters_to_xml
+- ✅ PR 3: **File parser dual output**: Add new parse_transcript_document function + keep legacy function
+- PR 4: **CLI dual-path with legacy flag**: Supports both legacy and new interfaces with --legacy flag for verification
+- PR 5: **Remove legacy flag and deprecated interfaces**: Clean removal after equivalence verified in PR 4
 
 **URL Integration & Unification**
 - PR 6: **URL script adopts shared models**: Uses xml_builder.transcript_to_xml, removes duplicate XML code
