@@ -91,12 +91,15 @@ def assert_files_identical(actual: Path, expected: Path) -> None:
         pytest.fail(f"Files differ:\n{diff_output}")
 
 
-def test_file_multi_chapters_success(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_multi_chapters_success(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI processing of file with multiple chapters."""
     input_file = EXAMPLES_DIR / "x4-chapters.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 0
     assert "Created:" in output
@@ -109,12 +112,15 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_chapters_with_blanks_success(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI processing of file with chapters containing blank lines."""
     input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 0
     assert "Created:" in output
@@ -126,16 +132,18 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-def test_file_invalid_format_error(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_invalid_format_error(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI error handling for invalid transcript format."""
     input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 1
     assert "Wrong format" in output
-    assert "youtube-to-xml --help" in output
 
 
 @pytest.mark.integration
@@ -314,50 +322,6 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
 # LEGACY FLAG TESTS - PR4: CLI dual-interface with --legacy flag support
 # These tests ensure both legacy and new parser paths work identically
 # ================================================================================
-
-
-def test_file_multi_chapters_legacy_flag(tmp_path: Path) -> None:
-    """Test CLI processing of file with multiple chapters using --legacy flag."""
-    input_file = EXAMPLES_DIR / "x4-chapters.txt"
-    (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
-
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path, legacy=True)
-
-    assert exit_code == 0
-    assert "Created:" in output
-
-    # Verify output matches reference file exactly
-    output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x4-chapters.xml")
-    assert_files_identical(output_file, reference_file)
-
-
-def test_file_chapters_with_blanks_legacy_flag(tmp_path: Path) -> None:
-    """Test CLI processing of file with chapters and blank lines using --legacy flag."""
-    input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
-    (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
-
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path, legacy=True)
-
-    assert exit_code == 0
-    assert "Created:" in output
-
-    # Verify output matches reference file exactly
-    output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x3-chapters-with-blanks.xml")
-    assert_files_identical(output_file, reference_file)
-
-
-def test_file_invalid_format_error_legacy_flag(tmp_path: Path) -> None:
-    """Test CLI error handling for invalid transcript format using --legacy flag."""
-    # Use the invalid format file
-    input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"
-    (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
-
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path, legacy=True)
-
-    assert exit_code == 1
-    assert "Wrong format" in output
 
 
 @pytest.mark.parametrize(

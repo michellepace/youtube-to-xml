@@ -6,6 +6,46 @@ from pathlib import Path
 import pytest
 
 
+def _compare_parser_outputs(tmp_path: Path, test_filename: str, content: str) -> None:
+    """Helper to compare legacy vs new parser outputs for identical results."""
+    # Create test file
+    test_file = tmp_path / test_filename
+    test_file.write_text(content, encoding="utf-8")
+
+    # Run with legacy flag
+    result_legacy = subprocess.run(  # noqa: S603
+        ["uv", "run", "youtube-to-xml", "--legacy", test_filename],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+
+    # Read legacy output
+    output_file = tmp_path / f"{test_file.stem}.xml"
+    legacy_output = output_file.read_text()
+    output_file.unlink()  # Remove for second run
+
+    # Run without legacy flag (new path)
+    result_new = subprocess.run(  # noqa: S603
+        ["uv", "run", "youtube-to-xml", test_filename],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+
+    # Read new output
+    new_output = output_file.read_text()
+
+    # Both should succeed
+    assert result_legacy.returncode == 0
+    assert result_new.returncode == 0
+
+    # Outputs should be identical
+    assert legacy_output == new_output
+
+
 def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
     # Create test file in tmp directory
     test_file = tmp_path / "test.txt"
@@ -77,45 +117,22 @@ def test_invalid_format_shows_error(tmp_path: Path) -> None:
     assert "youtube-to-xml --help" in result.stdout
 
 
-def test_default_path_uses_new_parser(tmp_path: Path) -> None:
-    """Test that default (no --legacy flag) uses new TranscriptDocument parser."""
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_parser_path_selection(tmp_path: Path, *, use_legacy: bool) -> None:
+    """Test that CLI uses correct parser based on legacy flag."""
     # Create test file in tmp directory
     test_file = tmp_path / "test.txt"
     test_file.write_text("Chapter One\n0:00\nTranscript text here", encoding="utf-8")
 
-    # Run CLI without --legacy flag (should use new path)
-    result = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "test.txt"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
+    # Build command with conditional legacy flag
+    cmd = ["uv", "run", "youtube-to-xml"]
+    if use_legacy:
+        cmd.append("--legacy")
+    cmd.append("test.txt")
 
-    # Check success
-    assert result.returncode == 0
-    assert "Created:" in result.stdout
-
-    # Verify output file exists
-    output_file = tmp_path / "test.xml"
-    assert output_file.exists()
-
-    # Verify XML contains structure (basic smoke test)
-    xml_content = output_file.read_text()
-    assert "<transcript" in xml_content
-    assert "<chapters>" in xml_content
-    assert "<chapter" in xml_content
-
-
-def test_legacy_flag_uses_legacy_parser(tmp_path: Path) -> None:
-    """Test that --legacy flag uses old parser path."""
-    # Create test file in tmp directory
-    test_file = tmp_path / "test.txt"
-    test_file.write_text("Chapter One\n0:00\nTranscript text here", encoding="utf-8")
-
-    # Run CLI with --legacy flag
-    result = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "--legacy", "test.txt"],
+    # Run CLI
+    result = subprocess.run(  # noqa: S603
+        cmd,
         capture_output=True,
         text=True,
         cwd=tmp_path,
@@ -139,41 +156,8 @@ def test_legacy_flag_uses_legacy_parser(tmp_path: Path) -> None:
 
 def test_both_paths_produce_identical_output(tmp_path: Path) -> None:
     """Test that legacy and new paths produce identical XML output."""
-    # Create test file
-    test_file = tmp_path / "test.txt"
-    test_file.write_text("Chapter One\n0:00\nTranscript text here", encoding="utf-8")
-
-    # Run with legacy flag
-    result_legacy = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "--legacy", "test.txt"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
-
-    # Read legacy output
-    legacy_output = (tmp_path / "test.xml").read_text()
-    (tmp_path / "test.xml").unlink()  # Remove for second run
-
-    # Run without legacy flag (new path)
-    result_new = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "test.txt"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
-
-    # Read new output
-    new_output = (tmp_path / "test.xml").read_text()
-
-    # Both should succeed
-    assert result_legacy.returncode == 0
-    assert result_new.returncode == 0
-
-    # Outputs should be identical
-    assert legacy_output == new_output
+    content = "Chapter One\n0:00\nTranscript text here"
+    _compare_parser_outputs(tmp_path, "test.txt", content)
 
 
 @pytest.mark.parametrize("legacy_flag", [True, False])
@@ -272,9 +256,8 @@ def test_both_paths_handle_valid_transcript_consistently(
     assert "Chapter One" in xml_content
 
 
-def test_complex_transcript_paths_produce_identical_output(tmp_path: Path) -> None:
-    """Test that both paths produce identical output for more complex transcripts."""
-    # Create a more complex transcript with multiple chapters
+def test_multi_chapter_transcript_identical_output(tmp_path: Path) -> None:
+    """Test that both paths produce identical output for multi-chapter transcripts."""
     complex_transcript = """Introduction to Advanced Topics
 0:00
 Welcome to this comprehensive guide about advanced concepts
@@ -293,37 +276,4 @@ To wrap up our discussion
 5:30
 Thank you for your attention"""
 
-    test_file = tmp_path / "complex.txt"
-    test_file.write_text(complex_transcript, encoding="utf-8")
-
-    # Run with legacy flag
-    result_legacy = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "--legacy", "complex.txt"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
-
-    # Read legacy output
-    legacy_output = (tmp_path / "complex.xml").read_text()
-    (tmp_path / "complex.xml").unlink()  # Remove for second run
-
-    # Run without legacy flag (new path)
-    result_new = subprocess.run(
-        ["uv", "run", "youtube-to-xml", "complex.txt"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
-
-    # Read new output
-    new_output = (tmp_path / "complex.xml").read_text()
-
-    # Both should succeed
-    assert result_legacy.returncode == 0
-    assert result_new.returncode == 0
-
-    # Outputs should be identical
-    assert legacy_output == new_output
+    _compare_parser_outputs(tmp_path, "complex.txt", complex_transcript)
