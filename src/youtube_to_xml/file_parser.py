@@ -134,37 +134,37 @@ def _find_subsequent_chapters(
 
 
 def _extract_transcript_lines_for_chapters(
-    transcript_lines: list[str], chapter_metadata: list[dict]
+    transcript_lines: list[str], chapters_dicts: list[dict]
 ) -> list[Chapter]:
     """Extract transcript lines for each chapter and create Chapter objects."""
-    result_chapters = []
-    for i, chapter_data in enumerate(chapter_metadata):
+    legacy_chapters = []
+    for i, chapter_dict in enumerate(chapters_dicts):
         # Determine transcript range and end time for this chapter
-        if i < len(chapter_metadata) - 1:
-            transcript_end = chapter_metadata[i + 1]["title_index"]
-            end_time = chapter_metadata[i + 1]["start_time"]
+        if i < len(chapters_dicts) - 1:
+            transcript_end_idx = chapters_dicts[i + 1]["title_index"]
+            end_time = chapters_dicts[i + 1]["start_time"]
             # Enforce monotonic chapter boundaries
-            if end_time <= chapter_data["start_time"]:
+            if end_time <= chapter_dict["start_time"]:
                 msg = "Subsequent chapter timestamps must be strictly increasing"
                 raise FileInvalidFormatError(msg)
         else:
-            transcript_end = len(transcript_lines)
+            transcript_end_idx = len(transcript_lines)
             end_time = math.inf
 
         # Extract transcript lines from start timestamp to range end
-        start_idx = chapter_data["transcript_start"]
-        transcript_chapter_lines = transcript_lines[start_idx:transcript_end]
+        start_idx = chapter_dict["transcript_start"]
+        chapter_transcript_text = transcript_lines[start_idx:transcript_end_idx]
 
-        result_chapters.append(
+        legacy_chapters.append(
             Chapter(
-                title=chapter_data["title"],
-                start_time=chapter_data["start_time"],
+                title=chapter_dict["title"],
+                start_time=chapter_dict["start_time"],
                 end_time=end_time,
-                transcript_lines=list(transcript_chapter_lines),
+                transcript_lines=list(chapter_transcript_text),
             )
         )
 
-    return result_chapters
+    return legacy_chapters
 
 
 def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
@@ -186,19 +186,17 @@ def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
     transcript_lines = [line for line in raw_transcript.splitlines() if line.strip()]
     timestamp_indices = find_timestamps(transcript_lines)
 
-    chapters_metadata = []
+    chapters_dicts = []
 
     # Find first chapter
     if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
-        chapters_metadata.append(first_chapter)
+        chapters_dicts.append(first_chapter)
 
     # Find subsequent chapters
-    chapters_metadata.extend(
-        _find_subsequent_chapters(transcript_lines, timestamp_indices)
-    )
+    chapters_dicts.extend(_find_subsequent_chapters(transcript_lines, timestamp_indices))
 
-    # Extract transcript lines for chapters (order is already correct)
-    return _extract_transcript_lines_for_chapters(transcript_lines, chapters_metadata)
+    # Extract transcript lines for chapters and build legacy Chapter objects
+    return _extract_transcript_lines_for_chapters(transcript_lines, chapters_dicts)
 
 
 def parse_transcript_document(raw_transcript: str) -> "TranscriptDocument":
@@ -221,53 +219,51 @@ def parse_transcript_document(raw_transcript: str) -> "TranscriptDocument":
     transcript_lines = sanitized_transcript.splitlines()
     timestamp_indices = find_timestamps(transcript_lines)
 
-    chapters_metadata = []
+    chapters_dicts = []
 
     # Find first chapter
     if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
-        chapters_metadata.append(first_chapter)
+        chapters_dicts.append(first_chapter)
 
     # Find subsequent chapters
-    chapters_metadata.extend(
-        _find_subsequent_chapters(transcript_lines, timestamp_indices)
-    )
+    chapters_dicts.extend(_find_subsequent_chapters(transcript_lines, timestamp_indices))
 
-    # Build new format chapters with TranscriptLine objects
-    new_chapters = []
-    for i, chapter_data in enumerate(chapters_metadata):
+    # Build chapters with TranscriptLine objects
+    chapters = []
+    for i, chapter_dict in enumerate(chapters_dicts):
         # Determine transcript range and end time for this chapter
-        if i < len(chapters_metadata) - 1:
-            transcript_end = chapters_metadata[i + 1]["title_index"]
-            end_time = chapters_metadata[i + 1]["start_time"]
+        if i < len(chapters_dicts) - 1:
+            transcript_end_idx = chapters_dicts[i + 1]["title_index"]
+            end_time = chapters_dicts[i + 1]["start_time"]
             # Enforce monotonic chapter boundaries
-            if end_time <= chapter_data["start_time"]:
+            if end_time <= chapter_dict["start_time"]:
                 msg = "Subsequent chapter timestamps must be strictly increasing"
                 raise FileInvalidFormatError(msg)
         else:
-            transcript_end = len(transcript_lines)
+            transcript_end_idx = len(transcript_lines)
             end_time = math.inf
 
         # Extract transcript lines from start timestamp to range end
-        start_idx = chapter_data["transcript_start"]
-        raw_chapter_lines = transcript_lines[start_idx:transcript_end]
+        start_idx = chapter_dict["transcript_start"]
+        chapter_transcript_text = transcript_lines[start_idx:transcript_end_idx]
 
         # Convert alternating timestamp/text strings to TranscriptLine objects
-        transcript_line_objects = _convert_string_lines_to_transcript_objects(
-            raw_chapter_lines
+        chapter_transcript_lines = _convert_string_lines_to_transcript_objects(
+            chapter_transcript_text
         )
 
-        new_chapters.append(
+        chapters.append(
             ModelsChapter(
-                title=chapter_data["title"],
-                start_time=chapter_data["start_time"],
+                title=chapter_dict["title"],
+                start_time=chapter_dict["start_time"],
                 end_time=end_time,
-                transcript_lines=transcript_line_objects,
+                transcript_lines=chapter_transcript_lines,
             )
         )
 
     return TranscriptDocument(
         metadata=VideoMetadata(),  # Empty metadata for file method
-        chapters=new_chapters,
+        chapters=chapters,
     )
 
 
