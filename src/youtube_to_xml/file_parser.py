@@ -18,6 +18,14 @@ from youtube_to_xml.exceptions import (
     FileEmptyError,
     FileInvalidFormatError,
 )
+from youtube_to_xml.models import (
+    Chapter as ModelsChapter,
+)
+from youtube_to_xml.models import (
+    TranscriptDocument,
+    TranscriptLine,
+    VideoMetadata,
+)
 from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
@@ -191,3 +199,139 @@ def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
 
     # Extract transcript lines for chapters (order is already correct)
     return _extract_transcript_lines_for_chapters(transcript_lines, chapters_metadata)
+
+
+def parse_transcript_document(raw_transcript: str) -> "TranscriptDocument":
+    """Parse transcript file into unified TranscriptDocument format.
+
+    Args:
+        raw_transcript: Raw transcript text from file
+
+    Returns:
+        TranscriptDocument with empty metadata and structured chapters
+
+    Raises:
+        FileEmptyError: If transcript is empty
+        FileInvalidFormatError: If format is invalid
+    """
+    sanitized_transcript = _sanitize_transcript_spacing(raw_transcript)
+
+    validate_transcript_format(sanitized_transcript)
+
+    transcript_lines = sanitized_transcript.splitlines()
+    timestamp_indices = find_timestamps(transcript_lines)
+
+    chapters_metadata = []
+
+    # Find first chapter
+    if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
+        chapters_metadata.append(first_chapter)
+
+    # Find subsequent chapters
+    chapters_metadata.extend(
+        _find_subsequent_chapters(transcript_lines, timestamp_indices)
+    )
+
+    # Build new format chapters with TranscriptLine objects
+    new_chapters = []
+    for i, chapter_data in enumerate(chapters_metadata):
+        # Determine transcript range and end time for this chapter
+        if i < len(chapters_metadata) - 1:
+            transcript_end = chapters_metadata[i + 1]["title_index"]
+            end_time = chapters_metadata[i + 1]["start_time"]
+            # Enforce monotonic chapter boundaries
+            if end_time <= chapter_data["start_time"]:
+                msg = "Subsequent chapter timestamps must be strictly increasing"
+                raise FileInvalidFormatError(msg)
+        else:
+            transcript_end = len(transcript_lines)
+            end_time = math.inf
+
+        # Extract transcript lines from start timestamp to range end
+        start_idx = chapter_data["transcript_start"]
+        raw_chapter_lines = transcript_lines[start_idx:transcript_end]
+
+        # Convert alternating timestamp/text strings to TranscriptLine objects
+        transcript_line_objects = _convert_string_lines_to_transcript_objects(
+            raw_chapter_lines
+        )
+
+        new_chapters.append(
+            ModelsChapter(
+                title=chapter_data["title"],
+                start_time=chapter_data["start_time"],
+                end_time=end_time,
+                transcript_lines=transcript_line_objects,
+            )
+        )
+
+    return TranscriptDocument(
+        metadata=VideoMetadata(),  # Empty metadata for file method
+        chapters=new_chapters,
+    )
+
+
+def _sanitize_transcript_spacing(raw_transcript: str) -> str:
+    """Normalize whitespace and remove blank lines from transcript.
+
+    Args:
+        raw_transcript: Raw transcript text with potentially inconsistent spacing
+
+    Returns:
+        Sanitized transcript string with normalized spacing (leading/trailing
+        whitespace trimmed, multiple spaces collapsed to single spaces,
+        blank lines removed)
+    """
+    sanitized_lines = [
+        " ".join(line.split()) for line in raw_transcript.splitlines() if line.strip()
+    ]
+    return "\n".join(sanitized_lines)
+
+
+def _convert_string_lines_to_transcript_objects(
+    raw_lines: list[str],
+) -> list["TranscriptLine"]:
+    """Convert alternating timestamp/text strings to TranscriptLine objects.
+
+    Args:
+        raw_lines: List of strings in alternating timestamp/text pattern
+
+    Returns:
+        List of TranscriptLine objects
+    """
+    result = []
+    i = 0
+
+    while i < len(raw_lines):
+        # Check if current line is a timestamp
+        if TIMESTAMP_PATTERN.match(raw_lines[i].strip()):
+            timestamp_str = raw_lines[i]
+
+            # Get the text that follows (or empty if at end)
+            if i + 1 < len(raw_lines):
+                # Check if next line is also a timestamp (shouldn't happen normally)
+                if TIMESTAMP_PATTERN.match(raw_lines[i + 1].strip()):
+                    # Two consecutive timestamps - add empty text for first
+                    text = ""
+                    i += 1  # Only advance by 1 to process next timestamp
+                else:
+                    # Normal case: timestamp followed by text
+                    text = raw_lines[i + 1]
+                    i += 2  # Advance past both timestamp and text
+            else:
+                # Timestamp at end of chapter with no following text
+                text = ""
+                i += 1
+
+            result.append(
+                TranscriptLine(
+                    timestamp=timestamp_to_seconds(timestamp_str),
+                    text=text,
+                )
+            )
+        else:
+            # Non-timestamp line without preceding timestamp (shouldn't happen)
+            # Skip it
+            i += 1
+
+    return result

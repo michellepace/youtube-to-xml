@@ -1,0 +1,302 @@
+# PR Strategy: YouTube Transcript to XML Integration
+
+## Executive Summary
+
+This integration merges the experimental URL-based transcript fetcher into the main application architecture. The strategy follows TDD principles, delivers incremental value with each PR, and maintains 100% backward compatibility while enabling new functionality.
+
+## Target Architecture
+
+```text
+models.py (shared data structures)
+├── TranscriptDocument (unified container)
+├── VideoMetadata (title, published, duration, url)
+├── TranscriptLine (timestamp, text)
+└── Chapter (title, times, transcript_lines)
+
+Parsers (produce TranscriptDocument objects)
+├── file_parser.py (refactor to use TranscriptLine objects)
+└── url_parser.py (new, extracted from scripts/url_to_transcript.py)
+
+Presentation
+├── xml_builder.py (accepts TranscriptDocument)
+└── cli.py (handles both file and URL workflows)
+```
+
+### Shared Models
+
+1. **`models.py`**: Unified data structures
+   ```python
+   @dataclass(frozen=True)
+   class VideoMetadata:
+       video_title: str = ""
+       video_published: str = ""  # YYYYMMDD raw format or empty
+       video_duration: int = 0    # seconds as integer (0 for file method)
+       video_url: str = ""
+       # Note: chapters_data field is NOT needed - chapter detection logic
+       # stays internal to URL parser implementation
+
+   @dataclass(frozen=True)
+   class TranscriptLine:
+       timestamp: float  # seconds
+       text: str
+
+   @dataclass(frozen=True)
+   class Chapter:
+       title: str
+       start_time: float
+       end_time: float
+       transcript_lines: list[TranscriptLine]
+
+   @dataclass(frozen=True)
+   class TranscriptDocument:
+       metadata: VideoMetadata
+       chapters: list[Chapter]
+   ```
+
+2. **`time_utils.py`**: All temporal utilities (already complete)
+   - `timestamp_to_seconds()` - converts "M:SS" to float seconds
+   - `seconds_to_timestamp()` - converts float seconds to "M:SS"
+   - `format_video_published()` - converts YYYYMMDD to YYYY-MM-DD
+   - `format_video_duration()` - converts seconds to "2h 15m 3s"
+
+3. **`xml_builder.py`**: Enhanced with metadata support
+   - Accepts `TranscriptDocument` objects
+   - Calls `format_video_duration()` to convert seconds → "2h 43m 47s" for XML
+   - Calls `format_video_published()` for date formatting if needed
+   - Maintains 100% backward compatibility
+
+### Key Terminology
+
+- **TranscriptLine**: A timestamp-text pair representing words spoken at a specific time (e.g., "0:02" → "Hello world")
+- **Chapter**: A titled section containing multiple transcript lines
+- **TranscriptDocument**: Complete container with video metadata + all chapters
+
+## Critical Integration Challenges
+
+### 1. Data Model Incompatibility
+- **Issue**: File parser uses `transcript_lines: list[str]` (raw strings with embedded timestamps)
+- **URL script uses**: `transcript_lines: list[TranscriptLine]` (structured objects)
+- **Impact**: Prevents code reuse between parsers and xml_builder
+
+### 2. Duplicate XML Generation
+- **Issue**: URL script contains its own XML creation logic
+- **Impact**: Violates DRY principle, maintenance burden, potential inconsistencies
+
+### 3. Missing Shared Models
+- **Issue**: Both implementations define their own incompatible `Chapter` class
+- **Impact**: Cannot share xml_builder or other components
+
+### 4. No VideoMetadata in File Workflow
+- **Issue**: File parser has no concept of metadata (hardcoded empty strings in XML)
+- **Impact**: Limits extensibility and consistency
+
+## Required XML Output Format
+
+The integration must preserve this exact XML structure for backward compatibility:
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<transcript video_title="" video_published="" video_duration="" video_url="">
+  <chapters>
+    <chapter title="Introduction to Cows" start_time="0:02">
+      0:02
+      Welcome to this talk about erm.. er
+      2:30
+      Let's start with the fundamentals
+    </chapter>
+  </chapters>
+</transcript>
+```
+
+**Note**: File method produces empty metadata attributes. URL method populates them with actual values.
+
+## File-First PR Strategy (Recommended)
+
+### ✅ PR 1: `feat/shared-models-foundation`
+
+**PR Contents:**
+- Create `src/youtube_to_xml/models.py` with shared data structures
+- Add comprehensive tests for new models in `tests/test_models.py`
+
+**Value:** Establishes foundational data structures. No dead code - models immediately used by tests.
+
+**Risk:** [Small] - Pure addition, no changes to existing functionality
+
+**Dependencies:** None
+
+---
+
+### ✅ PR 2: `refactor/xml-builder-dual-interface`
+
+**PR Contents:**
+- Update `xml_builder.py` to:
+  - Import shared models from `youtube_to_xml.models`
+  - Add new function: `transcript_to_xml(document: TranscriptDocument) -> str`
+  - Keep existing: `chapters_to_xml(chapters: list[file_parser.Chapter]) -> str`
+  - New function handles metadata formatting via time_utils
+  - Format TranscriptLine objects properly (timestamp + text pairs)
+- Add pragmatic converage tests for new interface
+- Ensure existing tests still pass
+
+**Value:** XML builder ready to handle TranscriptDocument objects. File workflow unchanged.
+
+**Risk:** [Small] - Additive change, backward compatibility maintained
+
+**Dependencies:** PR 1 (models)
+
+**Key Insight:** This PR comes early because it creates the target interface that both parsers will use, establishing the contract before any parser changes.
+
+---
+
+### ✅ PR 3: `refactor/file-parser-structured-output`
+
+**PR Contents:**
+- Update `file_parser.py` to:
+  - Import models (Chapter, TranscriptLine, TranscriptDocument, VideoMetadata)
+  - Add new function: `parse_transcript_document(raw: str) -> TranscriptDocument`
+  - Keep existing: `parse_transcript_file(raw: str) -> list[file_parser.Chapter]`
+  - New function converts string lines to TranscriptLine objects during parsing
+  - Returns TranscriptDocument with empty VideoMetadata
+  - **CRITICAL**: Ensure never produces TranscriptDocument(chapters=[]) - create default Chapter(title="", ...) when no chapter structure detected. This aligns to what current `scripts/url_to_transcript.py` does too.
+- Add tests for new function
+- Ensure existing function and tests unchanged
+
+**Value:** File parser can now produce TranscriptDocument objects while maintaining backward compatibility.
+
+**Risk:** [Medium] - Complex string-to-object conversion logic, but isolated in new function
+
+**Dependencies:** PRs 1-2
+
+---
+
+### PR 4: `feat/cli-uses-new-interfaces`
+
+**PR Contents:**
+- Update `cli.py` to:
+  - Use `parse_transcript_document()` instead of `parse_transcript_file()`
+  - Use `transcript_to_xml()` instead of `chapters_to_xml()`
+  - Rest of CLI logic unchanged
+- Update CLI tests
+- Verify end-to-end tests pass with identical XML output
+
+**Value:** File workflow fully migrated to new architecture. Ready for URL integration.
+
+**Risk:** [Small] - Simple function call changes
+
+**Dependencies:** PRs 1-3
+
+---
+
+### PR 5: `refactor/remove-deprecated-interfaces`
+
+**PR Contents:**
+- Remove deprecated functions:
+  - `file_parser.parse_transcript_file()`
+  - `xml_builder.chapters_to_xml()`
+  - Old `file_parser.Chapter` class
+- Remove imports of old Chapter from xml_builder
+- Update any remaining tests
+
+**Value:** Clean codebase, single source of truth for models
+
+**Risk:** [Small] - Removing unused code
+
+**Dependencies:** PR 4
+
+---
+
+### PR 6: `refactor/url-script-use-shared-models`
+
+**PR Contents:**
+- Update `scripts/url_to_transcript.py` to:
+  - Import shared models from `youtube_to_xml.models`
+  - Remove duplicate VideoMetadata, TranscriptLine, Chapter definitions
+  - Convert VideoMetadata.video_duration from string to int:
+    - Currently: `video_duration: str` (formatted "2h 15m 3s")
+    - Change to: `video_duration: int` (raw seconds)
+    - Note: formatting now happens in xml_builder via `format_video_duration()`
+  - Import and use `xml_builder.transcript_to_xml()`
+  - Remove local XML generation functions
+- Note: script is currently tested by `tests/test_end_to_end.py` and `tests/test_exceptions_ytdlp.py` only. A specfic test file for TDD of this script (later to be converted to `tests/test_url_parser.py`) must be considered for TDD if sane.
+
+**Value:** URL script uses shared infrastructure, eliminating ~150 lines of duplicate code
+
+**Risk:** [Small] - URL script already uses compatible structures
+
+**Dependencies:** PRs 1-2 (models and xml_builder with new interface)
+
+---
+
+### PR 7: `feat/extract-url-parser-module`
+
+**PR Contents:**
+- Create `src/youtube_to_xml/url_parser.py`:
+  - Extract core logic from `scripts/url_to_transcript.py`
+  - Implement `parse_transcript_document(url: str) -> TranscriptDocument`
+  - Handle all YouTube/yt-dlp exceptions
+- Add comprehensive tests
+- Keep script working (imports from new module)
+
+**Value:** URL parsing logic available as reusable module
+
+**Risk:** [Small] - Logic extraction from working code
+
+**Dependencies:** PR 6
+
+---
+
+### PR 8: `feat/unified-cli-auto-detection`
+
+**PR Contents:**
+- Update `cli.py` to:
+  - Auto-detect input type (file path vs URL)
+  - Import url_parser for URL inputs
+  - Both paths produce TranscriptDocument → xml_builder
+- Update help text for dual input methods
+- Add end-to-end tests for URL input
+
+**Value:** Single CLI handles both files and URLs transparently
+
+**Risk:** [Small] - Simple routing logic
+
+**Dependencies:** PR 7
+
+---
+
+### PR 9: `refactor/remove-url-script`
+
+**PR Contents:**
+- Remove `scripts/url_to_transcript.py`
+- Update wrapper to use url_parser module
+- Clean up documentation
+
+**Value:** Single source of truth for URL processing
+
+**Risk:** [Small] - Cleanup after successful integration
+
+**Dependencies:** PR 8
+
+## PR Implementation Summary
+
+**Foundation & File Migration**
+- ✅ PR 1: **Shared models foundation**: Create `models.py` with TranscriptDocument, VideoMetadata, Chapter, TranscriptLine
+- ✅ PR 2: **XML builder dual interface**: Add new transcript_to_xml function + keep old chapters_to_xml
+- ✅ PR 3: **File parser dual output**: Add new parse_transcript_document function + keep old function
+- PR 4: **CLI migrates to new interfaces**: Uses parse_transcript_document and transcript_to_xml, file workflow fully migrated
+- PR 5: **Remove deprecated interfaces**: Remove deprecated file parser functions and old file_parser.Chapter class
+
+**URL Integration & Unification**
+- PR 6: **URL script adopts shared models**: Uses xml_builder.transcript_to_xml, removes duplicate XML code
+- PR 7: **Extract url_parser module**: Create `src/youtube_to_xml/url_parser.py` from `scripts/url_to_transcript.py`
+- PR 8: **Unified CLI with auto-detection**: Single entry point for both files and URLs
+- PR 9: **Remove url script**: Delete `scripts/url_to_transcript.py` after successful integration
+
+## Success Metrics
+
+- [ ] **PRs are developed with TDD** write tests before implementation
+- [ ] **Pragmatic test coverage** for all new functions and models
+- [ ] **All existing tests pass** after each PR without modification
+- [ ] **No breaking changes** to file-based workflow (backward compatibility maintained)
+- [ ] **Zero code duplication** between file and URL parsers after PR 9
+- [ ] **Single XML generation path** through xml_builder.transcript_to_xml after PR 5
+- [ ] **Identical XML output** for equivalent file/URL inputs verified by end-to-end tests
