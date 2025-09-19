@@ -12,43 +12,62 @@ from youtube_to_xml.models import (
 )
 
 
-def test_models_can_be_created_and_used() -> None:
-    """Smoke test: models exist and can be instantiated with expected data."""
-    # Defaults are empty strings and 0 for duration (file based scenario)
-    file_metadata = VideoMetadata()
-    assert file_metadata.video_title == ""
-    assert file_metadata.video_published == ""
-    assert file_metadata.video_duration == 0
-    assert file_metadata.video_url == ""
+def test_transcript_line_stores_timestamp_and_text() -> None:
+    """TranscriptLine stores float timestamp and string text."""
+    line = TranscriptLine(timestamp=30.5, text="Hello world")
+    assert line.timestamp == 30.5
+    assert line.text == "Hello world"
 
-    # URL method scenario - populated metadata
-    url_metadata = VideoMetadata(
+
+def test_video_metadata_creates_with_empty_defaults() -> None:
+    """VideoMetadata initializes with empty strings and zero duration."""
+    metadata = VideoMetadata()
+    assert metadata.video_title == ""
+    assert metadata.video_published == ""
+    assert metadata.video_duration == 0
+    assert metadata.video_url == ""
+
+
+def test_video_metadata_stores_all_provided_values() -> None:
+    """VideoMetadata correctly stores title, date, duration and URL when provided."""
+    metadata = VideoMetadata(
         video_title="Test Video",
         video_published="20250717",
-        video_duration=163,  # raw seconds
+        video_duration=163,
         video_url="https://youtube.com/watch?v=abc123",
     )
-    assert url_metadata.video_title == "Test Video"
-    assert url_metadata.video_duration == 163
+    assert metadata.video_title == "Test Video"
+    assert metadata.video_published == "20250717"
+    assert metadata.video_duration == 163
+    assert metadata.video_url == "https://youtube.com/watch?v=abc123"
 
-    # Create transcript lines
-    line1 = TranscriptLine(timestamp=0.0, text="Hello world")
-    line2 = TranscriptLine(timestamp=30.5, text="How are you?")
-    assert line1.timestamp == 0.0
-    assert line2.text == "How are you?"
 
-    # Create chapter
+def test_chapter_stores_title_times_and_transcript_lines() -> None:
+    """Chapter holds title, start/end times, and list of TranscriptLine objects."""
+    lines = [
+        TranscriptLine(timestamp=0.0, text="Hello"),
+        TranscriptLine(timestamp=30.5, text="World"),
+    ]
     chapter = Chapter(
         title="Introduction",
         start_time=0.0,
         end_time=60.0,
-        transcript_lines=[line1, line2],
+        transcript_lines=lines,
     )
     assert chapter.title == "Introduction"
+    assert chapter.start_time == 0.0
+    assert chapter.end_time == 60.0
     assert len(chapter.transcript_lines) == 2
 
-    # Create complete document
-    document = TranscriptDocument(metadata=url_metadata, chapters=[chapter])
+
+def test_transcript_document_combines_metadata_and_chapters() -> None:
+    """TranscriptDocument holds VideoMetadata and list of Chapter objects."""
+    metadata = VideoMetadata(video_title="Test Video")
+    chapter = Chapter(
+        title="Chapter 1", start_time=0.0, end_time=60.0, transcript_lines=[]
+    )
+
+    document = TranscriptDocument(metadata=metadata, chapters=[chapter])
     assert document.metadata.video_title == "Test Video"
     assert len(document.chapters) == 1
-    assert document.chapters[0].title == "Introduction"
+    assert document.chapters[0].title == "Chapter 1"
