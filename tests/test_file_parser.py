@@ -13,9 +13,7 @@ from youtube_to_xml.exceptions import (
     FileInvalidFormatError,
 )
 from youtube_to_xml.file_parser import (
-    find_timestamps,
     parse_transcript_file,
-    validate_transcript_format,
 )
 from youtube_to_xml.time_utils import (
     seconds_to_timestamp,
@@ -67,22 +65,13 @@ Chapter 3
 # ============= TIMESTAMP TESTS =============
 
 
-def test_finds_all_timestamp_indices(simple_transcript: str) -> None:
-    """Find all timestamp line indices in multi-line text."""
-    lines = simple_transcript.splitlines()
-    timestamp_indices = find_timestamps(lines)
-
-    assert timestamp_indices == [1, 3]
-    assert lines[1] == "0:00"
-    assert lines[3] == "2:30"
+# NOTE: test_finds_all_timestamp_indices removed - function is now private
 
 
 # ============= VALIDATION TESTS =============
 
 
-def test_validation_passes_for_valid_transcript(simple_transcript: str) -> None:
-    """Valid transcript passes validation."""
-    assert validate_transcript_format(simple_transcript) is None
+# NOTE: test_validation_passes_for_valid_transcript removed - function is now private
 
 
 def test_parses_valid_transcript_format() -> None:

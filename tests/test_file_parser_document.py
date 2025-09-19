@@ -286,6 +286,38 @@ Line 3"""
     assert doc.chapters[1].title == "New Chapter Here"
 
 
+def test_no_chapter_when_one_line_gap() -> None:
+    """No chapter detected when only 1 line between timestamps."""
+    transcript = """Intro
+0:00
+Content
+2:30
+Wrong gap
+7:30
+More content"""
+
+    doc = parse_transcript_document(transcript)
+    assert len(doc.chapters) == 1
+    assert doc.chapters[0].title == "Intro"
+
+
+def test_no_chapter_when_three_line_gap() -> None:
+    """No chapter detected when 3 lines between timestamps."""
+    transcript = """Intro
+0:00
+Content
+2:30
+Line 1
+Line 2
+Line 3
+7:30
+More content"""
+
+    doc = parse_transcript_document(transcript)
+    assert len(doc.chapters) == 1
+    assert doc.chapters[0].title == "Intro"
+
+
 # ============= EDGE CASES =============
 
 
@@ -357,6 +389,41 @@ Just text"""
 
     with pytest.raises(FileInvalidFormatError, match="Second line must be a timestamp"):
         parse_transcript_document(transcript)
+
+
+def test_rejects_consecutive_timestamps_after_title() -> None:
+    """Consecutive timestamps after chapter title should fail format validation."""
+    consecutive_timestamps = """Introduction to Bret Taylor
+0:00
+0:01
+You're CTO of Meta and co-CEO of..."""
+
+    with pytest.raises(
+        FileInvalidFormatError, match="Third line must be transcript text, not timestamp"
+    ):
+        parse_transcript_document(consecutive_timestamps)
+
+
+def test_rejects_non_increasing_chapter_timestamps() -> None:
+    """Test that non-increasing chapter timestamps raise FileInvalidFormatError."""
+    # Create a transcript where second chapter has same/earlier start time than first
+    transcript_with_bad_timestamps = """Chapter 1
+0:30
+First chapter content
+
+Chapter 2
+0:30
+Second chapter content with same timestamp
+
+Chapter 3
+0:25
+Third chapter content with earlier timestamp"""
+
+    with pytest.raises(
+        FileInvalidFormatError,
+        match="Subsequent chapter timestamps must be strictly increasing",
+    ):
+        parse_transcript_document(transcript_with_bad_timestamps)
 
 
 # ============= INTEGRATION PATTERN TESTS =============

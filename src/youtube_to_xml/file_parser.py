@@ -50,7 +50,7 @@ class Chapter:
         return self.end_time - self.start_time
 
 
-def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
+def _find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
     """Find all timestamp line indices in the transcript."""
     return [
         i
@@ -59,7 +59,7 @@ def find_timestamps(transcript_lines: Sequence[str]) -> list[int]:
     ]
 
 
-def validate_transcript_format(raw_transcript: str) -> None:
+def _validate_transcript_format(raw_transcript: str) -> None:
     """Validate that the transcript is in YouTube format.
 
     Requirements
@@ -180,11 +180,11 @@ def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
         FileEmptyError: If transcript file is empty
         FileInvalidFormatError: If transcript format is invalid
     """
-    validate_transcript_format(raw_transcript)
+    _validate_transcript_format(raw_transcript)
 
     # Remove all blank lines from the transcript
     transcript_lines = [line for line in raw_transcript.splitlines() if line.strip()]
-    timestamp_indices = find_timestamps(transcript_lines)
+    timestamp_indices = _find_timestamps(transcript_lines)
 
     chapters_dicts = []
 
@@ -214,10 +214,10 @@ def parse_transcript_document(raw_transcript: str) -> "TranscriptDocument":
     """
     sanitized_transcript = _sanitize_transcript_spacing(raw_transcript)
 
-    validate_transcript_format(sanitized_transcript)
+    _validate_transcript_format(sanitized_transcript)
 
     transcript_lines = sanitized_transcript.splitlines()
-    timestamp_indices = find_timestamps(transcript_lines)
+    timestamp_indices = _find_timestamps(transcript_lines)
 
     chapters_dicts = []
 
