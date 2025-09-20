@@ -58,7 +58,9 @@ First, we'll start with the patches
 
 ### Option 2: URL Method (Experimental)
 
-🔥 Experimental script pending integration. If YouTube rate limits apply run `uv lock --upgrade-package yt-dlp && uv sync`.
+🔥 Experimental script pending integration. If rate-limited:
+  - **Global install**: `uv tool upgrade youtube-to-xml`
+  - **Local development**: `uv lock --upgrade-package yt-dlp && uv sync`
 
 ```bash
 # Use the globally installed command (after Option 1 installation)
@@ -105,7 +107,7 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 **Architecture**: Pure functions with clear module separation
 
-**Test-Driven Development**: 127 tests (16 integration, 111 unit, ~65 seconds)
+**Test-Driven Development**: 131 tests (16 integration, 115 unit, ~67 seconds)
 
 **Dependencies**:
 - Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
