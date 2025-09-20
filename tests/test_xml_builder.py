@@ -25,7 +25,10 @@ from youtube_to_xml.xml_builder import chapters_to_xml, transcript_to_xml
 
 @pytest.fixture
 def single_chapter() -> list[Chapter]:
-    """Single chapter with special characters for testing."""
+    """Single chapter with special characters for testing.
+
+    🛑 LEGACY (file_parser.Chapter with transcript_lines: list[str])
+    """
     return [
         Chapter(
             title='Introduction & "Getting Started" <Overview>',
@@ -43,7 +46,10 @@ def single_chapter() -> list[Chapter]:
 
 @pytest.fixture
 def multiple_chapters() -> list[Chapter]:
-    """Multiple chapters for testing."""
+    """Multiple chapters for testing.
+
+    🛑 LEGACY (file_parser.Chapter with transcript_lines: list[str])
+    """
     return [
         Chapter(
             title="Introduction",
@@ -84,7 +90,10 @@ def multiple_chapters() -> list[Chapter]:
 
 
 def test_empty_chapters_creates_valid_structure() -> None:
-    """Empty chapter list creates valid XML with empty chapters element."""
+    """Empty chapter list creates valid XML with empty chapters element.
+
+    🛑 LEGACY (chapters_to_xml with empty list)
+    """
     xml_string = chapters_to_xml([])
     root = ET.fromstring(xml_string)
 
@@ -100,7 +109,10 @@ def test_empty_chapters_creates_valid_structure() -> None:
 def test_xml_is_valid_and_parseable(
     single_chapter: list[Chapter], tmp_path: Path
 ) -> None:
-    """Generated XML can be parsed successfully by ElementTree."""
+    """Generated XML can be parsed successfully by ElementTree.
+
+    🛑 LEGACY (chapters_to_xml validation)
+    """
     xml_string = chapters_to_xml(single_chapter)
 
     # Write to file and parse - should not raise exception
@@ -117,7 +129,10 @@ def test_xml_is_valid_and_parseable(
 
 
 def test_builds_correct_xml_structure(multiple_chapters: list[Chapter]) -> None:
-    """XML has correct structure with proper elements, attributes, and content."""
+    """XML has correct structure with proper elements, attributes, and content.
+
+    🛑 LEGACY (chapters_to_xml multi-chapter structure)
+    """
     xml_string = chapters_to_xml(multiple_chapters)
     root = ET.fromstring(xml_string)
 
@@ -151,7 +166,10 @@ def test_builds_correct_xml_structure(multiple_chapters: list[Chapter]) -> None:
 
 
 def test_escapes_special_xml_characters(single_chapter: list[Chapter]) -> None:
-    """Special XML characters are properly escaped in output."""
+    """Special XML characters are properly escaped in output.
+
+    🛑 LEGACY (chapters_to_xml character escaping)
+    """
     xml_string = chapters_to_xml(single_chapter)
 
     # ElementTree automatically escapes these characters
@@ -165,14 +183,20 @@ def test_escapes_special_xml_characters(single_chapter: list[Chapter]) -> None:
 
 
 def test_includes_xml_declaration(single_chapter: list[Chapter]) -> None:
-    """XML output includes proper declaration."""
+    """XML output includes proper declaration.
+
+    🛑 LEGACY (chapters_to_xml declaration format)
+    """
     xml_string = chapters_to_xml(single_chapter)
     assert xml_string.startswith("<?xml version='1.0' encoding='utf-8'?>")
     assert xml_string.endswith("</transcript>\n")  # Should end with newline
 
 
 def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
-    """XML output follows template indentation: 2 spaces per level, 6 for transcript."""
+    """XML output follows template indentation: 2 spaces per level, 6 for transcript.
+
+    🛑 LEGACY (chapters_to_xml indentation)
+    """
     xml_string = chapters_to_xml(single_chapter)
     lines = xml_string.split("\n")
 
@@ -198,49 +222,11 @@ def test_matches_template_indentation(single_chapter: list[Chapter]) -> None:
         assert line == "    </chapter>", f"Expected '    </chapter>', got '{line}'"
 
 
-# ===========================================================
-# ============= NEW TRANSCRIPT_TO_XML TDD TESTS =============
-# ===========================================================
-
-
-def test_url_method_formatted_metadata() -> None:
-    """Populated metadata should be formatted via time_utils."""
-    metadata = VideoMetadata(
-        video_title="Test Video",
-        video_published="20250717",  # Raw YYYYMMDD
-        video_duration=163,  # Raw seconds
-        video_url="https://youtube.com/watch?v=abc123",
-    )
-    document = TranscriptDocument(metadata=metadata, chapters=[])
-    xml = transcript_to_xml(document)
-
-    # Parse XML for robust attribute checking
-    root = ET.fromstring(xml)
-    assert root.get("video_title") == "Test Video"
-    assert root.get("video_published") == "2025-07-17"  # Formatted by time_utils
-    assert root.get("video_duration") == "2m 43s"  # Formatted by time_utils
-    assert root.get("video_url") == "https://youtube.com/watch?v=abc123"
-
-
-def test_transcript_lines_formatted_correctly() -> None:
-    """TranscriptLine objects should format as timestamp + text pairs."""
-    lines = [
-        TranscriptLine(timestamp=0.0, text="Hello world"),
-        TranscriptLine(timestamp=150.0, text="Goodbye world"),
-    ]
-    chapter = ModelsChapter(
-        title="Test Chapter", start_time=0.0, end_time=200.0, transcript_lines=lines
-    )
-    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
-    xml = transcript_to_xml(document)
-
-    # Should have alternating timestamp/text pattern with proper indentation
-    # 150.0 seconds = 2:30 (2 minutes, 30 seconds)
-    assert "      0:00\n      Hello world\n      2:30\n      Goodbye world" in xml
-
-
 def test_chapters_to_xml_still_works() -> None:
-    """Existing function should be unchanged."""
+    """Existing function should be unchanged.
+
+    🛑 LEGACY (chapters_to_xml compatibility check)
+    """
     old_chapter = Chapter(
         title="Old Format",
         start_time=0.0,
@@ -256,30 +242,30 @@ def test_chapters_to_xml_still_works() -> None:
     assert chapter_elem.get("title") == "Old Format"
 
 
-# ============= EDGE CASE TESTS =============
+# ===========================================================
+# ========== 👍 NEW TRANSCRIPT_TO_XML TDD TESTS ============
+# ===========================================================
+
+# ============= 1. FOUNDATION TESTS (Basic XML Structure) =============
 
 
-def test_special_characters_in_metadata() -> None:
-    """Metadata with XML special characters should be escaped."""
-    metadata = VideoMetadata(
-        video_title='Test & "Special" <Characters>',
-        video_url="https://youtube.com/watch?v=test&t=10s",
-    )
-    document = TranscriptDocument(metadata=metadata, chapters=[])
+def test_transcript_to_xml_empty_chapters() -> None:
+    """Document with no chapters creates valid XML with empty chapters element."""
+    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[])
     xml = transcript_to_xml(document)
-
-    # XML should be valid despite special characters
     root = ET.fromstring(xml)
-    assert root.get("video_title") == 'Test & "Special" <Characters>'
-    assert root.get("video_url") == "https://youtube.com/watch?v=test&t=10s"
+
+    assert root.tag == "transcript"
+    chapters_elem = root.find("chapters")
+    assert chapters_elem is not None
+    assert len(chapters_elem) == 0
 
 
-def test_output_structure_matches_existing_format() -> None:
-    """New function output should match existing XML structure exactly."""
-    # Create equivalent data - empty metadata like file method
-    metadata = VideoMetadata()  # All defaults (empty strings, 0 duration)
+def test_transcript_to_xml_basic_structure() -> None:
+    """Single chapter with empty metadata produces expected XML elements and structure."""
+    metadata = VideoMetadata()
 
-    # Single chapter with transcript lines (structured format)
+    # Single chapter test data
     lines = [
         TranscriptLine(timestamp=2.0, text="Welcome to the session"),
         TranscriptLine(timestamp=150.0, text="Let's begin"),
@@ -291,7 +277,7 @@ def test_output_structure_matches_existing_format() -> None:
     document = TranscriptDocument(metadata=metadata, chapters=[chapter])
     xml = transcript_to_xml(document)
 
-    # Should have same overall structure as existing format
+    # Verify complete XML structure
     assert '<transcript video_title="" video_published=""' in xml
     assert 'video_duration="" video_url="">' in xml
     assert "<chapters>" in xml
@@ -303,17 +289,13 @@ def test_output_structure_matches_existing_format() -> None:
     assert "</transcript>" in xml
 
 
-# ============= Michelle Refactor Later (integration?) =============
-
-
-def test_file_without_chapters() -> None:
-    """File without chapters returns one chapter (without title)."""
-    # Create document with no explicit chapter structure
+def test_transcript_to_xml_single_untitled_chapter() -> None:
+    """Chapter with empty title produces XML with empty title attribute."""
     document = TranscriptDocument(
-        metadata=VideoMetadata(),  # Empty metadata for file method
+        metadata=VideoMetadata(),
         chapters=[
             ModelsChapter(
-                title="",  # No title when no chapters detected
+                title="",  # Empty title test case
                 start_time=6.0,
                 end_time=18.0,
                 transcript_lines=[
@@ -345,15 +327,125 @@ def test_file_without_chapters() -> None:
     assert xml == expected
 
 
-def test_complete_structure_integration() -> None:
-    """Integration test: Real transcript data → XML using pythonic model construction.
+# ============= 2. CONTENT FORMATTING TESTS (Data Processing) =============
 
-    This test uses data extracted from example_transcripts/x4-chapters.xml
-    to verify our transcript_to_xml() function works with realistic data.
-    Tests URL method scenario with populated metadata that gets formatted.
-    Uses direct model construction to demonstrate clean, readable test patterns.
-    """
-    # Create complete document using natural model construction
+
+def test_transcript_to_xml_metadata_formatting() -> None:
+    """Metadata timestamps and durations are formatted for XML output."""
+    metadata = VideoMetadata(
+        video_title="Test Video",
+        video_published="20250717",
+        video_duration=163,
+        video_url="https://youtube.com/watch?v=abc123",
+    )
+    document = TranscriptDocument(metadata=metadata, chapters=[])
+    xml = transcript_to_xml(document)
+
+    root = ET.fromstring(xml)
+    assert root.get("video_title") == "Test Video"
+    assert root.get("video_published") == "2025-07-17"
+    assert root.get("video_duration") == "2m 43s"
+    assert root.get("video_url") == "https://youtube.com/watch?v=abc123"
+
+
+def test_transcript_to_xml_transcript_line_conversion() -> None:
+    """TranscriptLine objects produce alternating timestamp and text lines in XML."""
+    lines = [
+        TranscriptLine(timestamp=0.0, text="Hello world"),
+        TranscriptLine(timestamp=150.0, text="Goodbye world"),
+    ]
+    chapter = ModelsChapter(
+        title="Test Chapter", start_time=0.0, end_time=200.0, transcript_lines=lines
+    )
+    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
+    xml = transcript_to_xml(document)
+
+    expected_chapter = """    <chapter title="Test Chapter" start_time="0:00">
+      0:00
+      Hello world
+      2:30
+      Goodbye world
+    </chapter>"""
+
+    assert expected_chapter in xml
+
+
+# ============= 3. VALIDATION TESTS (XML Compliance) =============
+
+
+def test_transcript_to_xml_special_character_handling() -> None:
+    """Special characters in metadata and transcript content are XML-escaped."""
+    lines = [TranscriptLine(0.0, 'Text with "quotes" & <tags>')]
+    chapter = ModelsChapter('Chapter & "Title" <Test>', 0.0, 60.0, lines)
+    metadata = VideoMetadata(video_title='Video & "Title" <Test>')
+    document = TranscriptDocument(metadata=metadata, chapters=[chapter])
+
+    xml_string = transcript_to_xml(document)
+
+    assert "&amp;" in xml_string
+    assert "&quot;" in xml_string
+    assert "&lt;" in xml_string
+    assert "&gt;" in xml_string
+
+    root = ET.fromstring(xml_string)
+    assert root.get("video_title") == 'Video & "Title" <Test>'
+    chapter_elem = root.find(".//chapter")
+    assert chapter_elem is not None
+    assert chapter_elem.get("title") == 'Chapter & "Title" <Test>'
+
+
+def test_transcript_to_xml_validation(tmp_path: Path) -> None:
+    """Generated XML is well-formed and parseable by ElementTree."""
+    lines = [
+        TranscriptLine(timestamp=0.0, text='Welcome & "Getting Started" <Overview>'),
+        TranscriptLine(timestamp=148.0, text="Let's dive into the topic"),
+    ]
+    chapter = ModelsChapter(
+        title="Introduction", start_time=0.0, end_time=200.0, transcript_lines=lines
+    )
+    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
+    xml_string = transcript_to_xml(document)
+
+    xml_file = tmp_path / "test.xml"
+    xml_file.write_text(xml_string, encoding="utf-8")
+
+    parsed_tree = ET.parse(xml_file)
+    parsed_root = parsed_tree.getroot()
+    assert parsed_root is not None
+
+
+def test_transcript_to_xml_xml_declaration() -> None:
+    """XML output includes proper declaration header and newline ending."""
+    lines = [TranscriptLine(timestamp=0.0, text="Welcome to today's session")]
+    chapter = ModelsChapter(
+        title="Introduction", start_time=0.0, end_time=60.0, transcript_lines=lines
+    )
+    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
+    xml_string = transcript_to_xml(document)
+
+    assert xml_string.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml_string.endswith("</transcript>\n")
+
+
+def test_transcript_to_xml_indentation() -> None:
+    """XML elements use correct indentation spacing (2 spaces per level)."""
+    lines = [TranscriptLine(0.0, "Welcome"), TranscriptLine(148.0, "Content")]
+    chapter = ModelsChapter("Test", 0.0, 60.0, lines)
+    document = TranscriptDocument(VideoMetadata(), [chapter])
+    xml_lines = transcript_to_xml(document).split("\n")
+
+    # Verify indentation levels: 2 spaces per level, 6 for transcript content
+    assert xml_lines[2] == "  <chapters>"  # Level 1: 2 spaces
+    assert xml_lines[3].startswith("    <chapter")  # Level 2: 4 spaces
+    assert xml_lines[4].startswith("      0:00")  # Content: 6 spaces
+    assert xml_lines[8] == "    </chapter>"  # Closing: 4 spaces
+
+
+# ============= 4. INTEGRATION TESTS (End-to-End) =============
+
+
+def test_transcript_to_xml_multi_chapter_integration() -> None:
+    """Multi-chapter document with populated metadata produces complete XML structure."""
     document = TranscriptDocument(
         metadata=VideoMetadata(
             video_title="How Claude Code Hooks Work",
