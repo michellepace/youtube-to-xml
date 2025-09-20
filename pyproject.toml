@@ -31,13 +31,14 @@ url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experiment
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.2.0",
+    "pre-commit>=4.3.0",
     "pytest>=8.4.2",
-    "ruff>=0.12.12",
+    "ruff>=0.13.1",
 ]
 
-# Allow nightly builds from PyPI (e.g., yt-dlp dev versions like 2025.9.7.232816)
-# Manual update still required: `uv lock --upgrade-package yt-dlp`
+# Allow PyPI nightly builds
+#   for example yt-dlp dev versions like "2025.9.19.232813.dev0"
+#   but manual upgrade still needed, run `uv lock --upgrade`
 [tool.uv]
 prerelease = "allow"
 
