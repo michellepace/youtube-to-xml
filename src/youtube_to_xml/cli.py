@@ -105,7 +105,7 @@ def main() -> None:
         output_path.write_text(xml_output, encoding="utf-8")
     except (PermissionError, OSError):
         print(f"❌ Cannot write to: {output_path}")
-        logger.error("[%s] PermissionError writing: %s", execution_id, output_path)
+        logger.exception("[%s] Write failed: %s", execution_id, output_path)
         sys.exit(1)
 
     # Success message
