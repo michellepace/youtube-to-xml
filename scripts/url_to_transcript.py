@@ -73,7 +73,7 @@ class VideoMetadata:
     video_published: str  # YYYY-MM-DD formatted string
     video_duration: str  # "2m 43s" formatted string
     video_url: str
-    chapters_data: list[dict]
+    chapters_dicts: list[dict]
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,7 +195,7 @@ def fetch_video_metadata_and_transcript(
             video_published=format_video_published(raw_metadata.get("upload_date", "")),
             video_duration=format_video_duration(float(raw_metadata.get("duration", 0))),
             video_url=raw_metadata.get("webpage_url", url),
-            chapters_data=raw_metadata.get("chapters", []),
+            chapters_dicts=raw_metadata.get("chapters", []),
         )
 
         return metadata, transcript_lines
@@ -245,7 +245,7 @@ def assign_transcript_lines_to_chapters(
     Returns:
         List of Chapter objects with assigned transcript lines
     """
-    if not metadata.chapters_data:
+    if not metadata.chapters_dicts:
         # No chapters - create single chapter with video title
         return [
             Chapter(
@@ -257,27 +257,28 @@ def assign_transcript_lines_to_chapters(
         ]
 
     chapters = []
-    chapter_list = metadata.chapters_data
 
-    for i, chapter_info in enumerate(chapter_list):
-        start = float(chapter_info.get("start_time", 0))
+    for i, chapter_dict in enumerate(metadata.chapters_dicts):
+        chapter_start_time = float(chapter_dict.get("start_time", 0))
 
         # End time is start of next chapter, or infinity for last chapter
-        if i + 1 < len(chapter_list):
-            end = float(chapter_list[i + 1]["start_time"])
+        if i + 1 < len(metadata.chapters_dicts):
+            chapter_end_time = float(metadata.chapters_dicts[i + 1]["start_time"])
         else:
-            end = math.inf
+            chapter_end_time = math.inf
 
         # Filter transcript lines within this chapter's time range
         chapter_transcript_lines = [
-            line for line in transcript_lines if start <= line.timestamp < end
+            line
+            for line in transcript_lines
+            if chapter_start_time <= line.timestamp < chapter_end_time
         ]
 
         chapters.append(
             Chapter(
-                title=chapter_info.get("title", f"Chapter {i + 1}"),
-                start_time=start,
-                end_time=end,
+                title=chapter_dict.get("title", f"Chapter {i + 1}"),
+                start_time=chapter_start_time,
+                end_time=chapter_end_time,
                 transcript_lines=chapter_transcript_lines,
             )
         )

@@ -25,22 +25,22 @@ Create a useful and representative commit message:
 </template>
 
 <main_prefix>
-- `feature:` New feature for users (adds functionality)
-- `fix:` Bug fixes (fixes broken functionality)
-- `docs:` Documentation changes only e.g. README.md
-- `rules:` `CLAUDE.md` and files in `.claude/`
-- `style:` Code formatting, white space, semicolons (no logic changes)
-- `refactor:` Code changes that neither fix bugs nor add features
-- `test:` Adding or updating tests
-- `chore:` Development workflow, workspace config, dependency updates, dev tools
-- `build:` Build system changes, compilation process, how code gets packaged
+- `rules:` Claude configuration e.g. `**/CLAUDE.md`, `.claude/**/*`
+- `test:` Adding or updating tests e.g. `tests/**/*`
 - `ci:` CI/CD pipeline changes, automated workflows, deployment automation
+- `build:` Build system changes, compilation process, how code gets packaged
 - `perf:` Performance improvements
+- `fix:` Bug fixes (fixes broken functionality)
+- `refactor:` Code changes that neither fix bugs nor add features
+- `chore:` Dev workflow, workspace config, dependency updates, dev tools e.g. `.vscode/**/*`, `pyproject.toml`, `.gitignore`
+- `docs:` Documentation changes only e.g. `README.md`, `docs/**/*.md`
+- `feature:` New feature for users (adds functionality)
 </main_prefix>
 
 <rules>
 - Use British spelling
 - Use factual tone, avoid hyperbolic language
+- Avoid marketing adjectives (comprehensive, complete, enhanced, improved, etc.)
 - Use fitting amount of detail proportional to commit scope
 - Wrap the terse sentences so that no line exceeds 90 characters
 </rules>

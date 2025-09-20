@@ -105,7 +105,7 @@ url-to-transcript https://youtu.be/Q4gsvJvRjCU
 
 **Architecture**: Pure functions with clear module separation
 
-**Test-Driven Development**: 78 tests (17 integration, 61 unit, takes 59 seconds)
+**Test-Driven Development**: 127 tests (16 integration, 111 unit, ~65 seconds)
 
 **Dependencies**:
 - Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
