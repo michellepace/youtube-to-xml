@@ -386,9 +386,7 @@ def convert_youtube_to_xml(
     return xml_output, metadata, chapters, len(transcript_lines)
 
 
-def convert_and_save_youtube_xml(
-    video_url: str, execution_id: str
-) -> tuple[Path, VideoMetadata]:
+def convert_and_save_youtube_xml(video_url: str, execution_id: str) -> Path:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
@@ -399,7 +397,7 @@ def convert_and_save_youtube_xml(
         execution_id: Unique identifier for this execution
 
     Returns:
-        Tuple of (output file path, video metadata)
+        Output file path
     """
     # Generate XML content and get metadata for filename
     xml_output, metadata, chapters, transcript_lines_count = convert_youtube_to_xml(
@@ -423,7 +421,7 @@ def convert_and_save_youtube_xml(
 
     logger.info("[%s] Successfully created: %s", execution_id, output_path.name)
 
-    return output_path, metadata
+    return output_path
 
 
 def main() -> None:
@@ -441,7 +439,7 @@ def main() -> None:
 
     try:
         print(f"🎬 Processing: {video_url}")
-        output_path, metadata = convert_and_save_youtube_xml(video_url, execution_id)
+        output_path = convert_and_save_youtube_xml(video_url, execution_id)
 
         print(f"✅ Created: {output_path.name}")
     except KeyboardInterrupt:

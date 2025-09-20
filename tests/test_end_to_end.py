@@ -204,10 +204,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "how-claude-code-hooks-save-me-hours-daily.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    file_exit_code, file_output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    file_exit_code = run_script("youtube-to-xml", ["input.txt"], tmp_path)[0]
 
     # Process URL method
-    url_exit_code, url_output = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)
+    url_exit_code = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)[0]
 
     assert file_exit_code == 0
     assert url_exit_code == 0
