@@ -175,7 +175,18 @@ def fetch_video_metadata_and_transcript(
         ]
 
         # Implement transcript priority: manual English (.en.json3) over auto-generated
-        transcript_files.sort(key=lambda p: ".en-orig.json3" in p.name)
+        def priority(p: Path) -> int:
+            name = p.name
+            # 0 = manual en, 1 = auto en-orig, 2 = everything else
+            return (
+                0
+                if name.endswith(".en.json3")
+                else 1
+                if name.endswith(".en-orig.json3")
+                else 2
+            )
+
+        transcript_files.sort(key=priority)
 
         # b) Parse transcript files into structured objects
         transcript_lines = []
@@ -420,13 +431,13 @@ def main() -> None:
     setup_logging()
     execution_id = str(uuid.uuid4())[:8]
 
-    try:
-        video_url = sys.argv[1]
-    except IndexError:
+    if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:  # noqa: PLR2004
         print("YouTube URL to XML Converter")
         print("  Usage: include the YouTube URL as an argument")
         print("  E.g.: url_to_transcript.py https://www.youtube.com/watch?v=Q4gsvJvRjCU")
         sys.exit(1)
+
+    video_url = sys.argv[1]
 
     try:
         print(f"🎬 Processing: {video_url}")

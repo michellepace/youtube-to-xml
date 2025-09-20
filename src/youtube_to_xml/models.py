@@ -7,7 +7,7 @@ Models store raw data - formatting happens at presentation layer.
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class VideoMetadata:
     """Video metadata for XML output.
 
@@ -21,7 +21,7 @@ class VideoMetadata:
     video_url: str = ""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class TranscriptLine:
     """A single timestamped transcript line."""
 
@@ -29,7 +29,7 @@ class TranscriptLine:
     text: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Chapter:
     """A video chapter containing transcript lines within its time range."""
 
@@ -39,7 +39,7 @@ class Chapter:
     transcript_lines: list[TranscriptLine]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class TranscriptDocument:
     """Complete transcript document with metadata and chapters."""
 

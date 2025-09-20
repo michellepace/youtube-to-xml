@@ -20,10 +20,11 @@ def _compare_parser_outputs(tmp_path: Path, test_filename: str, content: str) ->
         cwd=tmp_path,
         check=False,
     )
+    assert result_legacy.returncode == 0
 
     # Read legacy output
     output_file = tmp_path / f"{test_file.stem}.xml"
-    legacy_output = output_file.read_text()
+    legacy_output = output_file.read_text(encoding="utf-8")
     output_file.unlink()  # Remove for second run
 
     # Run without legacy flag (new path)
@@ -34,13 +35,10 @@ def _compare_parser_outputs(tmp_path: Path, test_filename: str, content: str) ->
         cwd=tmp_path,
         check=False,
     )
+    assert result_new.returncode == 0
 
     # Read new output
-    new_output = output_file.read_text()
-
-    # Both should succeed
-    assert result_legacy.returncode == 0
-    assert result_new.returncode == 0
+    new_output = output_file.read_text(encoding="utf-8")
 
     # Outputs should be identical
     assert legacy_output == new_output

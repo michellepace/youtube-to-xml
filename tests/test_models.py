@@ -71,3 +71,11 @@ def test_transcript_document_combines_metadata_and_chapters() -> None:
     assert document.metadata.video_title == "Test Video"
     assert len(document.chapters) == 1
     assert document.chapters[0].title == "Chapter 1"
+
+
+def test_models_use_slots() -> None:
+    """Test that models use __slots__ for memory efficiency."""
+    assert hasattr(VideoMetadata(), "__slots__")
+    assert hasattr(TranscriptLine(0.0, ""), "__slots__")
+    assert hasattr(Chapter("", 0.0, 1.0, []), "__slots__")
+    assert hasattr(TranscriptDocument(VideoMetadata(), []), "__slots__")
