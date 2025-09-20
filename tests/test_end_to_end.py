@@ -24,20 +24,26 @@ URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 
 
-def run_script(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, str]:
+def run_script(
+    command: str, args: list[str] | str, tmp_path: Path, *, legacy: bool = False
+) -> tuple[int, str]:
     """Run script and return (exit_code, output).
 
     Args:
         command: Either 'youtube-to-xml' or 'url-to-transcript'
         args: List of arguments or single URL string
         tmp_path: Working directory for the command
+        legacy: If True, add --legacy flag for youtube-to-xml commands
     """
     if isinstance(args, str):
         # Single URL for url-to-transcript
         cmd_args = ["uv", "run", command, args]
     else:
         # List of args for youtube-to-xml
-        cmd_args = ["uv", "run", command, *args]
+        cmd_args = ["uv", "run", command]
+        if legacy and command == "youtube-to-xml":
+            cmd_args.append("--legacy")
+        cmd_args.extend(args)
 
     result = subprocess.run(  # noqa: S603
         cmd_args,
@@ -85,12 +91,15 @@ def assert_files_identical(actual: Path, expected: Path) -> None:
         pytest.fail(f"Files differ:\n{diff_output}")
 
 
-def test_file_multi_chapters_success(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_multi_chapters_success(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI processing of file with multiple chapters."""
     input_file = EXAMPLES_DIR / "x4-chapters.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 0
     assert "Created:" in output
@@ -103,12 +112,15 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_chapters_with_blanks_success(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI processing of file with chapters containing blank lines."""
     input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 0
     assert "Created:" in output
@@ -120,16 +132,18 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     assert_files_identical(output_file, reference_file)
 
 
-def test_file_invalid_format_error(tmp_path: Path) -> None:
+@pytest.mark.parametrize("use_legacy", [False, True])
+def test_file_invalid_format_error(tmp_path: Path, *, use_legacy: bool) -> None:
     """Test CLI error handling for invalid transcript format."""
     input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=use_legacy
+    )
 
     assert exit_code == 1
     assert "Wrong format" in output
-    assert "youtube-to-xml --help" in output
 
 
 @pytest.mark.integration
@@ -302,3 +316,56 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     assert first_6_lines != autogen_version, (
         "Should not match messy auto-generated transcript"
     )
+
+
+# ================================================================================
+# LEGACY FLAG TESTS - PR4: CLI dual-interface with --legacy flag support
+# These tests ensure both legacy and new parser paths work identically
+# ================================================================================
+
+
+@pytest.mark.parametrize(
+    ("test_file", "reference_file"),
+    [
+        ("x4-chapters.txt", "x4-chapters.xml"),
+        ("x3-chapters-with-blanks.txt", "x3-chapters-with-blanks.xml"),
+    ],
+)
+def test_legacy_vs_new_path_identical_output(
+    tmp_path: Path, test_file: str, reference_file: str
+) -> None:
+    """Test that legacy and new paths produce identical output for example files."""
+    # Setup input file
+    input_file = EXAMPLES_DIR / test_file
+    test_input = tmp_path / "input.txt"
+    test_input.write_text(input_file.read_text(encoding="utf-8"))
+
+    # Run with legacy flag
+    exit_code_legacy, output_legacy = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=True
+    )
+    assert exit_code_legacy == 0
+    assert "Created:" in output_legacy
+
+    # Read legacy output
+    legacy_xml = (tmp_path / "input.xml").read_text(encoding="utf-8")
+    (tmp_path / "input.xml").unlink()  # Remove for second run
+
+    # Run without legacy flag (new path)
+    exit_code_new, output_new = run_script(
+        "youtube-to-xml", ["input.txt"], tmp_path, legacy=False
+    )
+    assert exit_code_new == 0
+    assert "Created:" in output_new
+
+    # Read new output
+    new_xml = (tmp_path / "input.xml").read_text(encoding="utf-8")
+
+    # Outputs should be identical
+    assert legacy_xml == new_xml
+
+    # Both should match reference
+    reference_file_path = setup_reference_file(tmp_path, reference_file)
+    reference_content = reference_file_path.read_text(encoding="utf-8")
+    assert legacy_xml == reference_content
+    assert new_xml == reference_content

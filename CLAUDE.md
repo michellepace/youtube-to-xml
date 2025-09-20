@@ -1,7 +1,11 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Project Capabilities
 **Purpose**: Convert YouTube transcripts to XML for improved LLM comprehension
 
-**Current State**: 
+**Current State**:
 - ✅ File-based CLI (`youtube-to-xml`) - production ready
 - 🔬 URL-based script (`url-to-transcript`) - experimental, pending integration
 
@@ -27,7 +31,7 @@ Full details with I/O examples: [README.md](README.md)
 **Common Commands:**
 ```bash
 # Setup & Dependencies
-uv sync # Match packages to lockfile 
+uv sync # Match packages to lockfile
 uv add --dev <pkg> # Add dev dependency
 uv tree # Show dependency tree
 uv lock --upgrade-package <pkg> # Update specific package
@@ -63,11 +67,11 @@ uv run ruff format # Format (see pyproject.toml)
 - Use pytest's `tmp_path` fixture to avoid creating test files
 - Avoid mocks as they introduce unnecessary complexity
 - Test incrementally: One test should drive one behavior
-- Use focused test names that describe what's being tested  
+- Use focused test names that describe what's being tested
 
 ## Code Quality Standards
 
 - **Ruff**: Strictest settings (ALL rules enabled)
-- **Pyright**: Configured to avoid Ruff duplicates  
+- **Pyright**: Configured to avoid Ruff duplicates (see [pyproject.toml](pyproject.toml))
 - **Pre-commit**: Auto-runs on every commit
 - **Performance target**: 15,000 lines in <2 seconds
