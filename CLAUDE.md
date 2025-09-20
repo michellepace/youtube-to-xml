@@ -72,6 +72,6 @@ uv run ruff format # Format (see pyproject.toml)
 ## Code Quality Standards
 
 - **Ruff**: Strictest settings (ALL rules enabled)
-- **Pyright**: Configured to avoid Ruff duplicates
+- **Pyright**: Configured to avoid Ruff duplicates (see [pyproject.toml](pyproject.toml))
 - **Pre-commit**: Auto-runs on every commit
 - **Performance target**: 15,000 lines in <2 seconds
