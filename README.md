@@ -59,8 +59,8 @@ First, we'll start with the patches
 ### Option 2: URL Method (Experimental)
 
 🔥 Experimental script pending integration. If rate-limited:
-  - **Global install**: `uv tool upgrade youtube-to-xml`
-  - **Local development**: `uv lock --upgrade-package yt-dlp && uv sync`
+- **Global install**: `uv tool upgrade youtube-to-xml`
+- **Local development**: `uv lock --upgrade-package yt-dlp && uv sync`
 
 ```bash
 # Use the globally installed command (after Option 1 installation)

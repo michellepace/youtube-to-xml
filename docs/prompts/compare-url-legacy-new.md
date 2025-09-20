@@ -1,18 +1,18 @@
-**Task: Validate XML Output Consistency Across Three YouTube Transcript Methods**
+# Validate XML Output Consistency Across Three YouTube Transcript Methods
 
 **Objective:** Verify that these three methods produce near-identical matching XML output files.
 
 **Three Methods to Test:**
 1. File-based new: `uv run youtube-to-xml <file.txt>`
 2. File-based legacy: `uv run youtube-to-xml --legacy <file.txt>`
-3. URL-based: `uv run scripts/url_to_transcript.xml`
+3. URL-based: `uv run scripts/url_to_transcript.py`
 
 **Definition: Near Identical Match:**
-1. File-based methods always match eachother exactly
-2. All methods have
-   - identical XML elements and attributes (vales are "" for file-based)
+1. File-based methods always match each other exactly.
+2. All methods have:
+   - identical XML elements and attributes (values are "" for file-based)
    - identical `<chapter>` content excluding timestamps
-3. File-based vs URL-based: timestamp deviations may occure but always <2 seconds
+3. File-based vs URL-based: timestamp deviations may occur but must be < 2 seconds.
 
 **Test Cases:**
 
@@ -40,7 +40,7 @@
 - Compare outputs using file diffs
 - Report results with clear success/failure indicators using emojis
 
-**Output Format:**
+## Output Format
 - Terminal-friendly table or list format
 - Clear ✅/❌ indicators for each test
 - Show any differences found
