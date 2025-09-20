@@ -199,7 +199,7 @@ def parse_transcript_file(raw_transcript: str) -> list[Chapter]:
     return _extract_transcript_lines_for_chapters(transcript_lines, chapters_dicts)
 
 
-def parse_transcript_document(raw_transcript: str) -> "TranscriptDocument":
+def parse_transcript_document(raw_transcript: str) -> TranscriptDocument:
     """Parse transcript file into unified TranscriptDocument format.
 
     Args:

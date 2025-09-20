@@ -348,7 +348,7 @@ def test_legacy_vs_new_path_identical_output(
     assert "Created:" in output_legacy
 
     # Read legacy output
-    legacy_xml = (tmp_path / "input.xml").read_text()
+    legacy_xml = (tmp_path / "input.xml").read_text(encoding="utf-8")
     (tmp_path / "input.xml").unlink()  # Remove for second run
 
     # Run without legacy flag (new path)
@@ -359,13 +359,13 @@ def test_legacy_vs_new_path_identical_output(
     assert "Created:" in output_new
 
     # Read new output
-    new_xml = (tmp_path / "input.xml").read_text()
+    new_xml = (tmp_path / "input.xml").read_text(encoding="utf-8")
 
     # Outputs should be identical
     assert legacy_xml == new_xml
 
     # Both should match reference
     reference_file_path = setup_reference_file(tmp_path, reference_file)
-    reference_content = reference_file_path.read_text()
+    reference_content = reference_file_path.read_text(encoding="utf-8")
     assert legacy_xml == reference_content
     assert new_xml == reference_content

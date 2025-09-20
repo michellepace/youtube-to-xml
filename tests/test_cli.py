@@ -146,7 +146,7 @@ def test_parser_path_selection(tmp_path: Path, *, use_legacy: bool) -> None:
     assert output_file.exists()
 
     # Verify XML contains structure (basic smoke test)
-    xml_content = output_file.read_text()
+    xml_content = output_file.read_text(encoding="utf-8")
     assert "<transcript" in xml_content
     assert "<chapters>" in xml_content
     assert "<chapter" in xml_content
@@ -247,7 +247,7 @@ def test_both_paths_handle_valid_transcript_consistently(
     assert output_file.exists()
 
     # Verify XML contains expected structure
-    xml_content = output_file.read_text()
+    xml_content = output_file.read_text(encoding="utf-8")
     assert "<transcript" in xml_content
     assert "<chapters>" in xml_content
     assert "<chapter" in xml_content
