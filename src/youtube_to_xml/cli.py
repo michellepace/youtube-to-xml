@@ -9,9 +9,9 @@ from youtube_to_xml.exceptions import (
     FileEmptyError,
     FileInvalidFormatError,
 )
-from youtube_to_xml.file_parser import parse_transcript_document, parse_transcript_file
+from youtube_to_xml.file_parser import parse_transcript_document
 from youtube_to_xml.logging_config import get_logger, setup_logging
-from youtube_to_xml.xml_builder import chapters_to_xml, transcript_to_xml
+from youtube_to_xml.xml_builder import transcript_to_xml
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -43,11 +43,6 @@ def parse_arguments() -> argparse.Namespace:
         type=Path,
         help="YouTube transcript text file to convert",
     )
-    parser.add_argument(
-        "--legacy",
-        action="store_true",
-        help="Use legacy file parser (for compatibility verification)",
-    )
     return parser.parse_args()
 
 
@@ -78,16 +73,11 @@ def main() -> None:
         logger.error("[%s] UnicodeDecodeError reading: %s", execution_id, transcript_path)
         sys.exit(1)
 
-    # Parse the transcript and generate XML using dual-path logic
+    # Parse the transcript and generate XML
     try:
-        if args.legacy:
-            chapters = parse_transcript_file(raw_transcript_text)
-            xml_output = chapters_to_xml(chapters)
-            logger.info("[%s] Used legacy parser path", execution_id)
-        else:
-            document = parse_transcript_document(raw_transcript_text)
-            xml_output = transcript_to_xml(document)
-            logger.info("[%s] Used new parser path", execution_id)
+        document = parse_transcript_document(raw_transcript_text)
+        xml_output = transcript_to_xml(document)
+        logger.info("[%s] Used parser path", execution_id)
     except FileEmptyError:
         print(f"❌ Your file is empty: {transcript_path}")
         logger.error("[%s] FileEmptyError: %s", execution_id, transcript_path)
