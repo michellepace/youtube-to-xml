@@ -77,7 +77,6 @@ def main() -> None:
     try:
         document = parse_transcript_document(raw_transcript_text)
         xml_output = transcript_to_xml(document)
-        logger.info("[%s] Used parser path", execution_id)
     except FileEmptyError:
         print(f"❌ Your file is empty: {transcript_path}")
         logger.error("[%s] FileEmptyError: %s", execution_id, transcript_path)
