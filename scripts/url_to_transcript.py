@@ -1,9 +1,7 @@
 """Convert YouTube videos to XML files with transcript lines organized by chapters.
 
-This script downloads YouTube transcripts and creates structured XML files.
-The XML structure: <transcript> root with video metadata attributes, containing a
-<chapters> element with <chapter> elements that contain individual timestamped
-transcript lines.
+This script downloads YouTube transcripts and creates structured XML files using
+shared models and xml_builder infrastructure.
 
 Usage:
     uv run scripts/url_to_transcript.py <YouTube_URL>
@@ -15,16 +13,12 @@ For a provided YouTube URL, the script will:
 1. Fetch the video metadata (title, published date, duration)
 2. Download and parse transcript lines (the timestamped text from YouTube's transcript)
 3. Assign transcript lines to chapters (using YouTube's chapter markers if available)
-4. Create and save an XML document with dynamic filename based on video title
+4. Create TranscriptDocument and generate XML using shared xml_builder
 
 Transcript priority:
 1. Manual English transcript uploaded by the video creator (highest quality)
 2. Auto-generated English transcript (fallback)
 No other languages are downloaded - English only.
-
-The output XML contains video metadata (video_title, video_published,
-video_duration, video_url) and transcript lines organised by chapter, with each
-individual transcript line timestamped.
 """
 
 import contextlib
@@ -35,8 +29,6 @@ import re
 import sys
 import tempfile
 import uuid
-import xml.etree.ElementTree as ET
-from dataclasses import dataclass
 from pathlib import Path
 
 import yt_dlp
@@ -54,66 +46,22 @@ from youtube_to_xml.exceptions import (
     map_yt_dlp_exception,
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
-from youtube_to_xml.time_utils import (
-    MILLISECONDS_PER_SECOND,
-    format_video_duration,
-    format_video_published,
-    seconds_to_timestamp,
+from youtube_to_xml.models import (
+    Chapter,
+    TranscriptDocument,
+    TranscriptLine,
+    VideoMetadata,
 )
+from youtube_to_xml.time_utils import MILLISECONDS_PER_SECOND
+from youtube_to_xml.xml_builder import transcript_to_xml
 
 # Module-level logger
 logger = get_logger(__name__)
 
 
-@dataclass(frozen=True, slots=True)
-class VideoMetadata:
-    """Video metadata needed for XML output."""
-
-    video_title: str
-    video_published: str  # YYYY-MM-DD formatted string
-    video_duration: str  # "2m 43s" formatted string
-    video_url: str
-    chapters_dicts: list[dict]
-
-
-@dataclass(frozen=True, slots=True)
-class TranscriptLine:
-    """A single YouTube timed transcript line with timestamp."""
-
-    timestamp: float  # in seconds
-    text: str
-
-
-@dataclass(frozen=True, slots=True)
-class Chapter:
-    """A video chapter containing transcript lines within its time range."""
-
-    title: str
-    start_time: float
-    end_time: float
-    transcript_lines: list[TranscriptLine]  # YouTube transcript lines
-
-    @property
-    def duration(self) -> float:
-        """Calculate chapter duration (may be inf for the final open-ended chapter)."""
-        return self.end_time - self.start_time
-
-    def format_transcript_lines(self) -> str:
-        """Format transcript lines as timestamped text for XML output."""
-        if not self.transcript_lines:
-            return ""
-
-        lines = []
-        for line in self.transcript_lines:
-            lines.append(seconds_to_timestamp(line.timestamp))
-            lines.append(line.text)
-
-        return "\n      ".join(lines)
-
-
 def fetch_video_metadata_and_transcript(
     url: str,
-) -> tuple[VideoMetadata, list[TranscriptLine]]:
+) -> tuple[VideoMetadata, list[TranscriptLine], list[dict]]:
     """Extract video metadata and download transcript from YouTube using yt-dlp.
 
     Uses yt-dlp to fetch video information and transcript, avoiding rate limits
@@ -123,7 +71,7 @@ def fetch_video_metadata_and_transcript(
         url: YouTube video URL
 
     Returns:
-        Tuple of (VideoMetadata object, list of TranscriptLine objects)
+        Tuple of (VideoMetadata object, list of TranscriptLine objects, chapters_dicts)
 
     Raises:
         URLBotProtectionError: If YouTube requires verification
@@ -201,15 +149,18 @@ def fetch_video_metadata_and_transcript(
             raise URLTranscriptNotFoundError
 
         # Phase 3: Create structured metadata object from raw_metadata
+        # Store raw video_published format (YYYYMMDD) and raw video_duration (seconds)
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
-            video_published=format_video_published(raw_metadata.get("upload_date", "")),
-            video_duration=format_video_duration(float(raw_metadata.get("duration", 0))),
+            video_published=raw_metadata.get("upload_date", ""),  # Raw YYYYMMDD
+            video_duration=int(raw_metadata.get("duration", 0)),  # Raw seconds as int
             video_url=raw_metadata.get("webpage_url", url),
-            chapters_dicts=raw_metadata.get("chapters", []),
         )
 
-        return metadata, transcript_lines
+        # Handle chapters_dicts separately (not part of shared VideoMetadata model)
+        chapters_dicts = raw_metadata.get("chapters", [])
+
+        return metadata, transcript_lines, chapters_dicts
 
 
 def extract_transcript_lines_from_json3(events: list) -> list[TranscriptLine]:
@@ -245,18 +196,21 @@ def extract_transcript_lines_from_json3(events: list) -> list[TranscriptLine]:
 
 
 def assign_transcript_lines_to_chapters(
-    metadata: VideoMetadata, transcript_lines: list[TranscriptLine]
+    metadata: VideoMetadata,
+    transcript_lines: list[TranscriptLine],
+    chapters_dicts: list[dict],
 ) -> list[Chapter]:
     """Parse API transcript data into chapters.
 
     Args:
-        metadata: Video metadata including chapter info
+        metadata: Video metadata for title
         transcript_lines: List of all individual transcript lines
+        chapters_dicts: Chapter information from YouTube API
 
     Returns:
         List of Chapter objects with assigned transcript lines
     """
-    if not metadata.chapters_dicts:
+    if not chapters_dicts:
         # No chapters - create single chapter with video title
         return [
             Chapter(
@@ -269,12 +223,12 @@ def assign_transcript_lines_to_chapters(
 
     chapters = []
 
-    for i, chapter_dict in enumerate(metadata.chapters_dicts):
+    for i, chapter_dict in enumerate(chapters_dicts):
         chapter_start_time = float(chapter_dict.get("start_time", 0))
 
         # End time is start of next chapter, or infinity for last chapter
-        if i + 1 < len(metadata.chapters_dicts):
-            chapter_end_time = float(metadata.chapters_dicts[i + 1]["start_time"])
+        if i + 1 < len(chapters_dicts):
+            chapter_end_time = float(chapters_dicts[i + 1]["start_time"])
         else:
             chapter_end_time = math.inf
 
@@ -297,47 +251,6 @@ def assign_transcript_lines_to_chapters(
     return chapters
 
 
-def create_xml_document(metadata: VideoMetadata, chapters: list[Chapter]) -> str:
-    """Create the complete XML document with metadata and chapters.
-
-    Args:
-        metadata: Video metadata for attributes
-        chapters: List of chapters with transcript lines
-
-    Returns:
-        Pretty-formatted XML string
-    """
-    # Create root element with metadata attributes
-    root = ET.Element("transcript")
-    root.set("video_title", metadata.video_title)
-    root.set("video_published", metadata.video_published)
-    root.set("video_duration", metadata.video_duration)
-    root.set("video_url", metadata.video_url)
-
-    # Add chapters container
-    chapters_elem = ET.SubElement(root, "chapters")
-
-    # Add each chapter
-    for chapter in chapters:
-        chapter_elem = ET.SubElement(chapters_elem, "chapter")
-        chapter_elem.set("title", chapter.title)
-        chapter_elem.set("start_time", seconds_to_timestamp(chapter.start_time))
-
-        # Add transcript lines if available
-        formatted_lines = chapter.format_transcript_lines()
-        if formatted_lines:
-            chapter_elem.text = "\n      " + formatted_lines + "\n    "
-
-    # Convert to pretty XML string
-    return format_xml_output(root)
-
-
-def format_xml_output(element: ET.Element) -> str:
-    """Format XML element with proper indentation."""
-    ET.indent(element, space="  ")
-    return ET.tostring(element, encoding="unicode", xml_declaration=True) + "\n"
-
-
 def sanitise_title_for_filename(title: str) -> str:
     """Convert video title to safe filename with .xml extension."""
     # Remove non-alphanumeric characters except spaces and hyphens
@@ -355,7 +268,7 @@ def convert_youtube_to_xml(
     Core business logic that:
     1. Fetches video metadata and downloads transcript using yt-dlp
     2. Assigns transcript lines to chapters
-    3. Creates XML document
+    3. Creates TranscriptDocument and generates XML using shared xml_builder
 
     Args:
         video_url: YouTube video URL
@@ -369,7 +282,9 @@ def convert_youtube_to_xml(
 
     # Step 1: Fetch metadata and download transcript using yt-dlp
     try:
-        metadata, transcript_lines = fetch_video_metadata_and_transcript(video_url)
+        metadata, transcript_lines, chapters_dicts = fetch_video_metadata_and_transcript(
+            video_url
+        )
     except URLTranscriptNotFoundError:
         logger.warning("[%s] No transcript available for video", execution_id)
         raise  # Re-raise to prevent file creation (no useless empty files)
@@ -378,10 +293,13 @@ def convert_youtube_to_xml(
         raise  # Re-raise to prevent file creation
 
     # Step 2: Assign transcript lines to chapters
-    chapters = assign_transcript_lines_to_chapters(metadata, transcript_lines)
+    chapters = assign_transcript_lines_to_chapters(
+        metadata, transcript_lines, chapters_dicts
+    )
 
-    # Step 3: Create XML
-    xml_output = create_xml_document(metadata, chapters)
+    # Step 3: Create TranscriptDocument and generate XML using shared xml_builder
+    document = TranscriptDocument(metadata=metadata, chapters=chapters)
+    xml_output = transcript_to_xml(document)
 
     return xml_output, metadata, chapters, len(transcript_lines)
 
