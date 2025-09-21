@@ -5,7 +5,6 @@ Converts parsed Chapter objects into XML format following the specified template
 
 import xml.etree.ElementTree as ET
 
-from youtube_to_xml.file_parser import Chapter as FileParserChapter
 from youtube_to_xml.models import TranscriptDocument
 from youtube_to_xml.time_utils import (
     format_video_duration,
@@ -56,20 +55,6 @@ def _finalise_xml(root: ET.Element) -> str:
     """Apply indentation and convert to XML string with declaration."""
     ET.indent(root, space="  ")
     return ET.tostring(root, encoding="unicode", xml_declaration=True) + "\n"
-
-
-def chapters_to_xml(chapters: list[FileParserChapter]) -> str:
-    """Build complete YouTube transcript XML document from chapters."""
-    root = _create_transcript_root_element()
-    chapters_elem = ET.SubElement(root, "chapters")
-
-    for chapter in chapters:
-        chapter_elem = _create_chapter_element(
-            chapters_elem, chapter.title, chapter.start_time
-        )
-        _add_indented_content(chapter_elem, chapter.transcript_lines)
-
-    return _finalise_xml(root)
 
 
 def transcript_to_xml(document: TranscriptDocument) -> str:
