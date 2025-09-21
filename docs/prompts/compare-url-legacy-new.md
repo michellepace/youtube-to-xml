@@ -30,7 +30,7 @@
 - Input file: `example_transcripts/rick-astley-never-gonna-give-you-up-official-video-4k-remaster.txt`
 - URL equivalent: `https://www.youtube.com/watch?v=Qw4wCMpXcQ`
 - Expected:
-   1. URL method contains "0:01" and "[♪♪♪]".
+   1. URL-based method matches exactly `example_transcripts/rick-astley-never-gonna-give-you-up-official-video-4k-remaster.xml`
    2. File-based method throws a "Wrong Format" error
 
 **Implementation Requirements:**
