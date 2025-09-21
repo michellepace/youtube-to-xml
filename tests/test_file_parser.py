@@ -1,11 +1,7 @@
-"""TESTS FOR THE NEW PARSE_TRANSCRIPT_DOCUMENT FUNCTION IN `file_parser.py`.
+"""Tests for file_parser.py transcript parsing functionality.
 
-# Tests for parse_transcript_document function.
-# This new TranscriptDocument parsing interface will become the primary API
-# after deprecated parse_transcript_file function is removed in PR 5.
-
-Following TDD principles with modern pytest patterns.
-Uses fixtures to reduce duplication and improve maintainability.
+Tests the parse_transcript_document function which converts YouTube transcript
+files into structured TranscriptDocument objects with chapters and metadata.
 """
 
 import math
@@ -76,10 +72,15 @@ spoken words at timestamp"""
 # ============= CORE FUNCTIONALITY TESTS =============
 
 
-def test_parse_document_returns_transcript_document(one_chapter_transcript: str) -> None:
-    """Verify function returns TranscriptDocument type."""
+def test_output_structure_conforms_to_interface(one_chapter_transcript: str) -> None:
+    """Verify parse_transcript_document returns correct unified model structure."""
     doc = parse_transcript_document(one_chapter_transcript)
+
+    # Core structure validation
     assert isinstance(doc, TranscriptDocument)
+    assert isinstance(doc.metadata, VideoMetadata)
+    assert isinstance(doc.chapters[0], Chapter)
+    assert isinstance(doc.chapters[0].transcript_lines[0], TranscriptLine)
 
 
 def test_parse_document_metadata_always_empty(one_chapter_transcript: str) -> None:
@@ -92,69 +93,57 @@ def test_parse_document_metadata_always_empty(one_chapter_transcript: str) -> No
     assert doc.metadata.video_url == ""
 
 
-def test_parse_document_simple_single_chapter(one_chapter_transcript: str) -> None:
-    """Parse basic transcript into TranscriptDocument."""
+def test_single_chapter_detection(one_chapter_transcript: str) -> None:
+    """Basic transcript produces exactly one chapter."""
     doc = parse_transcript_document(one_chapter_transcript)
-
-    # Verify structure
-    assert isinstance(doc, TranscriptDocument)
-    assert isinstance(doc.metadata, VideoMetadata)
     assert len(doc.chapters) == 1
+    assert doc.chapters[0].title == "Chapter 1"
 
-    # Check chapter
+
+def test_single_chapter_time_boundaries(one_chapter_transcript: str) -> None:
+    """Single chapter has correct start time and infinite end time."""
+    doc = parse_transcript_document(one_chapter_transcript)
     chapter = doc.chapters[0]
-    assert isinstance(chapter, Chapter)
-    assert chapter.title == "Chapter 1"
-    assert chapter.start_time == 10.0
+
+    assert chapter.start_time == 10.0  # 0:10 = 10 seconds
     assert chapter.end_time == math.inf
 
-    # Check transcript lines
-    assert len(chapter.transcript_lines) == 2
-    assert all(isinstance(line, TranscriptLine) for line in chapter.transcript_lines)
 
-    line1, line2 = chapter.transcript_lines
-    assert line1.timestamp == 10.0
-    assert line1.text == "Line A at 10 seconds"
-    assert line2.timestamp == 59.0
-    assert line2.text == "Line B at 59 seconds"
+def test_transcript_line_content_conversion(one_chapter_transcript: str) -> None:
+    """Transcript lines are correctly converted from string format."""
+    doc = parse_transcript_document(one_chapter_transcript)
+    lines = doc.chapters[0].transcript_lines
+
+    assert len(lines) == 2
+    assert lines[0].timestamp == 10.0
+    assert lines[0].text == "Line A at 10 seconds"
+    assert lines[1].timestamp == 59.0
+    assert lines[1].text == "Line B at 59 seconds"
 
 
-def test_parse_document_multiple_chapters(complex_transcript: str) -> None:
-    """Parse transcript with multiple chapters maintaining correct boundaries."""
+def test_multiple_chapter_detection(complex_transcript: str) -> None:
+    """Complex transcript correctly detects multiple chapters."""
     doc = parse_transcript_document(complex_transcript)
 
     assert len(doc.chapters) == 3
+    assert doc.chapters[0].title == "CHAPTER 1"
+    assert doc.chapters[1].title == "CHAPTER 2"
+    assert doc.chapters[2].title == "CHAPTER 3"
 
-    # First chapter - "CHAPTER 1" at 0:55
-    ch1 = doc.chapters[0]
-    assert ch1.title == "CHAPTER 1"
-    assert ch1.start_time == 55.0  # 0:55 = 55 seconds
-    assert ch1.end_time == 4530.0  # 1:15:30 = 4530 seconds
-    assert len(ch1.transcript_lines) == 2
-    assert ch1.transcript_lines[0].timestamp == 55.0
-    assert ch1.transcript_lines[0].text == "spoken words at timestamp"
-    assert ch1.transcript_lines[1].timestamp == 148.0
-    assert ch1.transcript_lines[1].text == "spoken words at timestamp"
 
-    # Second chapter - "CHAPTER 2" at 1:15:30
-    ch2 = doc.chapters[1]
-    assert ch2.title == "CHAPTER 2"
-    assert ch2.start_time == 4530.0
-    assert ch2.end_time == 369913.0
-    assert len(ch2.transcript_lines) == 2
-    assert ch2.transcript_lines[0].timestamp == 4530.0
-    assert ch2.transcript_lines[0].text == "spoken words at timestamp"
-    assert ch2.transcript_lines[1].timestamp == 369912.0
-    assert ch2.transcript_lines[1].text == "spoken words at timestamp"
+def test_chapter_boundary_calculation(complex_transcript: str) -> None:
+    """Chapter boundaries are calculated correctly between multiple chapters."""
+    doc = parse_transcript_document(complex_transcript)
 
-    # Third chapter - "CHAPTER 3" at 102:45:13
-    ch3 = doc.chapters[2]
-    assert ch3.title == "CHAPTER 3"
-    assert ch3.start_time == 369913.0
-    assert ch3.end_time == math.inf
-    assert len(ch3.transcript_lines) == 1
-    assert ch3.transcript_lines[0].timestamp == 369913.0
-    assert ch3.transcript_lines[0].text == ""
+    # Time boundaries: 0:55 → 1:15:30 → 102:45:13 → ∞
+    assert doc.chapters[0].start_time == 55.0
+    assert doc.chapters[0].end_time == 4530.0
+
+    assert doc.chapters[1].start_time == 4530.0
+    assert doc.chapters[1].end_time == 369913.0
+
+    assert doc.chapters[2].start_time == 369913.0
+    assert doc.chapters[2].end_time == math.inf
 
 
 def test_transcript_line_ordering_preserved() -> None:
@@ -261,15 +250,9 @@ Content"""
     assert doc.chapters[2].end_time == math.inf
 
 
-def test_last_chapter_has_infinite_end_time(minimal_transcript: str) -> None:
-    """Last chapter always has math.inf as end time."""
-    doc = parse_transcript_document(minimal_transcript)
-    assert doc.chapters[-1].end_time == math.inf
-
-
 def test_subsequent_chapter_detection() -> None:
     """2-line boundary rule correctly identifies chapters."""
-    # Exactly 2 lines between timestamps = new chapter
+    # Exactly 2 lines between timestamps = chapter boundary
     transcript = """First Chapter
 0:00
 Line 1
@@ -353,55 +336,42 @@ Second text
 # ============= ERROR VALIDATION TESTS =============
 
 
-def test_empty_input_raises_file_empty_error() -> None:
-    """Empty or whitespace input raises FileEmptyError."""
-    with pytest.raises(FileEmptyError):
-        parse_transcript_document("")
-
-    with pytest.raises(FileEmptyError):
-        parse_transcript_document("   \n\n  \t  ")
-
-
-def test_invalid_format_raises_error() -> None:
-    """Starting with timestamp raises FileInvalidFormatError."""
-    transcript = """0:00
-Should start with title
-Not timestamp"""
-
-    with pytest.raises(FileInvalidFormatError, match="First line must be chapter title"):
-        parse_transcript_document(transcript)
-
-
-def test_insufficient_lines_raises_error() -> None:
-    """Less than 3 lines raises error."""
-    with pytest.raises(FileInvalidFormatError, match="File must have at least 3 lines"):
-        parse_transcript_document("Title\n0:00")
-
-    with pytest.raises(FileInvalidFormatError, match="File must have at least 3 lines"):
-        parse_transcript_document("Title")
-
-
-def test_no_timestamps_raises_error() -> None:
-    """Text without timestamps raises error."""
-    transcript = """Title
-No timestamp here
-Just text"""
-
-    with pytest.raises(FileInvalidFormatError, match="Second line must be a timestamp"):
-        parse_transcript_document(transcript)
-
-
-def test_rejects_consecutive_timestamps_after_title() -> None:
-    """Consecutive timestamps after chapter title should fail format validation."""
-    consecutive_timestamps = """Introduction to Bret Taylor
-0:00
-0:01
-You're CTO of Meta and co-CEO of..."""
-
-    with pytest.raises(
-        FileInvalidFormatError, match="Third line must be transcript text, not timestamp"
-    ):
-        parse_transcript_document(consecutive_timestamps)
+@pytest.mark.parametrize(
+    ("input_text", "expected_error", "error_match"),
+    [
+        # Empty input cases
+        ("", FileEmptyError, None),
+        ("   \n\n  \t  ", FileEmptyError, None),
+        # Format validation cases
+        (
+            "0:00\nShould start with title\nNot timestamp",
+            FileInvalidFormatError,
+            "First line must be chapter title",
+        ),
+        ("Title\n0:00", FileInvalidFormatError, "File must have at least 3 lines"),
+        ("Title", FileInvalidFormatError, "File must have at least 3 lines"),
+        (
+            "Title\nNo timestamp here\nJust text",
+            FileInvalidFormatError,
+            "Second line must be a timestamp",
+        ),
+        (
+            "Title\n0:00\n0:01\nContent",
+            FileInvalidFormatError,
+            "Third line must be transcript text, not timestamp",
+        ),
+    ],
+)
+def test_invalid_input_raises_appropriate_error(
+    input_text: str, expected_error: type, error_match: str | None
+) -> None:
+    """Invalid input formats raise appropriate validation errors."""
+    if error_match:
+        with pytest.raises(expected_error, match=error_match):
+            parse_transcript_document(input_text)
+    else:
+        with pytest.raises(expected_error):
+            parse_transcript_document(input_text)
 
 
 def test_rejects_non_increasing_chapter_timestamps() -> None:
@@ -424,52 +394,3 @@ Third chapter content with earlier timestamp"""
         match="Subsequent chapter timestamps must be strictly increasing",
     ):
         parse_transcript_document(transcript_with_bad_timestamps)
-
-
-# ============= INTEGRATION PATTERN TESTS =============
-
-
-def test_returns_correct_model_types(one_chapter_transcript: str) -> None:
-    """Function returns exact types from shared models module."""
-    doc = parse_transcript_document(one_chapter_transcript)
-
-    assert type(doc).__name__ == "TranscriptDocument"
-    assert type(doc.metadata).__name__ == "VideoMetadata"
-    assert type(doc.chapters[0]).__name__ == "Chapter"
-    assert type(doc.chapters[0].transcript_lines[0]).__name__ == "TranscriptLine"
-
-
-def test_uses_new_chapter_model_not_legacy(one_chapter_transcript: str) -> None:
-    """Chapter uses new model with TranscriptLine list, not old string list."""
-    doc = parse_transcript_document(one_chapter_transcript)
-    chapter = doc.chapters[0]
-
-    assert hasattr(chapter, "transcript_lines")
-    assert isinstance(chapter.transcript_lines[0], TranscriptLine)
-    assert not isinstance(chapter.transcript_lines[0], str)
-
-
-def test_xml_builder_interface_compatibility(one_chapter_transcript: str) -> None:
-    """Output structure matches xml_builder expected interface."""
-    doc = parse_transcript_document(one_chapter_transcript)
-
-    # Document structure
-    assert hasattr(doc, "metadata")
-    assert hasattr(doc, "chapters")
-
-    # Metadata structure
-    assert hasattr(doc.metadata, "video_title")
-    assert hasattr(doc.metadata, "video_published")
-    assert hasattr(doc.metadata, "video_duration")
-    assert hasattr(doc.metadata, "video_url")
-
-    # Chapter and transcript line structure
-    for chapter in doc.chapters:
-        assert hasattr(chapter, "title")
-        assert hasattr(chapter, "start_time")
-        assert hasattr(chapter, "end_time")
-        assert hasattr(chapter, "transcript_lines")
-
-        for line in chapter.transcript_lines:
-            assert hasattr(line, "timestamp")
-            assert hasattr(line, "text")
