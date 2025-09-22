@@ -30,7 +30,7 @@
 - Input file: `example_transcripts/rick-astley-never-gonna-give-you-up-official-video-4k-remaster.txt`
 - URL equivalent: `https://www.youtube.com/watch?v=Qw4wCMpXcQ`
 - Expected:
-   1. URL-based method matches exactly `example_transcripts/rick-astley-never-gonna-give-you-up-official-video-4k-remaster.xml`
+   1. URL-based method matches exactly `example_transcripts/rick-astley-never-gonna-give-you-up-official-video-4k-remaster.xml` (exact match - no tolerance like Test 1)
    2. File-based method throws a "Wrong Format" error
 
 **Implementation Requirements:**
@@ -44,6 +44,6 @@
 - Clear ✅/❌ indicators for each test
 - Show any differences found
 - Summary of overall results
-- Appendix: verification of "near match" when encounted
+- Appendix: verification of "near match" when encountered
 
 Execute this validation and report findings.
