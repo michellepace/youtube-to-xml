@@ -1,62 +1,67 @@
-"""Unit tests for scripts/url_to_transcript.py — PR 6 refactoring.
+"""Unit tests for youtube_to_xml.url_parser module — PR 7 implementation.
 
-Note: In PR 7 tests will import from youtube_to_xml.url_parser.
-
-Tests that the URL script uses shared models and xml_builder infrastructure
-instead of duplicate local implementations.
+Tests that the URL parser module provides correct interface and functionality
+extracted from scripts/url_to_transcript.py.
 """
 
-import sys
-from pathlib import Path
+import inspect
 
-from youtube_to_xml.models import Chapter, TranscriptLine, VideoMetadata
-
-# Add scripts directory to path for importing url_to_transcript
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-
-# Import url_to_transcript with proper typing
-import url_to_transcript  # type: ignore[import-untyped]
+import youtube_to_xml.url_parser as url_parser_module
+from youtube_to_xml.models import (
+    Chapter,
+    TranscriptDocument,
+    TranscriptLine,
+    VideoMetadata,
+)
+from youtube_to_xml.url_parser import (
+    assign_transcript_lines_to_chapters,
+    extract_transcript_lines_from_json3,
+    fetch_video_metadata_and_transcript,
+    parse_youtube_url,
+)
 
 
 class TestSharedModelImports:
-    """Test that URL script imports models from shared modules."""
+    """Test that URL parser module uses shared models."""
 
-    def test_url_script_imports_video_metadata_from_shared_models(self) -> None:
-        """Test that VideoMetadata is imported from youtube_to_xml.models."""
-        # Get the VideoMetadata class used in url_to_transcript module
-        url_video_metadata = getattr(url_to_transcript, "VideoMetadata", None)
+    def test_url_parser_uses_video_metadata_from_shared_models(self) -> None:
+        """Test that url_parser module uses VideoMetadata from youtube_to_xml.models."""
+        # Check that fetch_video_metadata_and_transcript returns VideoMetadata
+        sig = inspect.signature(fetch_video_metadata_and_transcript)
+        return_annotation = sig.return_annotation
 
-        # Should not be None (class should exist)
-        assert url_video_metadata is not None, (
-            "VideoMetadata should be imported in url_to_transcript module"
-        )
+        # Should return tuple containing VideoMetadata
+        if hasattr(return_annotation, "__args__"):
+            assert VideoMetadata in return_annotation.__args__, (
+                "fetch_video_metadata_and_transcript should return VideoMetadata "
+                "from shared models"
+            )
 
-        # Should be the same class as the shared model
-        assert url_video_metadata is VideoMetadata, (
-            "VideoMetadata should be imported from youtube_to_xml.models, not locally"
-        )
+    def test_url_parser_uses_transcript_line_from_shared_models(self) -> None:
+        """Test that url_parser module uses TranscriptLine from youtube_to_xml.models."""
+        # Check that extract_transcript_lines_from_json3 returns list[TranscriptLine]
+        sig = inspect.signature(extract_transcript_lines_from_json3)
+        return_annotation = sig.return_annotation
 
-    def test_url_script_imports_transcript_line_from_shared_models(self) -> None:
-        """Test that TranscriptLine is imported from youtube_to_xml.models."""
-        url_transcript_line = getattr(url_to_transcript, "TranscriptLine", None)
+        # Should return list[TranscriptLine]
+        if hasattr(return_annotation, "__args__"):
+            assert TranscriptLine in return_annotation.__args__, (
+                "extract_transcript_lines_from_json3 should return list[TranscriptLine] "
+                "from shared models"
+            )
 
-        assert url_transcript_line is not None, (
-            "TranscriptLine should be imported in url_to_transcript module"
-        )
-        assert url_transcript_line is TranscriptLine, (
-            "TranscriptLine should be imported from youtube_to_xml.models, not locally"
-        )
+    def test_url_parser_uses_chapter_from_shared_models(self) -> None:
+        """Test that url_parser module uses Chapter from youtube_to_xml.models."""
+        # Check that assign_transcript_lines_to_chapters returns list[Chapter]
+        sig = inspect.signature(assign_transcript_lines_to_chapters)
+        return_annotation = sig.return_annotation
 
-    def test_url_script_imports_chapter_from_shared_models(self) -> None:
-        """Test that Chapter is imported from youtube_to_xml.models."""
-        url_chapter = getattr(url_to_transcript, "Chapter", None)
-
-        assert url_chapter is not None, (
-            "Chapter should be imported in url_to_transcript module"
-        )
-        assert url_chapter is Chapter, (
-            "Chapter should be imported from youtube_to_xml.models, not defined locally"
-        )
+        # Should return list[Chapter]
+        if hasattr(return_annotation, "__args__"):
+            assert Chapter in return_annotation.__args__, (
+                "assign_transcript_lines_to_chapters should return list[Chapter] "
+                "from shared models"
+            )
 
 
 class TestVideoMetadataDurationFormat:
@@ -64,11 +69,8 @@ class TestVideoMetadataDurationFormat:
 
     def test_video_metadata_duration_is_int_type(self) -> None:
         """Test that video_duration field expects int type (raw seconds)."""
-        # Get VideoMetadata from url_to_transcript module
-        url_video_metadata = url_to_transcript.VideoMetadata
-
         # Create instance with int duration (raw seconds)
-        metadata = url_video_metadata(
+        metadata = VideoMetadata(
             video_title="Test Video",
             video_published="20240315",
             video_duration=163,  # Raw seconds as int
@@ -85,30 +87,66 @@ class TestVideoMetadataDurationFormat:
 
 
 class TestXMLBuilderIntegration:
-    """Test that URL script uses xml_builder.transcript_to_xml()."""
+    """Test that URL parser module integrates with xml_builder correctly."""
 
-    def test_url_script_imports_transcript_to_xml(self) -> None:
-        """Test that transcript_to_xml is imported from xml_builder."""
-        # Should import transcript_to_xml function
-        transcript_to_xml_func = getattr(url_to_transcript, "transcript_to_xml", None)
-        assert transcript_to_xml_func is not None, (
-            "transcript_to_xml should be imported from xml_builder"
-        )
-
-        # Should be a function
-        assert callable(transcript_to_xml_func), "transcript_to_xml should be callable"
-
-    def test_url_script_no_longer_has_create_xml_document_function(self) -> None:
-        """Test that local XML generation functions are removed."""
+    def test_url_parser_module_has_no_duplicate_xml_functions(self) -> None:
+        """Test that url_parser module doesn't contain duplicate XML functions."""
         # Should not have local create_xml_document function
-        create_xml_func = getattr(url_to_transcript, "create_xml_document", None)
+        create_xml_func = getattr(url_parser_module, "create_xml_document", None)
         assert create_xml_func is None, (
-            "create_xml_document should be removed (use xml_builder.transcript_to_xml)"
+            "create_xml_document should not exist (use xml_builder.transcript_to_xml)"
         )
 
-    def test_url_script_no_longer_has_format_xml_output_function(self) -> None:
-        """Test that local format_xml_output function is removed."""
-        format_xml_func = getattr(url_to_transcript, "format_xml_output", None)
+        # Should not have local format_xml_output function
+        format_xml_func = getattr(url_parser_module, "format_xml_output", None)
         assert format_xml_func is None, (
-            "format_xml_output should be removed (use xml_builder.transcript_to_xml)"
+            "format_xml_output should not exist (use xml_builder.transcript_to_xml)"
         )
+
+    def test_parse_youtube_url_returns_transcript_document_for_xml_builder(self) -> None:
+        """Test parse_youtube_url returns TranscriptDocument for xml_builder."""
+        # Verify return type is TranscriptDocument (xml_builder.transcript_to_xml accepts)
+        sig = inspect.signature(parse_youtube_url)
+        return_annotation = sig.return_annotation
+
+        assert return_annotation == TranscriptDocument, (
+            "parse_youtube_url should return TranscriptDocument for xml_builder "
+            "integration"
+        )
+
+
+class TestUrlParserModule:
+    """Test that url_parser module exists (PR 7)."""
+
+    def test_url_parser_module_can_be_imported(self) -> None:
+        """Test that youtube_to_xml.url_parser module exists."""
+        # This will fail initially - drives TDD implementation
+        # Module is already imported at top level as url_parser_module
+        assert url_parser_module is not None
+
+
+class TestParseYoutubeUrlFunction:
+    """Test that parse_youtube_url function exists with correct interface (PR 7)."""
+
+    def test_parse_youtube_url_function_exists(self) -> None:
+        """Test that parse_youtube_url function exists in url_parser module."""
+        # Function should exist and be importable
+        assert callable(parse_youtube_url)
+
+    def test_parse_youtube_url_accepts_one_parameter(self) -> None:
+        """Test that parse_youtube_url accepts exactly one parameter."""
+        sig = inspect.signature(parse_youtube_url)
+        params = list(sig.parameters.values())
+        assert len(params) == 1
+
+    def test_parse_youtube_url_parameter_named_url(self) -> None:
+        """Test that parse_youtube_url parameter is named 'url'."""
+        sig = inspect.signature(parse_youtube_url)
+        params = list(sig.parameters.values())
+        assert params[0].name == "url"
+
+    def test_parse_youtube_url_returns_transcript_document(self) -> None:
+        """Test that parse_youtube_url has TranscriptDocument return type annotation."""
+        sig = inspect.signature(parse_youtube_url)
+        if sig.return_annotation != inspect.Signature.empty:
+            assert sig.return_annotation == TranscriptDocument

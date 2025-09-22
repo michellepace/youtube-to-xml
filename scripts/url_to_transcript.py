@@ -21,16 +21,9 @@ Transcript priority:
 No other languages are downloaded - English only.
 """
 
-import json
-import math
 import re
 import sys
-import tempfile
 from pathlib import Path
-from typing import TypedDict
-
-import yt_dlp
-from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
 
 from youtube_to_xml.exceptions import (
     URLBotProtectionError,
@@ -41,228 +34,13 @@ from youtube_to_xml.exceptions import (
     URLTranscriptNotFoundError,
     URLUnmappedError,
     URLVideoUnavailableError,
-    map_yt_dlp_exception,
 )
 from youtube_to_xml.logging_config import get_logger, setup_logging
-from youtube_to_xml.models import (
-    Chapter,
-    TranscriptDocument,
-    TranscriptLine,
-    VideoMetadata,
-)
-from youtube_to_xml.time_utils import MILLISECONDS_PER_SECOND
+from youtube_to_xml.url_parser import parse_youtube_url
 from youtube_to_xml.xml_builder import transcript_to_xml
-
-
-# Private TypedDict definitions for internal YouTube API data structures
-class _ChapterDict(TypedDict):
-    """Internal type for YouTube chapter data."""
-
-    title: str
-    start_time: float
-    end_time: float
-
-
-class _Json3Seg(TypedDict, total=False):
-    """Internal type for JSON3 transcript segment."""
-
-    utf8: str
-
-
-class _Json3Event(TypedDict, total=False):
-    """Internal type for JSON3 transcript event."""
-
-    tStartMs: int
-    segs: list[_Json3Seg]
-
 
 # Module-level logger
 logger = get_logger(__name__)
-
-
-def fetch_video_metadata_and_transcript(
-    url: str,
-) -> tuple[VideoMetadata, list[TranscriptLine], list[_ChapterDict]]:
-    """Extract video metadata and download transcript from YouTube using yt-dlp.
-
-    Uses yt-dlp to fetch video information and transcript with built-in
-    transcript handling and error management.
-
-    Args:
-        url: YouTube video URL
-
-    Returns:
-        Tuple of (VideoMetadata object, list of TranscriptLine objects,
-                 list of chapter dicts)
-
-    Raises:
-        URLBotProtectionError: If YouTube requires verification
-        URLNotYouTubeError: If URL is not a YouTube video
-        URLIncompleteError: If YouTube URL has incomplete video ID
-        URLIsInvalidError: If URL format is invalid
-        URLVideoUnavailableError: If YouTube video is unavailable
-        URLTranscriptNotFoundError: If no transcript is available
-        URLRateLimitError: If YouTube rate limit is encountered
-        URLUnmappedError: If an unexpected yt-dlp error occurs
-    """
-    with tempfile.TemporaryDirectory() as temp_dir:
-        options = {
-            "no_warnings": True,
-            "noprogress": True,
-            "skip_download": True,
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
-            "subtitlesformat": "json3",
-            "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
-        }
-
-        # Phase 1: Use yt-dlp to get data for transcript
-        with yt_dlp.YoutubeDL(options) as ydl:
-            try:
-                # a) get complete video metadata from YouTube
-                raw_metadata = ydl.extract_info(url, download=False)
-                # b) download subtitle files (.json3 format)
-                ydl.process_info(raw_metadata)
-            except (DownloadError, ExtractorError, UnsupportedError) as e:
-                mapped_exception = map_yt_dlp_exception(e)
-                raise mapped_exception from e
-
-        # Phase 2: File processing (outside yt-dlp context)
-        # Note: raw_metadata is never None in practice - yt-dlp raises exceptions instead
-        assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
-
-        # a) Locate downloaded transcript files
-        transcript_files = list(Path(temp_dir).glob("*.json3"))
-
-        # Implement transcript priority: manual English (.en.json3) over auto-generated
-        def priority(p: Path) -> int:
-            name = p.name
-            # 0 = manual en, 1 = auto en-orig, 2 = everything else
-            return (
-                0
-                if name.endswith(".en.json3")
-                else 1
-                if name.endswith(".en-orig.json3")
-                else 2
-            )
-
-        transcript_files.sort(key=priority)
-
-        # b) Parse transcript files into structured objects
-        transcript_lines = []
-        if transcript_files:
-            transcript_file = transcript_files[0]
-            # Read JSON3 format from disk
-            transcript_data = json.loads(transcript_file.read_text(encoding="utf-8"))
-            # Extract events → TranscriptLine objects
-            events = transcript_data.get("events", [])
-            transcript_lines = extract_transcript_lines_from_json3(events)
-        else:
-            raise URLTranscriptNotFoundError
-
-        # Phase 3: Create structured metadata object from raw_metadata
-        metadata = VideoMetadata(
-            video_title=raw_metadata.get("title", "Untitled"),
-            video_published=raw_metadata.get("upload_date", ""),  # Raw YYYYMMDD
-            video_duration=int(raw_metadata.get("duration", 0)),  # Raw seconds as int
-            video_url=raw_metadata.get("webpage_url", url),
-        )
-
-        # Handle chapters_dicts separately (not part of shared VideoMetadata model)
-        chapters_dicts = raw_metadata.get("chapters", [])
-
-        return metadata, transcript_lines, chapters_dicts
-
-
-def extract_transcript_lines_from_json3(
-    events: list[_Json3Event],
-) -> list[TranscriptLine]:
-    """Extract individual transcript lines from JSON3 event objects.
-
-    Args:
-        events: List of JSON3 event objects from YouTube transcript
-
-    Returns:
-        List of TranscriptLine objects with cleaned text and timestamps
-    """
-    transcript_lines = []
-
-    for event in events:
-        # Skip events without transcript data
-        if "segs" not in event:
-            continue
-
-        # Combine text from all parts
-        text_parts = [seg["utf8"] for seg in event["segs"] if "utf8" in seg]
-        # Remove line breaks that YouTube adds for display formatting
-        text = "".join(text_parts).strip().replace("\n", " ")
-        if not text:
-            continue
-
-        # Convert milliseconds to seconds
-        start_ms = event.get("tStartMs", 0)
-        start_seconds = start_ms / MILLISECONDS_PER_SECOND
-
-        transcript_lines.append(TranscriptLine(start_seconds, text))
-
-    return transcript_lines
-
-
-def assign_transcript_lines_to_chapters(
-    metadata: VideoMetadata,
-    transcript_lines: list[TranscriptLine],
-    chapters_dicts: list[_ChapterDict],
-) -> list[Chapter]:
-    """Assign transcript lines to chapters based on temporal boundaries.
-
-    Args:
-        metadata: Video metadata for title
-        transcript_lines: List of all individual transcript lines
-        chapters_dicts: List of chapter dictionaries from YouTube API
-
-    Returns:
-        List of Chapter objects with assigned transcript lines
-    """
-    if not chapters_dicts:
-        # No chapters - create single chapter with video title
-        return [
-            Chapter(
-                title=metadata.video_title,
-                start_time=0,
-                end_time=math.inf,
-                transcript_lines=transcript_lines,
-            )
-        ]
-
-    chapters = []
-
-    for i, chapter_dict in enumerate(chapters_dicts):
-        chapter_start_time = float(chapter_dict.get("start_time", 0))
-
-        # End time is start of next chapter, or infinity for last chapter
-        if i + 1 < len(chapters_dicts):
-            chapter_end_time = float(chapters_dicts[i + 1]["start_time"])
-        else:
-            chapter_end_time = math.inf
-
-        # Filter transcript lines within this chapter's time range
-        chapter_transcript_lines = [
-            line
-            for line in transcript_lines
-            if chapter_start_time <= line.timestamp < chapter_end_time
-        ]
-
-        chapters.append(
-            Chapter(
-                title=chapter_dict.get("title", f"Chapter {i + 1}"),
-                start_time=chapter_start_time,
-                end_time=chapter_end_time,
-                transcript_lines=chapter_transcript_lines,
-            )
-        )
-
-    return chapters
 
 
 def sanitise_title_for_filename(title: str) -> str:
@@ -278,30 +56,21 @@ def sanitise_title_for_filename(title: str) -> str:
     return f"{safe_title}.xml"
 
 
-def convert_youtube_to_xml(
-    video_url: str,
-) -> tuple[str, VideoMetadata, list[Chapter], int]:
+def convert_youtube_to_xml(video_url: str) -> tuple[str, int]:
     """Convert YouTube video to XML transcript with metadata.
 
-    Core business logic that:
-    1. Fetches video metadata and downloads transcript using yt-dlp
-    2. Assigns transcript lines to chapters
-    3. Creates TranscriptDocument and generates XML using shared xml_builder
+    Core business logic that uses url_parser module to get structured transcript
+    and generates XML using shared xml_builder.
 
     Args:
         video_url: YouTube video URL
 
     Returns:
-        Tuple of (XML content as string, VideoMetadata object, list of chapters,
-                 transcript lines count)
+        Tuple of (XML content as string, transcript lines count)
     """
-    logger.info("Processing video: %s", video_url)
-
-    # Step 1: Fetch metadata and download transcript using yt-dlp
+    # Step 1: Parse URL and get structured transcript document
     try:
-        metadata, transcript_lines, chapters_dicts = fetch_video_metadata_and_transcript(
-            video_url
-        )
+        document = parse_youtube_url(video_url)
     except URLTranscriptNotFoundError:
         logger.warning("No transcript available for video: %s", video_url)
         raise  # Re-raise to prevent file creation (no useless empty files)
@@ -309,16 +78,15 @@ def convert_youtube_to_xml(
         logger.exception("Rate limit hit for video: %s", video_url)
         raise  # Re-raise to prevent file creation
 
-    # Step 2: Assign transcript lines to chapters
-    chapters = assign_transcript_lines_to_chapters(
-        metadata, transcript_lines, chapters_dicts
-    )
-
-    # Step 3: Create TranscriptDocument and generate XML using shared xml_builder
-    document = TranscriptDocument(metadata=metadata, chapters=chapters)
+    # Step 2: Generate XML using shared xml_builder
     xml_output = transcript_to_xml(document)
 
-    return xml_output, metadata, chapters, len(transcript_lines)
+    # Calculate total transcript lines for logging
+    transcript_lines_count = sum(
+        len(chapter.transcript_lines) for chapter in document.chapters
+    )
+
+    return xml_output, transcript_lines_count
 
 
 def convert_and_save_youtube_xml(video_url: str) -> Path:
@@ -333,21 +101,23 @@ def convert_and_save_youtube_xml(video_url: str) -> Path:
     Returns:
         Output file path
     """
-    # Generate XML content and get metadata for filename
-    xml_output, metadata, chapters, transcript_lines_count = convert_youtube_to_xml(
-        video_url
-    )
+    # Generate XML content and get transcript lines count
+    xml_output, transcript_lines_count = convert_youtube_to_xml(video_url)
+
+    # Parse document again to get metadata for filename and logging
+    # (This is slightly inefficient but keeps the interface clean)
+    document = parse_youtube_url(video_url)
 
     # Log processing results for operational visibility
     logger.info(
         "Generated XML with %d chapters and %d transcript lines for video: %s",
-        len(chapters),
+        len(document.chapters),
         transcript_lines_count,
         video_url,
     )
 
     # Save to file
-    output_filename = sanitise_title_for_filename(metadata.video_title)
+    output_filename = sanitise_title_for_filename(document.metadata.video_title)
     if output_filename == ".xml":
         output_filename = "transcript-untitled.xml"
     output_path = Path(output_filename)
