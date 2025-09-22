@@ -107,7 +107,7 @@ def fetch_video_metadata_and_transcript(
     with tempfile.TemporaryDirectory() as temp_dir:
         options = {
             "no_warnings": True,
-            "no_progress": True,
+            "noprogress": True,
             "skip_download": True,
             "writesubtitles": True,
             "writeautomaticsub": True,
