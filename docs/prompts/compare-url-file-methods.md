@@ -1,6 +1,6 @@
-# Validate XML Output Consistency Across TWO YouTube Transcript Methods: File-based and URL-based
+# Validate XML Output Consistency Between File-based and URL-based Methods
 
-**Objective:** Verify that these three methods produce near-identical matching XML output files.
+**Objective:** Verify that these two methods produce near-identical matching XML output files.
 
 **Two Methods to Test:**
 1. File-based, run: `uv run youtube-to-xml <file.txt>`
@@ -19,7 +19,7 @@
 - URL equivalent: `https://www.youtube.com/watch?v=Q4gsvJvRjCU`
 - Expected:
    - File-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.txt.xml`
-   - URL-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml`
+   - URL-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml` (note: no `.txt` in filename)
    - URL-based is a near identical match to file-based method
 
 **Test 2 (file-based extensive):**
