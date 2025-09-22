@@ -12,6 +12,7 @@ converted back to "M:SS" or "H:MM:SS" format for XML output.
 
 import math
 from collections.abc import Sequence
+from typing import TypedDict
 
 from youtube_to_xml.exceptions import (
     FileEmptyError,
@@ -26,6 +27,17 @@ from youtube_to_xml.models import (
     VideoMetadata,
 )
 from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
+
+
+# Private TypedDict definition for internal chapter metadata
+class _InternalChapterDict(TypedDict):
+    """Internal type for chapter metadata during file parsing."""
+
+    title_index: int
+    title: str
+    start_time: float
+    transcript_start: int
+
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
@@ -49,7 +61,7 @@ def _validate_transcript_format(raw_transcript: str) -> None:
     Requirements
     - 1st line: (non-timestamp) → becomes first chapter
     - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
-    - 3rd line: (non-timestamp) → first transcript line of first chapter
+    - 3rd line: (non-timestamp) → first text of first transcript line
     """
     if not raw_transcript.strip():
         raise FileEmptyError
@@ -82,7 +94,7 @@ def _validate_transcript_format(raw_transcript: str) -> None:
 
 def _find_first_chapter(
     transcript_lines: list[str], timestamp_indices: list[int]
-) -> dict | None:
+) -> _InternalChapterDict | None:
     """Find first chapter metadata if transcript starts with a title."""
     if TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
         return None
@@ -97,7 +109,7 @@ def _find_first_chapter(
 
 def _find_subsequent_chapters(
     transcript_lines: list[str], timestamp_indices: list[int]
-) -> list[dict]:
+) -> list[_InternalChapterDict]:
     """Find subsequent chapters using the 2-line gap rule."""
     chapters = []
     for i in range(len(timestamp_indices) - 1):
@@ -117,7 +129,7 @@ def _find_subsequent_chapters(
     return chapters
 
 
-def parse_transcript_document(raw_transcript: str) -> TranscriptDocument:
+def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
     """Parse transcript file into unified TranscriptDocument format.
 
     Args:
@@ -163,12 +175,10 @@ def parse_transcript_document(raw_transcript: str) -> TranscriptDocument:
 
         # Extract transcript lines from start timestamp to range end
         start_idx = chapter_dict["transcript_start"]
-        chapter_transcript_text = transcript_lines[start_idx:transcript_end_idx]
+        chapter_raw_lines = transcript_lines[start_idx:transcript_end_idx]
 
         # Convert alternating timestamp/text strings to TranscriptLine objects
-        chapter_transcript_lines = _convert_string_lines_to_transcript_objects(
-            chapter_transcript_text
-        )
+        chapter_transcript_lines = _convert_strings_to_transcript_lines(chapter_raw_lines)
 
         chapters.append(
             ModelsChapter(
@@ -202,9 +212,9 @@ def _sanitize_transcript_spacing(raw_transcript: str) -> str:
     return "\n".join(sanitized_lines)
 
 
-def _convert_string_lines_to_transcript_objects(
+def _convert_strings_to_transcript_lines(
     raw_lines: list[str],
-) -> list["TranscriptLine"]:
+) -> list[TranscriptLine]:
     """Convert alternating timestamp/text strings to TranscriptLine objects.
 
     Args:

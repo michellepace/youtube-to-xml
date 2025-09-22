@@ -9,7 +9,7 @@ from youtube_to_xml.exceptions import (
     FileEmptyError,
     FileInvalidFormatError,
 )
-from youtube_to_xml.file_parser import parse_transcript_document
+from youtube_to_xml.file_parser import parse_transcript_file
 from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.xml_builder import transcript_to_xml
 
@@ -75,7 +75,7 @@ def main() -> None:
 
     # Parse the transcript and generate XML
     try:
-        document = parse_transcript_document(raw_transcript_text)
+        document = parse_transcript_file(raw_transcript_text)
         xml_output = transcript_to_xml(document)
     except FileEmptyError:
         print(f"❌ Your file is empty: {transcript_path}")

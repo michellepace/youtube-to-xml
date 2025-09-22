@@ -24,8 +24,7 @@
 
       "Read(docs/handovers/**)",
       "Read(docs/images/**)",
-      "Read(docs/knowledge/**)",
-      "Read(docs/plans/**)"
+      "Read(docs/knowledge/**)"
     ]
   }
 }
