@@ -129,7 +129,7 @@ def _find_subsequent_chapters(
     return chapters
 
 
-def parse_transcript_document(raw_transcript: str) -> TranscriptDocument:
+def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
     """Parse transcript file into unified TranscriptDocument format.
 
     Args:
