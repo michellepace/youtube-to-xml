@@ -17,12 +17,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Unified Data Flow**: Both processing methods converge on shared infrastructure:
 - **File Method**: Raw text → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
-- **URL Method**: YouTube URL → `scripts/url_to_transcript.fetch_video_metadata_and_transcript()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
+- **URL Method**: YouTube URL → `url_parser.parse_youtube_url()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 
-> **⚠️ Integration Status**: URL method currently exists as experimental script. Integration plan pending to move functionality into main application as `url_parser.py` module with unified CLI interface.
+> **🚧 Integration Status**: Core URL parsing functionality extracted to `url_parser.py` module. Unified CLI and experimental script cleanup pending.
 
 **Key Shared Components**:
 - `src/youtube_to_xml/models.py` - Core data structures (`TranscriptDocument`, `VideoMetadata`, `TranscriptLine`, `Chapter`)
+- `src/youtube_to_xml/file_parser.py` - File-based transcript parsing to `TranscriptDocument`
+- `src/youtube_to_xml/url_parser.py` - URL-based transcript parsing to `TranscriptDocument`
 - `src/youtube_to_xml/xml_builder.py` - Unified XML generation via `transcript_to_xml()`
 - `src/youtube_to_xml/time_utils.py` - Bidirectional timestamp conversion
 - `src/youtube_to_xml/exceptions.py` - Centralized exception hierarchy with `BaseTranscriptError`
