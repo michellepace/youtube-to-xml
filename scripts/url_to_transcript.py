@@ -21,14 +21,11 @@ Transcript priority:
 No other languages are downloaded - English only.
 """
 
-import contextlib
 import json
 import math
-import os
 import re
 import sys
 import tempfile
-import uuid
 from pathlib import Path
 from typing import TypedDict
 
@@ -95,7 +92,8 @@ def fetch_video_metadata_and_transcript(
         url: YouTube video URL
 
     Returns:
-        Tuple of (VideoMetadata object, list of TranscriptLine objects, list of chapters)
+        Tuple of (VideoMetadata object, list of TranscriptLine objects,
+                 list of chapter dicts)
 
     Raises:
         URLBotProtectionError: If YouTube requires verification
@@ -106,31 +104,24 @@ def fetch_video_metadata_and_transcript(
         URLTranscriptNotFoundError: If no transcript is available
         URLRateLimitError: If YouTube rate limit is encountered
     """
-    options = {
-        "quiet": True,
-        "no_warnings": True,
-        "skip_download": True,
-        "writesubtitles": True,
-        "writeautomaticsub": True,
-        "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
-        "subtitlesformat": "json3",
-        "outtmpl": "%(title)s [%(id)s].%(ext)s",
-    }
-
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Change to temp directory for yt-dlp output
-        options["outtmpl"] = str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s")
+        options = {
+            "no_warnings": True,
+            "no_progress": True,
+            "skip_download": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
+            "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
+            "subtitlesformat": "json3",
+            "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
+        }
 
         # Phase 1: Use yt-dlp to get data for transcript
-        with (
-            open(os.devnull, "w") as devnull,  # noqa: PTH123 - os.devnull for cross-platform
-            contextlib.redirect_stderr(devnull),
-            yt_dlp.YoutubeDL(options) as ydl,
-        ):
+        with yt_dlp.YoutubeDL(options) as ydl:
             try:
                 # a) get complete video metadata from YouTube
                 raw_metadata = ydl.extract_info(url, download=False)
-                # b) download subtitle files to temp_dir (.json3 format)
+                # b) download subtitle files (.json3 format)
                 ydl.process_info(raw_metadata)
             except (DownloadError, ExtractorError, UnsupportedError) as e:
                 mapped_exception = map_yt_dlp_exception(e)
@@ -141,10 +132,7 @@ def fetch_video_metadata_and_transcript(
         assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
 
         # a) Locate downloaded transcript files
-        video_id = raw_metadata.get("id", "")
-        transcript_files = [
-            p for p in Path(temp_dir).glob("*.json3") if f"[{video_id}]" in p.name
-        ]
+        transcript_files = list(Path(temp_dir).glob("*.json3"))
 
         # Implement transcript priority: manual English (.en.json3) over auto-generated
         def priority(p: Path) -> int:
@@ -173,7 +161,6 @@ def fetch_video_metadata_and_transcript(
             raise URLTranscriptNotFoundError
 
         # Phase 3: Create structured metadata object from raw_metadata
-        # Store raw video_published format (YYYYMMDD) and raw video_duration (seconds)
         metadata = VideoMetadata(
             video_title=raw_metadata.get("title", "Untitled"),
             video_published=raw_metadata.get("upload_date", ""),  # Raw YYYYMMDD
@@ -287,7 +274,7 @@ def sanitise_title_for_filename(title: str) -> str:
 
 
 def convert_youtube_to_xml(
-    video_url: str, execution_id: str
+    video_url: str,
 ) -> tuple[str, VideoMetadata, list[Chapter], int]:
     """Convert YouTube video to XML transcript with metadata.
 
@@ -298,13 +285,12 @@ def convert_youtube_to_xml(
 
     Args:
         video_url: YouTube video URL
-        execution_id: Unique identifier for this execution
 
     Returns:
         Tuple of (XML content as string, VideoMetadata object, list of chapters,
                  transcript lines count)
     """
-    logger.info("[%s] Processing video: %s", execution_id, video_url)
+    logger.info("Processing video: %s", video_url)
 
     # Step 1: Fetch metadata and download transcript using yt-dlp
     try:
@@ -312,10 +298,10 @@ def convert_youtube_to_xml(
             video_url
         )
     except URLTranscriptNotFoundError:
-        logger.warning("[%s] No transcript available for video", execution_id)
+        logger.warning("No transcript available for video")
         raise  # Re-raise to prevent file creation (no useless empty files)
     except URLRateLimitError:
-        logger.exception("[%s] URLRateLimitError", execution_id)
+        logger.exception("URLRateLimitError")
         raise  # Re-raise to prevent file creation
 
     # Step 2: Assign transcript lines to chapters
@@ -330,7 +316,7 @@ def convert_youtube_to_xml(
     return xml_output, metadata, chapters, len(transcript_lines)
 
 
-def convert_and_save_youtube_xml(video_url: str, execution_id: str) -> Path:
+def convert_and_save_youtube_xml(video_url: str) -> Path:
     """Convert YouTube video to XML and save to file.
 
     Handles the file I/O operation separate from business logic.
@@ -338,20 +324,18 @@ def convert_and_save_youtube_xml(video_url: str, execution_id: str) -> Path:
 
     Args:
         video_url: YouTube video URL
-        execution_id: Unique identifier for this execution
 
     Returns:
         Output file path
     """
     # Generate XML content and get metadata for filename
     xml_output, metadata, chapters, transcript_lines_count = convert_youtube_to_xml(
-        video_url, execution_id
+        video_url
     )
 
     # Log processing results for operational visibility
     logger.info(
-        "[%s] Generated XML with %d chapters and %d transcript lines",
-        execution_id,
+        "Generated XML with %d chapters and %d transcript lines",
         len(chapters),
         transcript_lines_count,
     )
@@ -359,11 +343,11 @@ def convert_and_save_youtube_xml(video_url: str, execution_id: str) -> Path:
     # Save to file
     output_filename = sanitise_title_for_filename(metadata.video_title)
     if output_filename == ".xml":
-        output_filename = f"transcript-{execution_id}.xml"
+        output_filename = "transcript-untitled.xml"
     output_path = Path(output_filename)
     output_path.write_text(xml_output, encoding="utf-8")
 
-    logger.info("[%s] Successfully created: %s", execution_id, output_path.name)
+    logger.info("Successfully created: %s", output_path.name)
 
     return output_path
 
@@ -371,7 +355,6 @@ def convert_and_save_youtube_xml(video_url: str, execution_id: str) -> Path:
 def main() -> None:
     """Command-line interface entry point."""
     setup_logging()
-    execution_id = str(uuid.uuid4())[:8]
 
     if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:  # noqa: PLR2004
         print("YouTube URL to XML Converter")
@@ -383,7 +366,7 @@ def main() -> None:
 
     try:
         print(f"🎬 Processing: {video_url}")
-        output_path = convert_and_save_youtube_xml(video_url, execution_id)
+        output_path = convert_and_save_youtube_xml(video_url)
 
         print(f"✅ Created: {output_path.name}")
     except KeyboardInterrupt:
@@ -399,12 +382,12 @@ def main() -> None:
         URLUnmappedError,
         URLVideoUnavailableError,
     ) as e:
-        logger.info("[%s] Processing failed: %s", execution_id, e)
+        logger.info("Processing failed: %s", e)
         print(f"\n❌ Error: {e}")
         sys.exit(1)
     except (ValueError, OSError) as e:
         print(f"\n❌ Unexpected error: {e}")
-        logger.exception("[%s] Unexpected error", execution_id)
+        logger.exception("Unexpected error")
         sys.exit(1)
 
 
