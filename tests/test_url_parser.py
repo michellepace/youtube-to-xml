@@ -1,12 +1,15 @@
-"""Unit tests for youtube_to_xml.url_parser module — PR 7 implementation.
+"""Unit tests for youtube_to_xml.url_parser module.
 
-Tests that the URL parser module provides correct interface and functionality
-extracted from scripts/url_to_transcript.py.
+Tests the URL parser module interface and functionality for converting
+YouTube URLs into structured TranscriptDocument objects.
 """
 
 import inspect
 
+# url_parser module imports (group together)
 import youtube_to_xml.url_parser as url_parser_module
+
+# Shared model imports
 from youtube_to_xml.models import (
     Chapter,
     TranscriptDocument,
