@@ -85,8 +85,8 @@ def fetch_video_metadata_and_transcript(
 ) -> tuple[VideoMetadata, list[TranscriptLine], list[_ChapterDict]]:
     """Extract video metadata and download transcript from YouTube using yt-dlp.
 
-    Uses yt-dlp to fetch video information and transcript, avoiding rate limits
-    by using yt-dlp's built-in transcript handling instead of direct HTTP requests.
+    Uses yt-dlp to fetch video information and transcript with built-in
+    transcript handling and error management.
 
     Args:
         url: YouTube video URL
@@ -103,6 +103,7 @@ def fetch_video_metadata_and_transcript(
         URLVideoUnavailableError: If YouTube video is unavailable
         URLTranscriptNotFoundError: If no transcript is available
         URLRateLimitError: If YouTube rate limit is encountered
+        URLUnmappedError: If an unexpected yt-dlp error occurs
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         options = {
@@ -213,7 +214,7 @@ def assign_transcript_lines_to_chapters(
     transcript_lines: list[TranscriptLine],
     chapters_dicts: list[_ChapterDict],
 ) -> list[Chapter]:
-    """Parse API transcript data into chapters.
+    """Assign transcript lines to chapters based on temporal boundaries.
 
     Args:
         metadata: Video metadata for title
@@ -265,7 +266,11 @@ def assign_transcript_lines_to_chapters(
 
 
 def sanitise_title_for_filename(title: str) -> str:
-    """Convert video title to safe filename with .xml extension."""
+    """Convert video title to safe filename by sanitising characters.
+
+    Removes non-alphanumeric characters and normalises spacing/hyphens.
+    Adds .xml extension to the sanitised title.
+    """
     # Remove non-alphanumeric characters except spaces and hyphens
     safe_title = re.sub(r"[^\w\s-]", "", title.lower())
     # Replace spaces and multiple hyphens with single hyphen
@@ -298,10 +303,10 @@ def convert_youtube_to_xml(
             video_url
         )
     except URLTranscriptNotFoundError:
-        logger.warning("No transcript available for video")
+        logger.warning("No transcript available for video: %s", video_url)
         raise  # Re-raise to prevent file creation (no useless empty files)
     except URLRateLimitError:
-        logger.exception("URLRateLimitError")
+        logger.exception("Rate limit hit for video: %s", video_url)
         raise  # Re-raise to prevent file creation
 
     # Step 2: Assign transcript lines to chapters
@@ -335,9 +340,10 @@ def convert_and_save_youtube_xml(video_url: str) -> Path:
 
     # Log processing results for operational visibility
     logger.info(
-        "Generated XML with %d chapters and %d transcript lines",
+        "Generated XML with %d chapters and %d transcript lines for video: %s",
         len(chapters),
         transcript_lines_count,
+        video_url,
     )
 
     # Save to file
@@ -347,7 +353,7 @@ def convert_and_save_youtube_xml(video_url: str) -> Path:
     output_path = Path(output_filename)
     output_path.write_text(xml_output, encoding="utf-8")
 
-    logger.info("Successfully created: %s", output_path.name)
+    logger.info("Successfully created: %s for video: %s", output_path.name, video_url)
 
     return output_path
 
@@ -382,12 +388,16 @@ def main() -> None:
         URLUnmappedError,
         URLVideoUnavailableError,
     ) as e:
-        logger.info("Processing failed: %s", e)
+        logger.info(
+            "Processing failed for video: %s - %s: %s", video_url, type(e).__name__, e
+        )
         print(f"\n❌ Error: {e}")
         sys.exit(1)
     except (ValueError, OSError) as e:
         print(f"\n❌ Unexpected error: {e}")
-        logger.exception("Unexpected error")
+        logger.exception(
+            "Unexpected error for video: %s - %s", video_url, type(e).__name__
+        )
         sys.exit(1)
 
 

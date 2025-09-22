@@ -61,7 +61,7 @@ def _validate_transcript_format(raw_transcript: str) -> None:
     Requirements
     - 1st line: (non-timestamp) → becomes first chapter
     - 2nd line: (timestamp e.g. "0:03") → becomes start_time for first chapter
-    - 3rd line: (non-timestamp) → first transcript line of first chapter
+    - 3rd line: (non-timestamp) → first text of first transcript line
     """
     if not raw_transcript.strip():
         raise FileEmptyError
@@ -175,12 +175,10 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
 
         # Extract transcript lines from start timestamp to range end
         start_idx = chapter_dict["transcript_start"]
-        chapter_transcript_text = transcript_lines[start_idx:transcript_end_idx]
+        chapter_raw_lines = transcript_lines[start_idx:transcript_end_idx]
 
         # Convert alternating timestamp/text strings to TranscriptLine objects
-        chapter_transcript_lines = _convert_string_lines_to_transcript_objects(
-            chapter_transcript_text
-        )
+        chapter_transcript_lines = _convert_strings_to_transcript_lines(chapter_raw_lines)
 
         chapters.append(
             ModelsChapter(
@@ -214,9 +212,9 @@ def _sanitize_transcript_spacing(raw_transcript: str) -> str:
     return "\n".join(sanitized_lines)
 
 
-def _convert_string_lines_to_transcript_objects(
+def _convert_strings_to_transcript_lines(
     raw_lines: list[str],
-) -> list["TranscriptLine"]:
+) -> list[TranscriptLine]:
     """Convert alternating timestamp/text strings to TranscriptLine objects.
 
     Args:

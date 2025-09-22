@@ -1,4 +1,6 @@
-"""Unit tests for scripts/url_to_transcript.py - PR 6 refactoring.
+"""Unit tests for scripts/url_to_transcript.py — PR 6 refactoring.
+
+Note: In PR 7 tests will import from youtube_to_xml.url_parser.
 
 Tests that the URL script uses shared models and xml_builder infrastructure
 instead of duplicate local implementations.

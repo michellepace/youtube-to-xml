@@ -1,6 +1,6 @@
 """Tests for file_parser.py transcript parsing functionality.
 
-Tests the parse_transcript_document function which converts YouTube transcript
+Tests the parse_transcript_file function which converts YouTube transcript
 files into structured TranscriptDocument objects with chapters and metadata.
 """
 
