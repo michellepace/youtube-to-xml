@@ -30,6 +30,7 @@ import sys
 import tempfile
 import uuid
 from pathlib import Path
+from typing import TypedDict
 
 import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
@@ -55,13 +56,36 @@ from youtube_to_xml.models import (
 from youtube_to_xml.time_utils import MILLISECONDS_PER_SECOND
 from youtube_to_xml.xml_builder import transcript_to_xml
 
+
+# Private TypedDict definitions for internal YouTube API data structures
+class _ChapterDict(TypedDict):
+    """Internal type for YouTube chapter data."""
+
+    title: str
+    start_time: float
+    end_time: float
+
+
+class _Json3Seg(TypedDict, total=False):
+    """Internal type for JSON3 transcript segment."""
+
+    utf8: str
+
+
+class _Json3Event(TypedDict, total=False):
+    """Internal type for JSON3 transcript event."""
+
+    tStartMs: int
+    segs: list[_Json3Seg]
+
+
 # Module-level logger
 logger = get_logger(__name__)
 
 
 def fetch_video_metadata_and_transcript(
     url: str,
-) -> tuple[VideoMetadata, list[TranscriptLine], list[dict]]:
+) -> tuple[VideoMetadata, list[TranscriptLine], list[_ChapterDict]]:
     """Extract video metadata and download transcript from YouTube using yt-dlp.
 
     Uses yt-dlp to fetch video information and transcript, avoiding rate limits
@@ -71,7 +95,7 @@ def fetch_video_metadata_and_transcript(
         url: YouTube video URL
 
     Returns:
-        Tuple of (VideoMetadata object, list of TranscriptLine objects, chapters_dicts)
+        Tuple of (VideoMetadata object, list of TranscriptLine objects, list of chapters)
 
     Raises:
         URLBotProtectionError: If YouTube requires verification
@@ -163,11 +187,13 @@ def fetch_video_metadata_and_transcript(
         return metadata, transcript_lines, chapters_dicts
 
 
-def extract_transcript_lines_from_json3(events: list) -> list[TranscriptLine]:
+def extract_transcript_lines_from_json3(
+    events: list[_Json3Event],
+) -> list[TranscriptLine]:
     """Extract individual transcript lines from JSON3 event objects.
 
     Args:
-        events: List of JSON3 event objects from YouTube
+        events: List of JSON3 event objects from YouTube transcript
 
     Returns:
         List of TranscriptLine objects with cleaned text and timestamps
@@ -198,14 +224,14 @@ def extract_transcript_lines_from_json3(events: list) -> list[TranscriptLine]:
 def assign_transcript_lines_to_chapters(
     metadata: VideoMetadata,
     transcript_lines: list[TranscriptLine],
-    chapters_dicts: list[dict],
+    chapters_dicts: list[_ChapterDict],
 ) -> list[Chapter]:
     """Parse API transcript data into chapters.
 
     Args:
         metadata: Video metadata for title
         transcript_lines: List of all individual transcript lines
-        chapters_dicts: Chapter information from YouTube API
+        chapters_dicts: List of chapter dictionaries from YouTube API
 
     Returns:
         List of Chapter objects with assigned transcript lines

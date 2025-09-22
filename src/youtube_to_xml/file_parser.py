@@ -12,6 +12,7 @@ converted back to "M:SS" or "H:MM:SS" format for XML output.
 
 import math
 from collections.abc import Sequence
+from typing import TypedDict
 
 from youtube_to_xml.exceptions import (
     FileEmptyError,
@@ -26,6 +27,17 @@ from youtube_to_xml.models import (
     VideoMetadata,
 )
 from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
+
+
+# Private TypedDict definition for internal chapter metadata
+class _InternalChapterDict(TypedDict):
+    """Internal type for chapter metadata during file parsing."""
+
+    title_index: int
+    title: str
+    start_time: float
+    transcript_start: int
+
 
 # Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
@@ -82,7 +94,7 @@ def _validate_transcript_format(raw_transcript: str) -> None:
 
 def _find_first_chapter(
     transcript_lines: list[str], timestamp_indices: list[int]
-) -> dict | None:
+) -> _InternalChapterDict | None:
     """Find first chapter metadata if transcript starts with a title."""
     if TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
         return None
@@ -97,7 +109,7 @@ def _find_first_chapter(
 
 def _find_subsequent_chapters(
     transcript_lines: list[str], timestamp_indices: list[int]
-) -> list[dict]:
+) -> list[_InternalChapterDict]:
     """Find subsequent chapters using the 2-line gap rule."""
     chapters = []
     for i in range(len(timestamp_indices) - 1):
