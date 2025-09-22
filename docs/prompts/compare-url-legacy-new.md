@@ -19,7 +19,7 @@
 - URL equivalent: `https://www.youtube.com/watch?v=Q4gsvJvRjCU`
 - Expected:
    - File-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.txt.xml`
-   - Url-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml`
+   - URL-based method matches exactly: `example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml`
    - URL-based is a near identical match to file-based method
 
 **Test 2 (file-based extensive):**
