@@ -55,8 +55,30 @@ class _Json3Event(TypedDict, total=False):
     segs: list[_Json3Seg]
 
 
+# Transcript language preferences (ordered by priority - index IS priority)
+_TRANSCRIPT_LANGUAGE_PREFERENCES = [
+    "en",  # Manual English subtitles (priority 0)
+    "en-orig",  # Auto-generated English (priority 1)
+]
+
+# Transcript file extension
+_SUBTITLE_FILE_EXT = "json3"
+
 # Module-level logger
 logger = get_logger(__name__)
+
+
+def _get_transcript_file_priority(subtitle_file_path: Path) -> int:
+    """Return priority for transcript file selection (0=highest)."""
+    name = subtitle_file_path.name
+
+    # Check each language preference in order (index = priority)
+    for priority, lang in enumerate(_TRANSCRIPT_LANGUAGE_PREFERENCES):
+        if name.endswith(f".{lang}.{_SUBTITLE_FILE_EXT}"):
+            return priority
+
+    # Return lowest priority for unrecognized languages
+    return len(_TRANSCRIPT_LANGUAGE_PREFERENCES)
 
 
 def fetch_video_metadata_and_transcript(
@@ -91,8 +113,8 @@ def fetch_video_metadata_and_transcript(
             "skip_download": True,
             "writesubtitles": True,
             "writeautomaticsub": True,
-            "subtitleslangs": ["en", "en-orig"],  # English manual then auto-generated
-            "subtitlesformat": "json3",
+            "subtitleslangs": _TRANSCRIPT_LANGUAGE_PREFERENCES,
+            "subtitlesformat": _SUBTITLE_FILE_EXT,
             "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
         }
 
@@ -112,21 +134,10 @@ def fetch_video_metadata_and_transcript(
         assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
 
         # a) Locate downloaded transcript files
-        transcript_files = list(Path(temp_dir).glob("*.json3"))
+        transcript_files = list(Path(temp_dir).glob(f"*.{_SUBTITLE_FILE_EXT}"))
 
-        # Implement transcript priority: manual English (.en.json3) over auto-generated
-        def priority(p: Path) -> int:
-            name = p.name
-            # 0 = manual en, 1 = auto en-orig, 2 = everything else
-            return (
-                0
-                if name.endswith(".en.json3")
-                else 1
-                if name.endswith(".en-orig.json3")
-                else 2
-            )
-
-        transcript_files.sort(key=priority)
+        # Sort transcript files by priority: manual English over auto-generated
+        transcript_files.sort(key=_get_transcript_file_priority)
 
         # b) Parse transcript files into structured objects
         transcript_lines = []
@@ -136,7 +147,7 @@ def fetch_video_metadata_and_transcript(
             transcript_data = json.loads(transcript_file.read_text(encoding="utf-8"))
             # Extract events → TranscriptLine objects
             events = transcript_data.get("events", [])
-            transcript_lines = extract_transcript_lines_from_json3(events)
+            transcript_lines = _extract_transcript_lines_from_json3(events)
         else:
             raise URLTranscriptNotFoundError
 
@@ -154,7 +165,7 @@ def fetch_video_metadata_and_transcript(
         return metadata, transcript_lines, chapters_dicts
 
 
-def extract_transcript_lines_from_json3(
+def _extract_transcript_lines_from_json3(
     events: list[_Json3Event],
 ) -> list[TranscriptLine]:
     """Extract individual transcript lines from JSON3 event objects.
@@ -188,7 +199,7 @@ def extract_transcript_lines_from_json3(
     return transcript_lines
 
 
-def assign_transcript_lines_to_chapters(
+def _assign_transcript_lines_to_chapters(
     metadata: VideoMetadata,
     transcript_lines: list[TranscriptLine],
     chapters_dicts: list[_ChapterDict],
@@ -275,7 +286,7 @@ def parse_youtube_url(url: str) -> TranscriptDocument:
     metadata, transcript_lines, chapters_dicts = fetch_video_metadata_and_transcript(url)
 
     # Step 2: Assign transcript lines to chapters
-    chapters = assign_transcript_lines_to_chapters(
+    chapters = _assign_transcript_lines_to_chapters(
         metadata, transcript_lines, chapters_dicts
     )
 

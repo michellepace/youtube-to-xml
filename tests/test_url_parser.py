@@ -5,6 +5,7 @@ YouTube URLs into structured TranscriptDocument objects.
 """
 
 import inspect
+from pathlib import Path
 
 # url_parser module imports (group together)
 import youtube_to_xml.url_parser as url_parser_module
@@ -17,8 +18,9 @@ from youtube_to_xml.models import (
     VideoMetadata,
 )
 from youtube_to_xml.url_parser import (
-    assign_transcript_lines_to_chapters,
-    extract_transcript_lines_from_json3,
+    _assign_transcript_lines_to_chapters,
+    _extract_transcript_lines_from_json3,
+    _get_transcript_file_priority,
     fetch_video_metadata_and_transcript,
     parse_youtube_url,
 )
@@ -43,7 +45,7 @@ class TestSharedModelImports:
     def test_url_parser_uses_transcript_line_from_shared_models(self) -> None:
         """Test that url_parser module uses TranscriptLine from youtube_to_xml.models."""
         # Check that extract_transcript_lines_from_json3 returns list[TranscriptLine]
-        sig = inspect.signature(extract_transcript_lines_from_json3)
+        sig = inspect.signature(_extract_transcript_lines_from_json3)
         return_annotation = sig.return_annotation
 
         # Should return list[TranscriptLine]
@@ -56,7 +58,7 @@ class TestSharedModelImports:
     def test_url_parser_uses_chapter_from_shared_models(self) -> None:
         """Test that url_parser module uses Chapter from youtube_to_xml.models."""
         # Check that assign_transcript_lines_to_chapters returns list[Chapter]
-        sig = inspect.signature(assign_transcript_lines_to_chapters)
+        sig = inspect.signature(_assign_transcript_lines_to_chapters)
         return_annotation = sig.return_annotation
 
         # Should return list[Chapter]
@@ -153,3 +155,22 @@ class TestParseYoutubeUrlFunction:
         sig = inspect.signature(parse_youtube_url)
         if sig.return_annotation != inspect.Signature.empty:
             assert sig.return_annotation == TranscriptDocument
+
+
+class TestTranscriptFilePriority:
+    """Test transcript file priority selection logic."""
+
+    def test_transcript_file_priority_ordering(self) -> None:
+        """Test files sort by priority: manual English > auto English > others."""
+        files = [
+            Path("video.es.json3"),  # Other language
+            Path("video.en-orig.json3"),  # Auto-generated English
+            Path("video.en.json3"),  # Manual English
+            Path("video.fr.json3"),  # Other language
+        ]
+
+        sorted_files = sorted(files, key=_get_transcript_file_priority)
+
+        assert sorted_files[0].name == "video.en.json3"  # Highest priority
+        assert sorted_files[1].name == "video.en-orig.json3"  # Medium priority
+        # Remaining two can be in any order (same priority)
