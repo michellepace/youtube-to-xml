@@ -2,9 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
-[options]
-prerelease-mode = "allow"
-
 [[package]]
 name = "cfgv"
 version = "3.4.0"
@@ -209,7 +206,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "yt-dlp", specifier = ">=2025.9.5" }]
+requires-dist = [{ name = "yt-dlp", specifier = ">=2025.9.23" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -220,9 +217,9 @@ dev = [
 
 [[package]]
 name = "yt-dlp"
-version = "2025.9.19.232813.dev0"
+version = "2025.9.23"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/49/de/cc982d381f4cd05aab27f8193e51f707ba1fe871c766c0b41259a5717b73/yt_dlp-2025.9.19.232813.dev0.tar.gz", hash = "sha256:6cc0f5c371bb1678e7e8f2c575c0a85b7975debecbcbedfcb5d556028ef21ea0", size = 3042067, upload-time = "2025-09-19T23:34:14.5Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/77/24a13bbd3190849e7e37e6093aa9648f3b26a836d37ba67e3429ee89ad1d/yt_dlp-2025.9.23.tar.gz", hash = "sha256:9282ad1deadb4c90b2e6d3bcf9f360abf88c5f2e4ba836dad7b51387b086d757", size = 3036855, upload-time = "2025-09-23T06:54:46.174Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f5/99/af4f7391ebbda266e4fe836579a39c862b674021ca80d1b59e65cdf532ed/yt_dlp-2025.9.19.232813.dev0-py3-none-any.whl", hash = "sha256:f3e3c50e7ff90c3328283bfb10ab0fa547fd74d1e3810583f153bd0a47aa4126", size = 3246408, upload-time = "2025-09-19T23:34:11.915Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/b7/723a4061d7efac4bbb86eddef9ceec0fc1e85415c7d665c2e5e1879759bb/yt_dlp-2025.9.23-py3-none-any.whl", hash = "sha256:84e36acf2dfbadb307d734a590dd937923173b13c57cf45a662f40c93e746302", size = 3241497, upload-time = "2025-09-23T06:54:43.485Z" },
 ]
