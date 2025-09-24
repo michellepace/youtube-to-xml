@@ -112,7 +112,7 @@ First, we'll start with the patches
 
 **Architecture**: Pure functions with clear module separation
 
-**Test-Driven Development**: 117 tests (17 integration, 100 unit, ~1.5 mins)
+**Test-Driven Development**: 117 tests (17 integration, 100 unit, ~100 seconds)
 
 **Dependencies**:
 - Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
