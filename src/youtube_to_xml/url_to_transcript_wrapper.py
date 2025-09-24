@@ -29,6 +29,10 @@ except ModuleNotFoundError:
 
 def main() -> None:
     """Entry point wrapper for url_to_transcript script."""
+    print(
+        "Note: This command is deprecated. Use 'youtube-to-xml <url>' instead.",
+        file=sys.stderr,
+    )
     script_main()
 
 

@@ -3,11 +3,15 @@
 This module provides the main interface for parsing YouTube URLs into
 TranscriptDocument objects, extracted from scripts/url_to_transcript.py.
 
-Core functions:
+Public functions:
 - parse_youtube_url(): Main interface that takes a URL and returns TranscriptDocument
-- fetch_video_metadata_and_transcript(): Downloads metadata and transcript from YouTube
-- extract_transcript_lines_from_json3(): Converts YouTube JSON3 to TranscriptLine objects
-- assign_transcript_lines_to_chapters(): Groups transcript lines by chapters
+
+Private functions:
+- _fetch_video_metadata_and_transcript(): Downloads metadata and transcript from YouTube
+- _process_youtube_transcript_files(): Processes downloaded transcript files into lines
+- _extract_transcript_lines_from_json3(): Converts YouTube JSON3 to TranscriptLine objects
+- _assign_transcript_lines_to_chapters(): Groups transcript lines by chapters
+- _get_youtube_transcript_file_priority(): Determines transcript file selection priority
 """
 
 import json
@@ -33,9 +37,9 @@ from youtube_to_xml.models import (
 from youtube_to_xml.time_utils import MILLISECONDS_PER_SECOND
 
 
-# Private TypedDict definitions for internal YouTube API data structures
-class _ChapterDict(TypedDict):
-    """Internal type for YouTube chapter data."""
+# Private TypedDict definitions for internal data structures
+class _InternalChapterDict(TypedDict):
+    """Internal type for YouTube API chapter data."""
 
     title: str
     start_time: float
@@ -61,108 +65,146 @@ _TRANSCRIPT_LANGUAGE_PREFERENCES = [
     "en-orig",  # Auto-generated English (priority 1)
 ]
 
-# Transcript file extension
-_SUBTITLE_FILE_EXT = "json3"
+# Subtitle/transcript file extension for yt-dlp
+_TRANSCRIPT_FILE_EXT = "json3"
 
 # Module-level logger
 logger = get_logger(__name__)
 
 
-def _get_transcript_file_priority(subtitle_file_path: Path) -> int:
+def _get_youtube_transcript_file_priority(transcript_file_path: Path) -> int:
     """Return priority for transcript file selection (0=highest)."""
-    name = subtitle_file_path.name
+    name = transcript_file_path.name
 
     # Check each language preference in order (index = priority)
     for priority, lang in enumerate(_TRANSCRIPT_LANGUAGE_PREFERENCES):
-        if name.endswith(f".{lang}.{_SUBTITLE_FILE_EXT}"):
+        if name.endswith(f".{lang}.{_TRANSCRIPT_FILE_EXT}"):
             return priority
 
     # Return lowest priority for unrecognized languages
     return len(_TRANSCRIPT_LANGUAGE_PREFERENCES)
 
 
-def fetch_video_metadata_and_transcript(
+def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
+    """Build VideoMetadata object from raw yt-dlp metadata.
+
+    Args:
+        raw_metadata: Raw metadata dictionary from yt-dlp
+        url: Original YouTube URL (fallback for webpage_url)
+
+    Returns:
+        VideoMetadata object with extracted information
+    """
+    return VideoMetadata(
+        video_title=raw_metadata.get("title", "Untitled"),
+        video_published=raw_metadata.get("upload_date", ""),  # Raw YYYYMMDD
+        video_duration=int(raw_metadata.get("duration", 0)),  # Raw seconds as int
+        video_url=raw_metadata.get("webpage_url", url),
+    )
+
+
+def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
+    """Handle yt-dlp configuration and download of transcript.
+
+    Args:
+        url: YouTube video URL
+        temp_dir: Temporary directory for downloaded files
+
+    Returns:
+        Raw metadata dictionary from yt-dlp
+    """
+    yt_dlp_options = {
+        # Core purpose: Download transcripts
+        "writesubtitles": True,
+        "writeautomaticsub": True,
+        "subtitleslangs": _TRANSCRIPT_LANGUAGE_PREFERENCES,
+        "subtitlesformat": _TRANSCRIPT_FILE_EXT,
+        # Download behavior: Skip video, only get transcripts
+        "skip_download": True,
+        # Output formatting: Where to save files
+        "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
+        # UI/UX: Quiet operation for CLI user experience
+        "no_warnings": True,
+        "noprogress": True,
+    }
+
+    with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
+        try:
+            # a) YT-DLP: get complete video metadata from YouTube
+            raw_metadata = ydl.extract_info(url, download=False)
+            # b) YT-DLP: download subtitle files (.json3 format)
+            ydl.process_info(raw_metadata)
+        except (DownloadError, ExtractorError, UnsupportedError) as e:
+            mapped_exception = map_yt_dlp_exception(e)
+            raise mapped_exception from e
+
+    assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
+    return raw_metadata
+
+
+def _extract_transcript_lines_from_files(temp_dir: Path) -> list[TranscriptLine]:
+    """Process downloaded transcript files into TranscriptLine objects.
+
+    Finds transcript files, selects the best one by language priority,
+    and extracts transcript lines from JSON3 format.
+
+    Args:
+        temp_dir: Directory containing downloaded transcript files
+
+    Returns:
+        List of TranscriptLine objects
+
+    Raises:
+        URLTranscriptNotFoundError: If no transcript files found
+    """
+    # Locate downloaded transcript files
+    transcript_files = list(temp_dir.glob(f"*.{_TRANSCRIPT_FILE_EXT}"))
+
+    # Sort transcript files by priority: manual English over auto-generated
+    transcript_files.sort(key=_get_youtube_transcript_file_priority)
+
+    # Parse transcript files into structured objects
+    if not transcript_files:
+        raise URLTranscriptNotFoundError
+
+    # Use highest priority transcript file
+    transcript_file = transcript_files[0]
+    # Read JSON3 format from disk
+    transcript_data = json.loads(transcript_file.read_text(encoding="utf-8"))
+    # Extract events → TranscriptLine objects
+    events = transcript_data.get("events", [])
+    return _extract_transcript_lines_from_json3(events)
+
+
+def _fetch_video_metadata_and_transcript(
     url: str,
-) -> tuple[VideoMetadata, list[TranscriptLine], list[_ChapterDict]]:
+) -> tuple[VideoMetadata, list[TranscriptLine], list[_InternalChapterDict]]:
     """Extract video metadata and download transcript from YouTube using yt-dlp.
 
-    Uses yt-dlp to fetch video information and transcript with built-in
-    transcript handling and error management.
+    Orchestrates the download and processing of YouTube video data by
+    coordinating helper functions for downloading and metadata creation.
 
     Args:
         url: YouTube video URL
 
     Returns:
         Tuple of (VideoMetadata object, list of TranscriptLine objects,
-                 list of chapter dicts)
-
-    Raises:
-        URLBotProtectionError: If YouTube requires verification
-        URLNotYouTubeError: If URL is not a YouTube video
-        URLIncompleteError: If YouTube URL has incomplete video ID
-        URLIsInvalidError: If URL format is invalid
-        URLVideoUnavailableError: If YouTube video is unavailable
-        URLTranscriptNotFoundError: If no transcript is available
-        URLRateLimitError: If YouTube rate limit is encountered
-        URLUnmappedError: If an unexpected yt-dlp error occurs
+                 list of _InternalChapterDict objects from YouTube API)
     """
     with tempfile.TemporaryDirectory() as temp_dir:
-        options = {
-            "no_warnings": True,
-            "noprogress": True,
-            "skip_download": True,
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "subtitleslangs": _TRANSCRIPT_LANGUAGE_PREFERENCES,
-            "subtitlesformat": _SUBTITLE_FILE_EXT,
-            "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
-        }
+        # Phase 1: Download transcript and metadata using yt-dlp
+        raw_metadata = _download_transcript_with_yt_dlp(url, Path(temp_dir))
 
-        # Phase 1: Use yt-dlp to get data for transcript
-        with yt_dlp.YoutubeDL(options) as ydl:
-            try:
-                # a) get complete video metadata from YouTube
-                raw_metadata = ydl.extract_info(url, download=False)
-                # b) download subtitle files (.json3 format)
-                ydl.process_info(raw_metadata)
-            except (DownloadError, ExtractorError, UnsupportedError) as e:
-                mapped_exception = map_yt_dlp_exception(e)
-                raise mapped_exception from e
+        # Phase 2: Process downloaded transcript files
+        transcript_lines = _extract_transcript_lines_from_files(Path(temp_dir))
 
-        # Phase 2: File processing (outside yt-dlp context)
-        # Note: raw_metadata is never None in practice - yt-dlp raises exceptions instead
-        assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
+        # Phase 3: Create structured metadata object
+        metadata = _create_video_metadata(raw_metadata, url)
 
-        # a) Locate downloaded transcript files
-        transcript_files = list(Path(temp_dir).glob(f"*.{_SUBTITLE_FILE_EXT}"))
+        # Phase 4: Extract raw YouTube chapter data (kept separate from VideoMetadata)
+        raw_youtube_chapters = raw_metadata.get("chapters", [])
 
-        # Sort transcript files by priority: manual English over auto-generated
-        transcript_files.sort(key=_get_transcript_file_priority)
-
-        # b) Parse transcript files into structured objects
-        transcript_lines = []
-        if transcript_files:
-            transcript_file = transcript_files[0]
-            # Read JSON3 format from disk
-            transcript_data = json.loads(transcript_file.read_text(encoding="utf-8"))
-            # Extract events → TranscriptLine objects
-            events = transcript_data.get("events", [])
-            transcript_lines = _extract_transcript_lines_from_json3(events)
-        else:
-            raise URLTranscriptNotFoundError
-
-        # Phase 3: Create structured metadata object from raw_metadata
-        metadata = VideoMetadata(
-            video_title=raw_metadata.get("title", "Untitled"),
-            video_published=raw_metadata.get("upload_date", ""),  # Raw YYYYMMDD
-            video_duration=int(raw_metadata.get("duration", 0)),  # Raw seconds as int
-            video_url=raw_metadata.get("webpage_url", url),
-        )
-
-        # Handle chapters_dicts separately (not part of shared VideoMetadata model)
-        chapters_dicts = raw_metadata.get("chapters", [])
-
-        return metadata, transcript_lines, chapters_dicts
+        return metadata, transcript_lines, raw_youtube_chapters
 
 
 def _extract_transcript_lines_from_json3(
@@ -202,19 +244,19 @@ def _extract_transcript_lines_from_json3(
 def _assign_transcript_lines_to_chapters(
     metadata: VideoMetadata,
     transcript_lines: list[TranscriptLine],
-    chapters_dicts: list[_ChapterDict],
+    chapter_dicts: list[_InternalChapterDict],
 ) -> list[Chapter]:
     """Assign transcript lines to chapters based on temporal boundaries.
 
     Args:
         metadata: Video metadata for title
         transcript_lines: List of all individual transcript lines
-        chapters_dicts: List of chapter dictionaries from YouTube API
+        chapter_dicts: List of internal chapter dictionaries
 
     Returns:
         List of Chapter objects with assigned transcript lines
     """
-    if not chapters_dicts:
+    if not chapter_dicts:
         # No chapters - create single chapter with video title
         return [
             Chapter(
@@ -227,12 +269,12 @@ def _assign_transcript_lines_to_chapters(
 
     chapters = []
 
-    for i, chapter_dict in enumerate(chapters_dicts):
-        chapter_start_time = float(chapter_dict.get("start_time", 0))
+    for i, youtube_chapter_dict in enumerate(chapter_dicts):
+        chapter_start_time = float(youtube_chapter_dict.get("start_time", 0))
 
         # End time is start of next chapter, or infinity for last chapter
-        if i + 1 < len(chapters_dicts):
-            chapter_end_time = float(chapters_dicts[i + 1]["start_time"])
+        if i + 1 < len(chapter_dicts):
+            chapter_end_time = float(chapter_dicts[i + 1]["start_time"])
         else:
             chapter_end_time = math.inf
 
@@ -245,7 +287,7 @@ def _assign_transcript_lines_to_chapters(
 
         chapters.append(
             Chapter(
-                title=chapter_dict.get("title", f"Chapter {i + 1}"),
+                title=youtube_chapter_dict.get("title", f"Chapter {i + 1}"),
                 start_time=chapter_start_time,
                 end_time=chapter_end_time,
                 transcript_lines=chapter_transcript_lines,
@@ -259,10 +301,9 @@ def parse_youtube_url(url: str) -> TranscriptDocument:
     """Parse YouTube URL and return structured transcript document.
 
     Main interface function that coordinates the complete URL processing pipeline:
-    1. Fetch video metadata and transcript from YouTube
-    2. Extract transcript lines from JSON3 format
-    3. Assign transcript lines to chapters
-    4. Return complete TranscriptDocument
+    1. Fetch video metadata and transcript from YouTube (includes JSON3 extraction)
+    2. Assign transcript lines to chapters
+    3. Return complete TranscriptDocument
 
     Args:
         url: YouTube video URL
@@ -283,11 +324,13 @@ def parse_youtube_url(url: str) -> TranscriptDocument:
     logger.info("Processing video: %s", url)
 
     # Step 1: Fetch metadata and download transcript using yt-dlp
-    metadata, transcript_lines, chapters_dicts = fetch_video_metadata_and_transcript(url)
+    metadata, transcript_lines, youtube_chapter_dicts = (
+        _fetch_video_metadata_and_transcript(url)
+    )
 
     # Step 2: Assign transcript lines to chapters
     chapters = _assign_transcript_lines_to_chapters(
-        metadata, transcript_lines, chapters_dicts
+        metadata, transcript_lines, youtube_chapter_dicts
     )
 
     # Step 3: Create and return TranscriptDocument

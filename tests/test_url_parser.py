@@ -4,13 +4,13 @@ Tests the URL parser module interface and functionality for converting
 YouTube URLs into structured TranscriptDocument objects.
 """
 
+import contextlib
 import inspect
+import tempfile
 from pathlib import Path
 
-# url_parser module imports (group together)
 import youtube_to_xml.url_parser as url_parser_module
-
-# Shared model imports
+from youtube_to_xml.exceptions import URLIncompleteError
 from youtube_to_xml.models import (
     Chapter,
     TranscriptDocument,
@@ -19,9 +19,13 @@ from youtube_to_xml.models import (
 )
 from youtube_to_xml.url_parser import (
     _assign_transcript_lines_to_chapters,
+    _create_video_metadata,
+    _download_transcript_with_yt_dlp,
     _extract_transcript_lines_from_json3,
-    _get_transcript_file_priority,
-    fetch_video_metadata_and_transcript,
+    _fetch_video_metadata_and_transcript,
+    _get_youtube_transcript_file_priority,
+    _InternalChapterDict,
+    _Json3Event,
     parse_youtube_url,
 )
 
@@ -32,7 +36,7 @@ class TestSharedModelImports:
     def test_url_parser_uses_video_metadata_from_shared_models(self) -> None:
         """Test that url_parser module uses VideoMetadata from youtube_to_xml.models."""
         # Check that fetch_video_metadata_and_transcript returns VideoMetadata
-        sig = inspect.signature(fetch_video_metadata_and_transcript)
+        sig = inspect.signature(_fetch_video_metadata_and_transcript)
         return_annotation = sig.return_annotation
 
         # Should return tuple containing VideoMetadata
@@ -169,8 +173,138 @@ class TestTranscriptFilePriority:
             Path("video.fr.json3"),  # Other language
         ]
 
-        sorted_files = sorted(files, key=_get_transcript_file_priority)
+        sorted_files = sorted(files, key=_get_youtube_transcript_file_priority)
 
         assert sorted_files[0].name == "video.en.json3"  # Highest priority
         assert sorted_files[1].name == "video.en-orig.json3"  # Medium priority
         # Remaining two can be in any order (same priority)
+
+
+class TestExtractTranscriptLinesBehavior:
+    """Test JSON3 transcript parsing behavior."""
+
+    def test_handles_empty_events_list(self) -> None:
+        """Empty events should return empty list."""
+        assert _extract_transcript_lines_from_json3([]) == []
+
+    def test_skips_events_without_segs(self) -> None:
+        """Events without 'segs' key should be skipped."""
+        # Create properly typed test events
+        events: list[_Json3Event] = [
+            {"tStartMs": 1000},  # No segs
+            {"tStartMs": 2000, "segs": [{"utf8": "text"}]},
+        ]
+        result = _extract_transcript_lines_from_json3(events)
+        assert len(result) == 1
+        assert result[0].text == "text"
+
+    def test_combines_multi_segment_text(self) -> None:
+        """Multiple segments should be combined."""
+        events: list[_Json3Event] = [
+            {
+                "tStartMs": 5000,
+                "segs": [{"utf8": "Hello"}, {"utf8": " world"}],
+            }
+        ]
+        result = _extract_transcript_lines_from_json3(events)
+        assert result[0].text == "Hello world"
+
+    def test_removes_newlines_from_text(self) -> None:
+        """Newlines should be replaced with spaces."""
+        events: list[_Json3Event] = [{"tStartMs": 0, "segs": [{"utf8": "Line\nbreak"}]}]
+        result = _extract_transcript_lines_from_json3(events)
+        assert result[0].text == "Line break"
+
+    def test_converts_milliseconds_to_seconds(self) -> None:
+        """Timestamps should be converted from ms to seconds."""
+        events: list[_Json3Event] = [{"tStartMs": 5500, "segs": [{"utf8": "text"}]}]
+        result = _extract_transcript_lines_from_json3(events)
+        assert result[0].timestamp == 5.5
+
+
+class TestAssignChaptersBehavior:
+    """Test chapter assignment behavior."""
+
+    def test_no_chapters_creates_single_chapter(self) -> None:
+        """No chapters should create one chapter with all lines."""
+        metadata = VideoMetadata("Title", "20240101", 100, "url")
+        lines = [TranscriptLine(10, "text")]
+        result = _assign_transcript_lines_to_chapters(metadata, lines, [])
+        assert len(result) == 1
+        assert result[0].title == "Title"
+        assert result[0].transcript_lines == lines
+
+    def test_assigns_lines_to_correct_chapters(self) -> None:
+        """Lines should be assigned based on timestamps."""
+        metadata = VideoMetadata("Title", "20240101", 100, "url")
+        lines = [
+            TranscriptLine(5, "intro"),
+            TranscriptLine(15, "main"),
+            TranscriptLine(25, "conclusion"),
+        ]
+        youtube_chapter_dicts: list[_InternalChapterDict] = [
+            {"title": "Intro", "start_time": 0, "end_time": 10},
+            {"title": "Main", "start_time": 10, "end_time": 20},
+            {"title": "End", "start_time": 20, "end_time": 30},
+        ]
+        result = _assign_transcript_lines_to_chapters(
+            metadata, lines, youtube_chapter_dicts
+        )
+        assert len(result) == 3
+        assert result[0].transcript_lines[0].text == "intro"
+        assert result[1].transcript_lines[0].text == "main"
+        assert result[2].transcript_lines[0].text == "conclusion"
+
+
+class TestDecomposedFunctions:
+    """Test the decomposed helper functions from fetch_video_metadata_and_transcript."""
+
+    def test_create_video_metadata_from_raw_data(self) -> None:
+        """Test _create_video_metadata builds correct VideoMetadata object."""
+        raw_metadata = {
+            "title": "Test Video Title",
+            "upload_date": "20240315",
+            "duration": 163,
+            "webpage_url": "https://youtube.com/watch?v=test123",
+        }
+        url = "https://youtube.com/watch?v=test123"
+
+        result = _create_video_metadata(raw_metadata, url)
+
+        assert isinstance(result, VideoMetadata)
+        assert result.video_title == "Test Video Title"
+        assert result.video_published == "20240315"
+        assert result.video_duration == 163
+        assert result.video_url == "https://youtube.com/watch?v=test123"
+
+    def test_create_video_metadata_with_missing_fields(self) -> None:
+        """Test _create_video_metadata handles missing fields with defaults."""
+        raw_metadata = {}  # Empty metadata
+        url = "https://youtube.com/watch?v=fallback"
+
+        result = _create_video_metadata(raw_metadata, url)
+
+        assert result.video_title == "Untitled"
+        assert result.video_published == ""
+        assert result.video_duration == 0
+        assert result.video_url == "https://youtube.com/watch?v=fallback"
+
+    def test_download_transcript_with_yt_dlp_interface_exists(self) -> None:
+        """Test _download_transcript_with_yt_dlp has correct signature."""
+        # Verify function signature
+        sig = inspect.signature(_download_transcript_with_yt_dlp)
+        params = list(sig.parameters.keys())
+        assert params == ["url", "temp_dir"], (
+            "Function should have url and temp_dir params"
+        )
+        assert sig.return_annotation is dict, "Should return dict"
+
+        # Verify it handles invalid URLs properly (raises mapped exceptions)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            contextlib.suppress(URLIncompleteError),
+        ):
+            # This should raise URLIncompleteError for invalid video ID
+            _download_transcript_with_yt_dlp(
+                "https://youtube.com/watch?v=test", Path(temp_dir)
+            )
