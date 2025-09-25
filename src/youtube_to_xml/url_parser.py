@@ -8,7 +8,7 @@ Public functions:
 
 Private functions:
 - _fetch_video_metadata_and_transcript(): Downloads metadata and transcript from YouTube
-- _process_youtube_transcript_files(): Processes downloaded transcript files into lines
+- _extract_transcript_lines_from_files(): Processes downloaded transcript files into lines
 - _extract_transcript_lines_from_json3(): Converts YouTube JSON3 to TranscriptLine objects
 - _assign_transcript_lines_to_chapters(): Groups transcript lines by chapters
 - _get_youtube_transcript_file_priority(): Determines transcript file selection priority

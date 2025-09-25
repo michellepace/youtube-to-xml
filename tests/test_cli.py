@@ -80,15 +80,7 @@ def test_has_txt_extension_rejects_non_txt() -> None:
 def test_cli_shows_argparse_error_for_no_arguments(tmp_path: Path) -> None:
     """No arguments should show argparse error with help hint."""
     # Run with no arguments
-    result = subprocess.run(
-        ["uv", "run", "youtube-to-xml"],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        check=False,
-    )
-
-    exit_code, output = result.returncode, result.stdout + result.stderr
+    exit_code, output = run_cli([], tmp_path)
     assert exit_code == 1
     # Generic assertions - argparse shows usage and error, we add help hint
     assert "usage: youtube-to-xml" in output

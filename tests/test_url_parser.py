@@ -8,6 +8,9 @@ import contextlib
 import inspect
 import tempfile
 from pathlib import Path
+from typing import get_args
+
+import pytest
 
 import youtube_to_xml.url_parser as url_parser_module
 from youtube_to_xml.exceptions import URLIncompleteError
@@ -40,8 +43,9 @@ class TestSharedModelImports:
         return_annotation = sig.return_annotation
 
         # Should return tuple containing VideoMetadata
-        if hasattr(return_annotation, "__args__"):
-            assert VideoMetadata in return_annotation.__args__, (
+        args = get_args(return_annotation)
+        if args:
+            assert VideoMetadata in args, (
                 "fetch_video_metadata_and_transcript should return VideoMetadata "
                 "from shared models"
             )
@@ -53,8 +57,9 @@ class TestSharedModelImports:
         return_annotation = sig.return_annotation
 
         # Should return list[TranscriptLine]
-        if hasattr(return_annotation, "__args__"):
-            assert TranscriptLine in return_annotation.__args__, (
+        args = get_args(return_annotation)
+        if args:
+            assert TranscriptLine in args, (
                 "extract_transcript_lines_from_json3 should return list[TranscriptLine] "
                 "from shared models"
             )
@@ -66,8 +71,9 @@ class TestSharedModelImports:
         return_annotation = sig.return_annotation
 
         # Should return list[Chapter]
-        if hasattr(return_annotation, "__args__"):
-            assert Chapter in return_annotation.__args__, (
+        args = get_args(return_annotation)
+        if args:
+            assert Chapter in args, (
                 "assign_transcript_lines_to_chapters should return list[Chapter] "
                 "from shared models"
             )
@@ -289,6 +295,7 @@ class TestDecomposedFunctions:
         assert result.video_duration == 0
         assert result.video_url == "https://youtube.com/watch?v=fallback"
 
+    @pytest.mark.integration
     def test_download_transcript_with_yt_dlp_interface_exists(self) -> None:
         """Test _download_transcript_with_yt_dlp has correct signature."""
         # Verify function signature

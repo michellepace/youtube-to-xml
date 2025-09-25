@@ -32,7 +32,7 @@ def _is_valid_url(input_string: str) -> bool:
 
 def _has_txt_extension(input_string: str) -> bool:
     """Check if input has .txt extension."""
-    return Path(input_string).suffix == ".txt"
+    return Path(input_string).suffix.lower() == ".txt"
 
 
 def _sanitize_video_title_for_filename(video_title: str) -> str:
