@@ -60,10 +60,10 @@ class _Json3Event(TypedDict, total=False):
 
 
 # Transcript language preferences (ordered by priority - index IS priority)
-_TRANSCRIPT_LANGUAGE_PREFERENCES = [
+_TRANSCRIPT_LANGUAGE_PREFERENCES = (
     "en",  # Manual English subtitles (priority 0)
     "en-orig",  # Auto-generated English (priority 1)
-]
+)
 
 # Subtitle/transcript file extension for yt-dlp
 _TRANSCRIPT_FILE_EXT = "json3"
@@ -161,7 +161,7 @@ def _extract_transcript_lines_from_files(temp_dir: Path) -> list[TranscriptLine]
     # Locate downloaded transcript files
     transcript_files = list(temp_dir.glob(f"*.{_TRANSCRIPT_FILE_EXT}"))
 
-    # Sort transcript files by priority: manual English over auto-generated
+    # Sort transcript files by priority: Uploaded English over auto-generated
     transcript_files.sort(key=_get_youtube_transcript_file_priority)
 
     # Parse transcript files into structured objects
