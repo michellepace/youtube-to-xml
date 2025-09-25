@@ -73,22 +73,21 @@ def _validate_transcript_format(raw_transcript: str) -> None:
 
     # Must have at least 3 lines for minimum format
     if len(non_empty_lines) < MINIMUM_LINES_REQUIRED:
-        msg = "File must have at least 3 lines: chapter title, timestamp, transcript"
-        raise FileInvalidFormatError(msg)
+        raise FileInvalidFormatError
 
     # Line 1: Must be chapter title (non-timestamp)
     if TIMESTAMP_PATTERN.match(non_empty_lines[0].strip()):
-        msg = "First line must be chapter title, not timestamp"
+        msg = "First line in file must be a chapter title, not a timestamp"
         raise FileInvalidFormatError(msg)
 
     # Line 2: Must be timestamp
     if not TIMESTAMP_PATTERN.match(non_empty_lines[1].strip()):
-        msg = "Second line must be a timestamp"
+        msg = "Second line in file must be a timestamp"
         raise FileInvalidFormatError(msg)
 
     # Line 3: Must be transcript text (non-timestamp)
     if TIMESTAMP_PATTERN.match(non_empty_lines[2].strip()):
-        msg = "Third line must be transcript text, not timestamp"
+        msg = "Third line in file must be transcript text, not a timestamp"
         raise FileInvalidFormatError(msg)
 
 

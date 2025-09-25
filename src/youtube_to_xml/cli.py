@@ -8,9 +8,7 @@ from urllib.parse import urlparse
 
 from youtube_to_xml.exceptions import (
     BaseTranscriptError,
-    FileEmptyError,
     FileEncodingError,
-    FileInvalidFormatError,
     FileNotExistsError,
     FilePermissionError,
     InvalidInputError,
@@ -103,12 +101,7 @@ def _process_file_input(file_path_str: str, execution_id: str) -> tuple[str, str
         raise FileEncodingError from None
 
     # Parse transcript and generate XML - let parsing errors bubble
-    try:
-        document = parse_transcript_file(raw_transcript_text)
-    except FileEmptyError:
-        raise FileEmptyError from None
-    except FileInvalidFormatError:
-        raise FileInvalidFormatError from None
+    document = parse_transcript_file(raw_transcript_text)
 
     xml_content = transcript_to_xml(document)
     output_filename = f"{transcript_file_path.stem}.xml"

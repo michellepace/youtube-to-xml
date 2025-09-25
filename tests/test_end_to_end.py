@@ -22,6 +22,9 @@ EXAMPLES_DIR = Path("example_transcripts")
 URL_CHAPTERS = "https://www.youtube.com/watch?v=Q4gsvJvRjCU"
 URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
+URL_PLAYLIST = (
+    "https://www.youtube.com/watch?v=LorEJPrALcg&list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
+)
 
 
 def run_script(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, str]:
@@ -129,7 +132,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 1
-    assert "Wrong format" in output
+    assert "First line in file must be a chapter title, not a timestamp" in output
 
 
 @pytest.mark.integration
@@ -181,6 +184,22 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
         tmp_path, "pick-up-where-you-left-off-with-claude.xml"
     )
     assert_files_identical(xml_files[0], reference_file)
+
+
+@pytest.mark.integration
+def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
+    """Test YouTube fetcher processes single video from playlist URL, not playlist."""
+    exit_code, output = run_script("youtube-to-xml", URL_PLAYLIST, tmp_path)
+
+    assert exit_code == 0
+    assert "✅ Created" in output
+
+    # Should process exactly one video, not entire playlist
+    xml_files = list(tmp_path.glob("*.xml"))
+    assert len(xml_files) == 1, "Should create exactly one XML file for single video"
+
+    # Output should indicate noplaylist option was applied
+    assert "because of --no-playlist" in output.lower()
 
 
 @pytest.mark.integration

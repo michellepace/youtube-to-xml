@@ -121,6 +121,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
         "subtitlesformat": _TRANSCRIPT_FILE_EXT,
         # Download behavior: Skip video, only get transcripts
         "skip_download": True,
+        "noplaylist": True,
         # Output formatting: Where to save files
         "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
         # UI/UX: Quiet operation for CLI user experience

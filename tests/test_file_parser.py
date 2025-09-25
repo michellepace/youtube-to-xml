@@ -346,19 +346,19 @@ Second text
         (
             "0:00\nShould start with title\nNot timestamp",
             FileInvalidFormatError,
-            "First line must be chapter title",
+            "First line in file must be a chapter title, not a timestamp",
         ),
-        ("Title\n0:00", FileInvalidFormatError, "File must have at least 3 lines"),
-        ("Title", FileInvalidFormatError, "File must have at least 3 lines"),
+        ("Title\n0:00", FileInvalidFormatError, "Wrong format in transcript file"),
+        ("Title", FileInvalidFormatError, "Wrong format in transcript file"),
         (
             "Title\nNo timestamp here\nJust text",
             FileInvalidFormatError,
-            "Second line must be a timestamp",
+            "Second line in file must be a timestamp",
         ),
         (
             "Title\n0:00\n0:01\nContent",
             FileInvalidFormatError,
-            "Third line must be transcript text, not timestamp",
+            "Third line in file must be transcript text, not a timestamp",
         ),
     ],
 )
