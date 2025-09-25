@@ -12,7 +12,7 @@ class BaseTranscriptError(Exception):
 class FileEmptyError(BaseTranscriptError):
     """Raised when attempting to parse an empty transcript file."""
 
-    def __init__(self, message: str = "Cannot parse an empty transcript file") -> None:
+    def __init__(self, message: str = "Your file is empty") -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -20,10 +20,7 @@ class FileEmptyError(BaseTranscriptError):
 class FileInvalidFormatError(BaseTranscriptError):
     """Raised when transcript file doesn't follow expected manual format."""
 
-    def __init__(
-        self,
-        message: str = "Transcript file must start with a chapter title, not a timestamp",
-    ) -> None:
+    def __init__(self, message: str = "Wrong format in transcript file") -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -97,6 +94,40 @@ class URLUnmappedError(BaseTranscriptError):
     def __init__(
         self, message: str = "YouTube processing failed - unmapped error"
     ) -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class FileNotExistsError(BaseTranscriptError):
+    """Raised when transcript file doesn't exist."""
+
+    def __init__(self, message: str = "We couldn't find your file") -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class FilePermissionError(BaseTranscriptError):
+    """Raised when file cannot be read due to permission issues."""
+
+    def __init__(
+        self, message: str = "We don't have permission to access your file"
+    ) -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class FileEncodingError(BaseTranscriptError):
+    """Raised when file is not UTF-8 encoded."""
+
+    def __init__(self, message: str = "File is not UTF-8 encoded") -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class InvalidInputError(BaseTranscriptError):
+    """Raised when input is neither a valid URL nor .txt file."""
+
+    def __init__(self, message: str = "Input must be a YouTube URL or .txt file") -> None:
         """Initialise with custom message."""
         super().__init__(message)
 

@@ -31,7 +31,7 @@ from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
 
 # Private TypedDict definition for internal chapter metadata
 class _InternalChapterDict(TypedDict):
-    """Internal type for chapter metadata during file parsing."""
+    """Internal type for file-based chapter data during parsing."""
 
     title_index: int
     title: str
@@ -73,22 +73,21 @@ def _validate_transcript_format(raw_transcript: str) -> None:
 
     # Must have at least 3 lines for minimum format
     if len(non_empty_lines) < MINIMUM_LINES_REQUIRED:
-        msg = "File must have at least 3 lines: chapter title, timestamp, transcript"
-        raise FileInvalidFormatError(msg)
+        raise FileInvalidFormatError
 
     # Line 1: Must be chapter title (non-timestamp)
     if TIMESTAMP_PATTERN.match(non_empty_lines[0].strip()):
-        msg = "First line must be chapter title, not timestamp"
+        msg = "First line in file must be a chapter title, not a timestamp"
         raise FileInvalidFormatError(msg)
 
     # Line 2: Must be timestamp
     if not TIMESTAMP_PATTERN.match(non_empty_lines[1].strip()):
-        msg = "Second line must be a timestamp"
+        msg = "Second line in file must be a timestamp"
         raise FileInvalidFormatError(msg)
 
     # Line 3: Must be transcript text (non-timestamp)
     if TIMESTAMP_PATTERN.match(non_empty_lines[2].strip()):
-        msg = "Third line must be transcript text, not timestamp"
+        msg = "Third line in file must be transcript text, not a timestamp"
         raise FileInvalidFormatError(msg)
 
 
@@ -149,24 +148,26 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
     transcript_lines = sanitized_transcript.splitlines()
     timestamp_indices = _find_timestamps(transcript_lines)
 
-    chapters_dicts = []
+    file_chapter_dicts = []
 
     # Find first chapter
     if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
-        chapters_dicts.append(first_chapter)
+        file_chapter_dicts.append(first_chapter)
 
     # Find subsequent chapters
-    chapters_dicts.extend(_find_subsequent_chapters(transcript_lines, timestamp_indices))
+    file_chapter_dicts.extend(
+        _find_subsequent_chapters(transcript_lines, timestamp_indices)
+    )
 
     # Build chapters with TranscriptLine objects
     chapters = []
-    for i, chapter_dict in enumerate(chapters_dicts):
+    for i, file_chapter_dict in enumerate(file_chapter_dicts):
         # Determine transcript range and end time for this chapter
-        if i < len(chapters_dicts) - 1:
-            transcript_end_idx = chapters_dicts[i + 1]["title_index"]
-            end_time = chapters_dicts[i + 1]["start_time"]
+        if i < len(file_chapter_dicts) - 1:
+            transcript_end_idx = file_chapter_dicts[i + 1]["title_index"]
+            end_time = file_chapter_dicts[i + 1]["start_time"]
             # Enforce monotonic chapter boundaries
-            if end_time <= chapter_dict["start_time"]:
+            if end_time <= file_chapter_dict["start_time"]:
                 msg = "Subsequent chapter timestamps must be strictly increasing"
                 raise FileInvalidFormatError(msg)
         else:
@@ -174,7 +175,7 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
             end_time = math.inf
 
         # Extract transcript lines from start timestamp to range end
-        start_idx = chapter_dict["transcript_start"]
+        start_idx = file_chapter_dict["transcript_start"]
         chapter_raw_lines = transcript_lines[start_idx:transcript_end_idx]
 
         # Convert alternating timestamp/text strings to TranscriptLine objects
@@ -182,8 +183,8 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
 
         chapters.append(
             ModelsChapter(
-                title=chapter_dict["title"],
-                start_time=chapter_dict["start_time"],
+                title=file_chapter_dict["title"],
+                start_time=file_chapter_dict["start_time"],
                 end_time=end_time,
                 transcript_lines=chapter_transcript_lines,
             )

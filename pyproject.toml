@@ -8,7 +8,7 @@ build-backend = "uv_build"
 
 
 # =================================
-# Project Metadata & Dependencies
+# Project Metadata & Configuration
 # =================================
 
 [project]
@@ -17,18 +17,16 @@ version = "0.1.0"
 description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
 authors = [ { name = "Michelle", email = "" } ]
-
 requires-python = ">=3.13"
-
-dependencies = [
-    "yt-dlp>=2025.9.5",
+dependencies = [        # runtime
+    "yt-dlp>=2025.9.23",
 ]
 
-# Entry points
+# CLI entry points
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
-url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experimental
 
+# Development dependencies 
 [dependency-groups]
 dev = [
     "pre-commit>=4.3.0",
@@ -36,16 +34,28 @@ dev = [
     "ruff>=0.13.1",
 ]
 
-# Allow PyPI nightly builds
+# =================================
+# Package Manager Configuration
+# =================================
+
+# Allow PyPI nightly builds (❌ DISABLED to use stable releases only)
 #   for example yt-dlp dev versions like "2025.9.19.232813.dev0"
 #   but manual upgrade still needed, run `uv lock --upgrade`
-[tool.uv]
-prerelease = "allow"
-
+#[tool.uv]
+#prerelease = "allow"
 
 
 # =================================
-# Development Tools Configuration
+# Pytest Configuration
+# =================================
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that use download from YouTube via `yt-dlp` API"
+]
+
+# =================================
+# Pyright Type Checking
 # =================================
 
 [tool.pyright]
@@ -53,8 +63,8 @@ prerelease = "allow"
 # For Cursor (Cursor Pyright extension), for VSCode (Microsoft Pylance)
 # Cursor Pyright forks BasedPyright, some lint rules overlap with Ruff, causes dupe errors
 
-# Cursor Pyright default
-typeCheckingMode = "standard"
+typeCheckingMode = "standard" # Cursor Pyright default
+pythonVersion = "3.13"
 
 # Disable Basedpyright rules that duplicate Ruff
 reportUnusedImport = false      # Ruff F401 handles it
@@ -62,15 +72,9 @@ reportUnusedVariable = false    # Ruff F841 handles it
 reportDuplicateImport = false   # Ruff F811 handles it
 reportUnusedParameter = false   # Ruff ARG001 handles it
 
-
 # =================================
 # Ruff Linter Configuration
 # =================================
-
-[tool.pytest.ini_options]
-markers = [
-    "integration: tests that require external YouTube API access"
-]
 
 [tool.ruff]
 # Strictest ruff settings

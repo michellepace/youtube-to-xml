@@ -5,7 +5,11 @@ import pytest
 from youtube_to_xml.exceptions import (
     BaseTranscriptError,
     FileEmptyError,
+    FileEncodingError,
     FileInvalidFormatError,
+    FileNotExistsError,
+    FilePermissionError,
+    InvalidInputError,
     URLBotProtectionError,
     URLIncompleteError,
     URLIsInvalidError,
@@ -20,7 +24,11 @@ from youtube_to_xml.exceptions import (
 ALL_EXCEPTION_CLASSES = [
     # BaseTranscriptError excluded
     FileEmptyError,
+    FileEncodingError,
     FileInvalidFormatError,
+    FileNotExistsError,
+    FilePermissionError,
+    InvalidInputError,
     URLBotProtectionError,
     URLIncompleteError,
     URLIsInvalidError,
