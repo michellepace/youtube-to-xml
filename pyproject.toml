@@ -51,7 +51,7 @@ dev = [
 
 [tool.pytest.ini_options]
 markers = [
-    "integration: tests that use download from YouTbue via `yt-dlp` API"
+    "integration: tests that use download from YouTube via `yt-dlp` API"
 ]
 
 # =================================
