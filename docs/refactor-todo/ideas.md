@@ -1,5 +1,18 @@
 # ISSUES
 
+## DEBUG LOGGING FOR TRANSCRIPT SELECTION
+Add debug logging to show which transcript file was chosen and its priority. This would help diagnose language selection and file picking issues. CodeRabbit suggested adding:
+
+```python
+# In url_parser.py around line 171-176
+transcript_file = transcript_files[0]
+logger.debug(
+    "Selected transcript file: %s (priority %d)",
+    transcript_file.name,
+    _get_youtube_transcript_file_priority(transcript_file),
+)
+```
+
 ## URLS
 Does `test_url_parser.py`? The URL detection function should be tested in test_cli.py since it's CLI functionality, but the URL parsing itself is already well-tested in test_url_parser.py.
 
