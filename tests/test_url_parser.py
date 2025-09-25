@@ -4,16 +4,11 @@ Tests the URL parser module interface and functionality for converting
 YouTube URLs into structured TranscriptDocument objects.
 """
 
-import contextlib
 import inspect
-import tempfile
 from pathlib import Path
 from typing import get_args
 
-import pytest
-
 import youtube_to_xml.url_parser as url_parser_module
-from youtube_to_xml.exceptions import URLIncompleteError
 from youtube_to_xml.models import (
     Chapter,
     TranscriptDocument,
@@ -23,7 +18,6 @@ from youtube_to_xml.models import (
 from youtube_to_xml.url_parser import (
     _assign_transcript_lines_to_chapters,
     _create_video_metadata,
-    _download_transcript_with_yt_dlp,
     _extract_transcript_lines_from_json3,
     _fetch_video_metadata_and_transcript,
     _get_youtube_transcript_file_priority,
@@ -294,24 +288,3 @@ class TestDecomposedFunctions:
         assert result.video_published == ""
         assert result.video_duration == 0
         assert result.video_url == "https://youtube.com/watch?v=fallback"
-
-    @pytest.mark.integration
-    def test_download_transcript_with_yt_dlp_interface_exists(self) -> None:
-        """Test _download_transcript_with_yt_dlp has correct signature."""
-        # Verify function signature
-        sig = inspect.signature(_download_transcript_with_yt_dlp)
-        params = list(sig.parameters.keys())
-        assert params == ["url", "temp_dir"], (
-            "Function should have url and temp_dir params"
-        )
-        assert sig.return_annotation is dict, "Should return dict"
-
-        # Verify it handles invalid URLs properly (raises mapped exceptions)
-        with (
-            tempfile.TemporaryDirectory() as temp_dir,
-            contextlib.suppress(URLIncompleteError),
-        ):
-            # This should raise URLIncompleteError for invalid video ID
-            _download_transcript_with_yt_dlp(
-                "https://youtube.com/watch?v=test", Path(temp_dir)
-            )

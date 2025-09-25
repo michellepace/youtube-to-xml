@@ -51,7 +51,7 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
       To create your first hook, use the hooks
       <!-- ... more transcript content ... -->
     </chapter>
-    <!-- ... 3 more chapters ... -->
+    <!-- ... 2 more chapters ... -->
   </chapters>
 </transcript>
 ```

@@ -20,6 +20,8 @@ from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.url_parser import parse_youtube_url
 from youtube_to_xml.xml_builder import transcript_to_xml
 
+ARGPARSE_ERROR_CODE = 2  # argparse uses exit code 2 for argument errors
+
 
 def _is_valid_url(input_string: str) -> bool:
     """Check if input is a proper URL with scheme and netloc."""
@@ -177,7 +179,7 @@ def main() -> None:
         args = parse_arguments()
         user_input = args.transcript
     except SystemExit as e:
-        if e.code == 2:  # argparse error (like missing arguments)  # noqa: PLR2004
+        if e.code == ARGPARSE_ERROR_CODE:
             # Display after argparse's message
             print("\nTry: youtube-to-xml --help")
             sys.exit(1)
