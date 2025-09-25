@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from youtube_to_xml.cli import is_youtube_url
+from youtube_to_xml.cli import _has_txt_extension, _is_valid_url
 
 
 def run_cli(args: str | list[str], tmp_path: Path) -> tuple[int, str]:
@@ -27,19 +27,95 @@ def run_cli(args: str | list[str], tmp_path: Path) -> tuple[int, str]:
     return result.returncode, result.stdout + result.stderr
 
 
-def test_is_youtube_url_detects_youtube_urls() -> None:
-    """Test URL detection identifies YouTube URLs correctly."""
-    # Test various YouTube URL formats
-    assert is_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ") is True
-    assert is_youtube_url("https://youtube.com/watch?v=abc123") is True
-    assert is_youtube_url("https://youtu.be/xyz789") is True
-    assert is_youtube_url("http://youtube.com/watch?v=test") is True
+def test_is_valid_url_accepts_proper_urls() -> None:
+    """Valid URLs with scheme and netloc should be recognized."""
+    valid_urls = [
+        "https://www.youtube.com/watch?v=abc123",
+        "https://youtu.be/xyz789",
+        "https://www.google.com",
+        "http://example.com",
+    ]
+    for url in valid_urls:
+        assert _is_valid_url(url) is True
 
-    # Test non-YouTube inputs
-    assert is_youtube_url("transcript.txt") is False
-    assert is_youtube_url("/path/to/file.txt") is False
-    assert is_youtube_url("https://example.com") is False
-    assert is_youtube_url("") is False
+
+def test_is_valid_url_rejects_non_urls() -> None:
+    """Non-URLs should be rejected by URL validation."""
+    non_url_inputs = [
+        "transcript.txt",
+        "/path/to/file.txt",
+        "data.md",
+        "config.xml",
+        "random_text",
+        "",
+        "not-a-file-or-url",
+    ]
+    for input_str in non_url_inputs:
+        assert _is_valid_url(input_str) is False
+
+
+def test_has_txt_extension_accepts_txt_files() -> None:
+    """Files with .txt extension should be recognized."""
+    txt_files = [
+        "transcript.txt",
+        "/path/to/file.txt",
+        "./local/file.txt",
+    ]
+    for file_path in txt_files:
+        assert _has_txt_extension(file_path) is True
+
+
+def test_has_txt_extension_rejects_non_txt() -> None:
+    """Files without .txt extension should be rejected."""
+    non_txt_files = [
+        "data.md",
+        "file.xml",
+        "random_text",
+        "",
+    ]
+    for input_str in non_txt_files:
+        assert _has_txt_extension(input_str) is False
+
+
+def test_cli_shows_argparse_error_for_no_arguments(tmp_path: Path) -> None:
+    """No arguments should show argparse error with help hint."""
+    # Run with no arguments
+    result = subprocess.run(
+        ["uv", "run", "youtube-to-xml"],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+
+    exit_code, output = result.returncode, result.stdout + result.stderr
+    assert exit_code == 1
+    # Generic assertions - argparse shows usage and error, we add help hint
+    assert "usage: youtube-to-xml" in output
+    assert "error: the following arguments are required" in output
+    assert "Try: youtube-to-xml --help" in output
+
+
+def test_cli_shows_help_for_invalid_text(tmp_path: Path) -> None:
+    """Random text should show concise error message."""
+    exit_code, output = run_cli("some_text", tmp_path)
+
+    assert exit_code == 1
+    assert "❌" in output
+    assert "Try: youtube-to-xml --help" in output
+    # Should NOT show full help
+    assert "💡 Check that your transcript follows this basic pattern" not in output
+
+
+def test_cli_shows_help_for_invalid_file_extension(tmp_path: Path) -> None:
+    """Non-.txt file extensions should show concise error message."""
+    exit_code, output = run_cli("data.md", tmp_path)
+
+    assert exit_code == 1
+    assert "❌" in output
+    assert "Try: youtube-to-xml --help" in output
+    # Should NOT show full help
+    assert "💡 Check that your transcript follows this basic pattern" not in output
 
 
 def test_cli_routes_files_to_file_parser(tmp_path: Path) -> None:
@@ -96,6 +172,7 @@ def test_missing_file_shows_error(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert "couldn't find your file" in output
+    assert "Try: youtube-to-xml --help" in output
 
 
 def test_empty_file_shows_error(tmp_path: Path) -> None:
@@ -107,6 +184,7 @@ def test_empty_file_shows_error(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert "Your file is empty" in output
+    assert "Try: youtube-to-xml --help" in output
 
 
 def test_invalid_format_shows_error(tmp_path: Path) -> None:

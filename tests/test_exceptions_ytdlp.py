@@ -10,9 +10,9 @@ import pytest
 
 
 def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
-    """Run url_to_transcript.py script and return (exit_code, output)."""
+    """Run youtube-to-xml CLI and return (exit_code, output)."""
     result = subprocess.run(  # noqa: S603
-        ["uv", "run", "url-to-transcript", url],
+        ["uv", "run", "youtube-to-xml", url],
         capture_output=True,
         text=True,
         cwd=tmp_path,
@@ -35,15 +35,17 @@ def test_empty_url_raises_invalid_format_error(tmp_path: Path) -> None:
     """Empty URL should be rejected."""
     exit_code, output = run_script("", tmp_path)
     assert exit_code == 1
-    assert "Invalid URL format" in output
+    assert "❌ Input must be a YouTube URL or .txt file" in output
+    assert "Try: youtube-to-xml --help" in output
 
 
 @pytest.mark.integration
-def test_malformed_text_raises_invalid_format_error(tmp_path: Path) -> None:
+def test_plain_text_raises_invalid_format_error(tmp_path: Path) -> None:
     """Non-URL text should be rejected."""
-    exit_code, output = run_script("not_a_url_at_all", tmp_path)
+    exit_code, output = run_script("some_text", tmp_path)
     assert exit_code == 1
-    assert "Invalid URL format" in output
+    assert "❌ Input must be a YouTube URL or .txt file" in output
+    assert "Try: youtube-to-xml --help" in output
 
 
 # === URL Domain Validation ===

@@ -19,6 +19,8 @@ uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 
 ## 🚀 Usage
 
+The `youtube-to-xml` command intelligently auto-detects whether you're providing a YouTube URL or a transcript file.
+
 ### Option 1: URL Method (Easiest)
 
 ```bash
@@ -119,7 +121,7 @@ First, we'll start with the patches
 - Dev Dependencies: `pytest`, `ruff`, `pre-commit`
 
 **Key Modules**
-- **[cli.py](src/youtube_to_xml/cli.py)** — Unified CLI with auto-detection for files and URLs
+- **[cli.py](src/youtube_to_xml/cli.py)** — Unified CLI with intelligent auto-detection (URLs vs .txt files)
 - **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
 - **[url_parser.py](src/youtube_to_xml/url_parser.py)** — YouTube URL processing with metadata extraction
 - **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
@@ -168,6 +170,6 @@ uv run pre-commit run --all-files # All hooks
 - **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
 
 **To Do**
-1. ~~Integrate URL functionality into main CLI~~ ✅ Complete - unified CLI now handles both files and URLs
+1. ~~Integrate URL functionality into main CLI~~ ✅ COMPLETE (unified CLI with auto-detection)
 2. Evals to prove XML format vs plain (Use Hamels [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
 3. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?

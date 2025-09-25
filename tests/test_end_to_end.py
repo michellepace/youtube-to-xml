@@ -28,15 +28,15 @@ def run_script(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int
     """Run script and return (exit_code, output).
 
     Args:
-        command: Either 'youtube-to-xml' or 'url-to-transcript'
+        command: 'youtube-to-xml' (unified CLI)
         args: List of arguments or single URL string
         tmp_path: Working directory for the command
     """
     if isinstance(args, str):
-        # Single URL for url-to-transcript
+        # Single URL
         cmd_args = ["uv", "run", command, args]
     else:
-        # List of args for youtube-to-xml
+        # List of args
         cmd_args = ["uv", "run", command]
         cmd_args.extend(args)
 
@@ -135,7 +135,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_url_multi_chapters_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with multi-chapter video."""
-    exit_code, output = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)
+    exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -152,7 +152,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with shared URL format containing parameters."""
-    exit_code, output = run_script("url-to-transcript", URL_CHAPTERS_SHARED, tmp_path)
+    exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS_SHARED, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -169,7 +169,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
 @pytest.mark.integration
 def test_url_single_chapter_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with single-chapter video."""
-    exit_code, output = run_script("url-to-transcript", URL_NO_CHAPTERS, tmp_path)
+    exit_code, output = run_script("youtube-to-xml", URL_NO_CHAPTERS, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -193,7 +193,7 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     file_exit_code = run_script("youtube-to-xml", ["input.txt"], tmp_path)[0]
 
     # Process URL method
-    url_exit_code = run_script("url-to-transcript", URL_CHAPTERS, tmp_path)[0]
+    url_exit_code = run_script("youtube-to-xml", URL_CHAPTERS, tmp_path)[0]
 
     assert file_exit_code == 0
     assert url_exit_code == 0
@@ -259,7 +259,7 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     """Test manual transcripts are prioritised over auto-generated (higher quality)."""
     test_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-    exit_code, output = run_script("url-to-transcript", test_url, tmp_path)
+    exit_code, output = run_script("youtube-to-xml", test_url, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output

@@ -5,21 +5,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Capabilities
 **Purpose**: Convert YouTube transcripts to XML for improved LLM comprehension
 
-**Current State**:
-- ✅ File-based CLI (`youtube-to-xml`) - production ready
-- 🔬 URL-based script (`url-to-transcript`) - experimental, pending integration
-
 **Architecture**: UV Package Application with TDD, pure functions, layer separation
 
-**Entry Points**: See [pyproject.toml](pyproject.toml) `[project.scripts]` section for available commands
+**Entry Point**: Single `youtube-to-xml` command handles both transcript files and YouTube URLs
 
 ## Core Architecture Pattern
 
-**Unified Data Flow**: Both processing methods converge on shared infrastructure:
-- **File Method**: Raw text → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
-- **URL Method**: YouTube URL → `url_parser.parse_youtube_url()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
-
-> **🚧 Integration Status**: Core URL parsing functionality extracted to `url_parser.py` module. Unified CLI and experimental script cleanup pending.
+**Unified Data Flow**: Single CLI with auto-detection routes to shared infrastructure:
+- **File Input**: `youtube-to-xml file.txt` → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
+- **URL Input**: `youtube-to-xml https://youtube.com/...` → `url_parser.parse_youtube_url()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 
 **Key Shared Components**:
 - `src/youtube_to_xml/models.py` - Core data structures (`TranscriptDocument`, `VideoMetadata`, `TranscriptLine`, `Chapter`)
@@ -55,7 +49,7 @@ uv lock --upgrade && uv sync # Update all packages and apply
 
 # Development
 uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
-uv run youtube-to-xml <file> # Run CLI
+uv run youtube-to-xml <file|url> # Run unified CLI (auto-detects input type)
 uv run pytest # All tests
 uv run pytest -m "not integration" # Unit tests only (fast)
 uv run pytest -m "integration" # Integration tests only (includes YouTube URLs)
@@ -90,4 +84,3 @@ uv run ruff format # Format (see pyproject.toml)
 - **Ruff**: Strictest settings (ALL rules enabled)
 - **Pyright**: Configured to avoid Ruff duplicates (see [pyproject.toml](pyproject.toml))
 - **Pre-commit**: Auto-runs on every commit
-- **Performance target**: 15,000 lines in <2 seconds

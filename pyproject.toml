@@ -25,7 +25,6 @@ dependencies = [        # runtime
 # CLI entry points
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
-url-to-transcript = "youtube_to_xml.url_to_transcript_wrapper:main" # experimental
 
 # Development dependencies 
 [dependency-groups]
