@@ -63,8 +63,8 @@ markers = [
 # For Cursor (Cursor Pyright extension), for VSCode (Microsoft Pylance)
 # Cursor Pyright forks BasedPyright, some lint rules overlap with Ruff, causes dupe errors
 
-# Cursor Pyright default
-typeCheckingMode = "standard"
+typeCheckingMode = "standard" # Cursor Pyright default
+pythonVersion = "3.13"
 
 # Disable Basedpyright rules that duplicate Ruff
 reportUnusedImport = false      # Ruff F401 handles it
