@@ -6,7 +6,7 @@ THINK HARD FOR ELEGANT SIMPLICITY:
 You are evaluating `<source_module>` and its test suite `<test_module>` for refactoring opportunities. This project follows test-driven development and prioritises maintainable, readable code over complex architectures.
 
 <source_module>
-`src/url_parser.py` (~280 lines)
+`src/youtube_to_xml/url_parser.py` (~280 lines)
 </source_module>
 
 <test_module>
@@ -21,7 +21,7 @@ You are evaluating `<source_module>` and its test suite `<test_module>` for refa
 - Straightforward solutions over clever abstractions
 
 **Professional Standards**: Apply industry best practices:
-- Type annotations on all function signature
+- Type annotations on all function signatures
 - Proper error handling without over-engineering
 - Testable design with clear interfaces
 
@@ -32,7 +32,7 @@ You are evaluating `<source_module>` and its test suite `<test_module>` for refa
 - **Function Size**: Identify functions >20 lines that could be decomposed
 - **Complexity**: Flag high cyclomatic complexity (>10)
 - **Dependencies**: Assess coupling between components
-- **Encapsulation**: Are there functions that are sensical to be private?
+- **Encapsulation**: Are there functions that are sensible to be private?
 
 ### 2. Naming and Clarity
 - **Descriptive Names**: Functions and variables clearly express intent
