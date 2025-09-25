@@ -79,7 +79,7 @@ def _process_file_input(file_path_str: str, execution_id: str) -> tuple[str, str
         Tuple of (xml_content, output_filename)
 
     Raises:
-        FileNotFoundError: If file doesn't exist
+        FileNotExistsError: If file doesn't exist
         FilePermissionError: If file can't be read due to permissions
         FileEncodingError: If file isn't UTF-8 encoded
         FileEmptyError: If file is empty
