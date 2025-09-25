@@ -181,7 +181,7 @@ def main() -> None:
     except SystemExit as e:
         if e.code == ARGPARSE_ERROR_CODE:
             # Display after argparse's message
-            print("\nTry: youtube-to-xml --help")
+            print("\nTry: youtube-to-xml --help", file=sys.stderr)
             sys.exit(1)
         else:
             # Re-raise other SystemExits (like --help which should exit normally)
@@ -202,13 +202,13 @@ def main() -> None:
 
     except BaseTranscriptError as e:
         # All our custom exceptions
-        print(f"❌ {e}")
-        print("\nTry: youtube-to-xml --help")
+        print(f"❌ {e}", file=sys.stderr)
+        print("\nTry: youtube-to-xml --help", file=sys.stderr)
         logger.info("[%s] %s: %s", execution_id, type(e).__name__, e)
         sys.exit(1)
     except (PermissionError, OSError) as e:
         # System errors from file operations
-        print(f"❌ {e}")
-        print("\nTry: youtube-to-xml --help")
+        print(f"❌ {e}", file=sys.stderr)
+        print("\nTry: youtube-to-xml --help", file=sys.stderr)
         logger.exception("[%s] System error", execution_id)
         sys.exit(1)
