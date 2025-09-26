@@ -95,7 +95,7 @@ class TestVideoMetadataDurationFormat:
         )
 
 
-class TestXMLBuilderIntegration:
+class TestXMLBuilderCompatibility:
     """Test that URL parser module integrates with xml_builder correctly."""
 
     def test_url_parser_module_has_no_duplicate_xml_functions(self) -> None:
@@ -120,18 +120,8 @@ class TestXMLBuilderIntegration:
 
         assert return_annotation == TranscriptDocument, (
             "parse_youtube_url should return TranscriptDocument for xml_builder "
-            "integration"
+            "compatibility"
         )
-
-
-class TestUrlParserModule:
-    """Test that url_parser module exists (PR 7)."""
-
-    def test_url_parser_module_can_be_imported(self) -> None:
-        """Test that youtube_to_xml.url_parser module exists."""
-        # This will fail initially - drives TDD implementation
-        # Module is already imported at top level as url_parser_module
-        assert url_parser_module is not None
 
 
 class TestParseYoutubeUrlFunction:

@@ -60,8 +60,9 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 
 ### Option 2: File Method
 
+Manually copy YouTube transcript into a text file, then:
+
 ```bash
-# Manually copy YouTube transcript into a text file, then:
 youtube-to-xml my_transcript.txt
 # ✅ Created: my_transcript.xml
 ```
