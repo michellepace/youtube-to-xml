@@ -12,23 +12,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Core Architecture Pattern
 
 **Unified Data Flow**: Single CLI with auto-detection routes to shared infrastructure:
-- **File Input**: `youtube-to-xml file.txt` → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 - **URL Input**: `youtube-to-xml https://youtube.com/...` → `url_parser.parse_youtube_url()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
+- **File Input**: `youtube-to-xml file.txt` → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 
-**Key Shared Components**:
-- `src/youtube_to_xml/models.py` - Core data structures (`TranscriptDocument`, `VideoMetadata`, `TranscriptLine`, `Chapter`)
-- `src/youtube_to_xml/file_parser.py` - File-based transcript parsing to `TranscriptDocument`
+**Key Modules**:
+- `src/youtube_to_xml/cli.py` - Unified CLI with auto-detection (URLs vs .txt files)
+- `src/youtube_to_xml/models.py` - Unified data structures for both file and URL processing
 - `src/youtube_to_xml/url_parser.py` - URL-based transcript parsing to `TranscriptDocument`
+- `src/youtube_to_xml/file_parser.py` - File-based transcript parsing to `TranscriptDocument`
 - `src/youtube_to_xml/xml_builder.py` - Unified XML generation via `transcript_to_xml()`
-- `src/youtube_to_xml/time_utils.py` - Bidirectional timestamp conversion
-- `src/youtube_to_xml/exceptions.py` - Centralized exception hierarchy with `BaseTranscriptError`
+- `src/youtube_to_xml/exceptions.py` - Centralised exception hierarchy with `BaseTranscriptError`
 
 Full details with I/O examples: [README.md](README.md)
 
 ## Tech Stack
 
 - **Python**: 3.13+
-- **Key Patterns**: Use `pathlib` (not `os.path`), `dataclasses`, `logging`, `pytest` with `tmp_path`
+- **Key Patterns**: Use `pathlib` (not `os`), `dataclasses`, `logging`, `pytest` with `tmp_path`
 - **Dependencies**: See [pyproject.toml](pyproject.toml) for complete list
 
 ## UV Workflow (Always)
@@ -76,7 +76,7 @@ uv run ruff format # Format (see pyproject.toml)
 
 - Use pytest's `tmp_path` fixture to avoid creating test files
 - Avoid mocks as they introduce unnecessary complexity
-- Test incrementally: One test should drive one behavior
+- Test incrementally: One test should drive one behaviour
 - Use focused test names that describe what's being tested
 
 ## Code Quality Standards
