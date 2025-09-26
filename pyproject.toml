@@ -16,7 +16,7 @@ name = "youtube-to-xml"
 version = "0.1.0"
 description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
-authors = [ { name = "Michelle", email = "" } ]
+authors = [{ name = "Michelle", email = "your.email@example.com" }]
 requires-python = ">=3.13"
 dependencies = [        # runtime
     "yt-dlp>=2025.9.23",
@@ -51,7 +51,6 @@ dev = [
 
 [tool.pytest.ini_options]
 markers = [
-    "integration: tests that use download from YouTube via `yt-dlp` API (DEPRECATED - use 'slow')",
     "slow: tests that require internet connection (hit yt-dlp API) (reviewed and confirmed)"
 ]
 

@@ -51,8 +51,8 @@ uv lock --upgrade && uv sync # Update all packages and apply
 uv run pre-commit run --all-files # (hooks in .pre-commit-config.yaml)
 uv run youtube-to-xml <file|url> # Run unified CLI (auto-detects input type)
 uv run pytest # All tests
-uv run pytest -m "not integration" # Unit tests only (fast)
-uv run pytest -m "integration" # Integration tests only (includes YouTube URLs)
+uv run pytest -m "not slow" # Unit tests only (fast, no network)
+uv run pytest -m "slow" # Tests requiring internet (hit yt-dlp API)
 uv run pytest -v tests/test_specific.py::test_function
 uv run ruff check --fix # Lint and auto-fix (rules in pyproject.toml)
 uv run ruff format # Format (see pyproject.toml)

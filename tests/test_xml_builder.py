@@ -218,11 +218,11 @@ def test_transcript_to_xml_indentation() -> None:
     assert xml_lines[8] == "    </chapter>"  # Closing: 4 spaces
 
 
-# ============= 4. INTEGRATION TESTS (End-to-End) =============
+# ============= 4. COMPREHENSIVE TESTS (Complete XML Generation) =============
 
 
-def test_transcript_to_xml_multi_chapter_integration() -> None:
-    """Multi-chapter document with populated metadata produces complete XML structure."""
+def test_transcript_to_xml_multi_chapter_complete() -> None:
+    """Multi-chapter document with metadata produces complete XML structure."""
     document = TranscriptDocument(
         metadata=VideoMetadata(
             video_title="How Claude Code Hooks Work",

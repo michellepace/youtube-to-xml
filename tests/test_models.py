@@ -1,7 +1,7 @@
 """Smoke tests for shared data models.
 
 Simple validation that models can be imported and used as expected.
-Real integration testing happens when these models are used by parsers and builders.
+Real end-to-end testing happens when these models are used by parsers and builders.
 """
 
 from youtube_to_xml.models import (

@@ -6,8 +6,8 @@ Tests complete successful workflows from user input to final output:
 - File vs URL equivalence verification
 
 Uses unified run_script() helper with automatic rate limiting protection.
-Integration tests (marked with @pytest.mark.integration) hit external YouTube API.
-For error scenarios, see tests/test_exceptions_ytdlp.py.
+Tests that hit YouTube API are marked with @pytest.mark.slow.
+For error scenarios, see tests/test_exceptions_url.py.
 """
 
 import difflib
@@ -135,7 +135,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     assert "❌ Wrong format in transcript file" in output
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_multi_chapters_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with multi-chapter video."""
     exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS, tmp_path)
@@ -152,7 +152,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     assert_files_identical(xml_files[0], reference_file)
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with shared URL format containing parameters."""
     exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS_SHARED, tmp_path)
@@ -169,7 +169,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     assert_files_identical(xml_files[0], reference_file)
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_single_chapter_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with single-chapter video."""
     exit_code, output = run_script("youtube-to-xml", URL_NO_CHAPTERS, tmp_path)
@@ -186,7 +186,7 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
     assert_files_identical(xml_files[0], reference_file)
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
     """Test YouTube fetcher processes single video from playlist URL, not playlist."""
     exit_code, output = run_script("youtube-to-xml", URL_PLAYLIST, tmp_path)
@@ -202,7 +202,7 @@ def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
     assert "because of --no-playlist" in output.lower()
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     """Test URL vs file processing equivalence using direct XML parsing."""
     # Process file method
@@ -273,7 +273,7 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         )
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     """Test manual transcripts are prioritised over auto-generated (higher quality)."""
     test_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"

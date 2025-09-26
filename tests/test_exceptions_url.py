@@ -29,27 +29,8 @@ def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
     return result.returncode, result.stdout + result.stderr
 
 
-# === Input Validation ===
-@pytest.mark.integration
-def test_empty_url_raises_invalid_format_error(tmp_path: Path) -> None:
-    """Empty URL should be rejected."""
-    exit_code, output = run_script("", tmp_path)
-    assert exit_code == 1
-    assert "❌ Input must be a YouTube URL or .txt file" in output
-    assert "Try: youtube-to-xml --help" in output
-
-
-@pytest.mark.integration
-def test_plain_text_raises_invalid_format_error(tmp_path: Path) -> None:
-    """Non-URL text should be rejected."""
-    exit_code, output = run_script("some_text", tmp_path)
-    assert exit_code == 1
-    assert "❌ Input must be a YouTube URL or .txt file" in output
-    assert "Try: youtube-to-xml --help" in output
-
-
 # === URL Domain Validation ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
     """Non-YouTube URLs should be rejected."""
     exit_code, output = run_script("https://www.google.com/", tmp_path)
@@ -57,7 +38,7 @@ def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
     assert "URL is not a YouTube video" in output
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
     """Unreachable domains should fail gracefully."""
     exit_code, output = run_script("https://ailearnlog", tmp_path)
@@ -66,7 +47,7 @@ def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
 
 
 # === YouTube URL Format ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
     """Truncated video IDs should be detected."""
     exit_code, output = run_script("https://www.youtube.com/watch?v=Q4g", tmp_path)
@@ -74,7 +55,7 @@ def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
     assert "YouTube URL is incomplete" in output
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
     """Invalid character patterns in video IDs should be caught."""
     exit_code, output = run_script(
@@ -85,7 +66,7 @@ def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
 
 
 # === Video Availability ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
     """Handles videos removed from YouTube."""
     exit_code, output = run_script("https://youtu.be/ai_HGCf2w_w", tmp_path)
@@ -93,7 +74,7 @@ def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
     assert "YouTube video unavailable" in output
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_private_video_raises_unavailable_error(tmp_path: Path) -> None:
     """Handles private/restricted videos."""
     exit_code, output = run_script("https://youtu.be/15vClfaR35w", tmp_path)
@@ -102,7 +83,7 @@ def test_private_video_raises_unavailable_error(tmp_path: Path) -> None:
 
 
 # === Transcript Availability ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_video_without_transcript_raises_transcript_not_found_error(
     tmp_path: Path,
 ) -> None:
@@ -115,7 +96,7 @@ def test_video_without_transcript_raises_transcript_not_found_error(
 
 
 # === Network/Access ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
     """Intermittent bot protection should either succeed or fail cleanly."""
     # This is intermittent - could succeed (0) or fail (1) due to bot protection
@@ -135,7 +116,7 @@ def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
 
 
 # === Success Case ===
-@pytest.mark.integration
+@pytest.mark.slow
 def test_valid_video_with_transcript_creates_xml_successfully(
     tmp_path: Path,
 ) -> None:

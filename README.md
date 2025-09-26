@@ -60,8 +60,9 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 
 ### Option 2: File Method
 
+Manually copy YouTube transcript into a text file, then:
+
 ```bash
-# Manually copy YouTube transcript into a text file, then:
 youtube-to-xml my_transcript.txt
 # ✅ Created: my_transcript.xml
 ```
@@ -108,17 +109,15 @@ First, we'll start with the patches
 
 ## 📊 Technical Details
 
-**Terminology**: Code uses consistent TRANSCRIPT terminology. **[View terminology guide →](docs/terminology.md)**
+**Domain Terminology**: Code uses consistent TRANSCRIPT terminology. **[View terminology guide →](docs/terminology.md)**
 
-**Package & Project Management**: [UV Package Application](https://docs.astral.sh/uv/concepts/projects/)
+**Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
 
 **Architecture**: Pure functions with clear module separation
 
-**Test-Driven Development**: 124 tests (18 integration, 106 unit, ~68 seconds)
+**Test Driven Development**: 117 tests (17 slow, 100 unit, ~79 seconds)
 
-**Dependencies**:
-- Runtime Dependencies: `yt-dlp` (fetch metadata and download transcript from YouTube URL)
-- Dev Dependencies: `pytest`, `ruff`, `pre-commit`
+**Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads. Dev tools: `pytest`, `ruff`, `pre-commit`. See [pyproject.toml](pyproject.toml).
 
 **Key Modules**
 - **[cli.py](src/youtube_to_xml/cli.py)** — Unified CLI with intelligent auto-detection (URLs vs .txt files)
@@ -137,17 +136,18 @@ cd youtube-to-xml
 uv sync
 ```
 
-**Testing:**
-```bash
-uv run pytest                    # All tests
-uv run pytest -v                 # Verbose output
-```
-
 **Code Quality:**
 ```bash
-uv run ruff check                 # Lint
-uv run ruff format                # Format
-uv run pre-commit run --all-files # All hooks
+uv run ruff check --fix           # Lint and auto-fix (see pyproject.toml)
+uv run ruff format                # Format code (see pyproject.toml)
+```
+
+**Testing:**
+```bash
+uv run pytest                     # All tests
+uv run pytest -m "slow"           # Only slow tests (internet required)
+uv run pytest -m "not slow"       # All tests except slow tests
+uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 ```
 
 ---
@@ -155,21 +155,20 @@ uv run pre-commit run --all-files # All hooks
 ## 📕 *Own Notes*
 
 **Learning Notes**
-- [Code Rabbit for PR review](https://www.anthropic.com/customers/coderabbit)
+- [CodeRabbit for PR review](https://www.anthropic.com/customers/coderabbit)
 - [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs)
 - [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index)
-- [Manage MCPs Nicely](docs/knowledge/manage-mcps-nicely.md)
-- [Git Branch Workflow](docs/knowledge/git-branch-flow.md)
+- [Manage MCPs nicely](docs/knowledge/manage-mcps-nicely.md)
+- [Git branch workflow](docs/knowledge/git-branch-flow.md)
 
 **Outstanding Questions**
 - **Q1.** Is there something I could have done better with UV?
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
-- **Q3.** Are my [tests](/tests/) clear and sane, or did I seriously overcomplicate / over cook it?
-- **Q4.** Did I do the errors properly (make them a type, define in [exceptions.py](/src/youtube_to_xml/exceptions.py), customising messages in [cli.py](/src/youtube_to_xml/cli.py))?
-- **Q5.** Is the code "clean"... was I right to make private methods in file_parser.py and only expose one public function. It was at the cost of direct testability, but does it matter?
-- **Q6.** Was I right to exclude the "XML security" Ruff [S314](pyproject.toml), as I'm generating xml only.
+- **Q3.** Are [tests](/tests/) clear and sane, or over-engineered?
+- **Q4.** Did I do exceptions well - define as type with default messages [exceptions.py](/src/youtube_to_xml/exceptions.py)?
+- **Q5.** Is the code clean and clear?
+- **Q6.** Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
 
 **To Do**
-1. ~~Integrate URL functionality into main CLI~~ ✅ COMPLETE (unified CLI with auto-detection)
-2. Evals to prove XML format vs plain (Use Hamels [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
-3. If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?
+- [ ] Evals to prove XML format vs plain. Use Hamel's [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
+- [ ] If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?
