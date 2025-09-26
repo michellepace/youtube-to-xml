@@ -51,7 +51,8 @@ dev = [
 
 [tool.pytest.ini_options]
 markers = [
-    "integration: tests that use download from YouTube via `yt-dlp` API"
+    "integration: tests that use download from YouTube via `yt-dlp` API (DEPRECATED - use 'slow')",
+    "slow: tests that require internet connection (hit yt-dlp API) (reviewed and confirmed)"
 ]
 
 # =================================

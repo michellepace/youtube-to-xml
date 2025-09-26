@@ -132,7 +132,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 1
-    assert "First line in file must be a chapter title, not a timestamp" in output
+    assert "❌ Wrong format in transcript file" in output
 
 
 @pytest.mark.integration
