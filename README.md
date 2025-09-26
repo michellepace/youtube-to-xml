@@ -98,34 +98,26 @@ First, we'll start with the patches
 
 > 📁 **[View example files →](example_transcripts/introduction-to-cows.txt)** | **[Output XML →](example_transcripts/introduction-to-cows.xml)**
 
-*Output structure matches the URL method but with empty metadata attributes (title, duration, etc.)*
-
 <figure align="center">
   <a href="docs/terminology.md">
     <img src="docs/images/terminology.youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
   </a>
-  <figcaption>YouTube transcript terminology used throughout code: (click to read)</figcaption>
+  <figcaption>YouTube transcript terminology throughout codebase: (click to read)</figcaption>
 </figure>
 
 ## 📊 Technical Details
 
-**Domain Terminology**: Code uses consistent TRANSCRIPT terminology. **[View terminology guide →](docs/terminology.md)**
+**Architecture**: Pure functions with clear module separation
+
+**Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
+
+**Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 
 **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
 
-**Architecture**: Pure functions with clear module separation
-
 **Test Driven Development**: 117 tests (17 slow, 100 unit, ~79 seconds)
 
-**Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads. Dev tools: `pytest`, `ruff`, `pre-commit`. See [pyproject.toml](pyproject.toml).
-
-**Key Modules**
-- **[cli.py](src/youtube_to_xml/cli.py)** — Unified CLI with intelligent auto-detection (URLs vs .txt files)
-- **[file_parser.py](src/youtube_to_xml/file_parser.py)** — Regex-based timestamp detection and chapter boundary rules
-- **[url_parser.py](src/youtube_to_xml/url_parser.py)** — YouTube URL processing with metadata extraction
-- **[xml_builder.py](src/youtube_to_xml/xml_builder.py)** — ElementTree API for valid XML generation
-- **[exceptions.py](src/youtube_to_xml/exceptions.py)** — Custom error hierarchy for clean error handling
-- **[test_end_to_end.py](tests/test_end_to_end.py)** — Workflow tests for file and URL processing
+**Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 ## 🛠️ Development
 
