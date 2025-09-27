@@ -340,14 +340,42 @@ Second text
     ("input_text", "expected_error"),
     [
         # Empty input cases
-        ("", FileEmptyError),
-        ("   \n\n  \t  ", FileEmptyError),
-        # Format validation cases - all use generic default message after simplification
-        ("0:00\nShould start with title\nNot timestamp", FileInvalidFormatError),
-        ("Title\n0:00", FileInvalidFormatError),
-        ("Title", FileInvalidFormatError),
-        ("Title\nNo timestamp here\nJust text", FileInvalidFormatError),
-        ("Title\n0:00\n0:01\nContent", FileInvalidFormatError),
+        pytest.param(
+            "",
+            FileEmptyError,
+            id="empty",
+        ),
+        pytest.param(
+            "   \n\n  \t  ",
+            FileEmptyError,
+            id="whitespace",
+        ),
+        # Format validation cases
+        pytest.param(
+            "0:00\nShould start with title\nNot timestamp",
+            FileInvalidFormatError,
+            id="no_title_first",
+        ),
+        pytest.param(
+            "Title\n0:00",
+            FileInvalidFormatError,
+            id="only_one_pair",
+        ),
+        pytest.param(
+            "Title",
+            FileInvalidFormatError,
+            id="title_only",
+        ),
+        pytest.param(
+            "Title\nNo timestamp here\nJust text",
+            FileInvalidFormatError,
+            id="no_timestamp",
+        ),
+        pytest.param(
+            "Title\n0:00\n0:01\nContent",
+            FileInvalidFormatError,
+            id="two_timestamps",
+        ),
     ],
 )
 def test_invalid_input_raises_appropriate_error(

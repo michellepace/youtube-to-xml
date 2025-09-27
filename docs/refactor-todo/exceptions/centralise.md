@@ -4,7 +4,7 @@
 
 **Issue**: Exception messages are hardcoded across 14 exception classes and 184 test assertions spanning 9 test files, creating brittle code that's difficult to maintain when updating user-facing error messages.
 
-**Goal**: Centralise exception messages in `exceptions.py` using a `MESSAGES` constant, enabling single-source-of-truth message management while maintaining existing functionality and test coverage.
+**Goal**: Centralise exception messages in `exceptions.py` using an `EXCEPTION_MESSAGES` constant, enabling single-source-of-truth message management while maintaining existing functionality and test coverage.
 
 
 ## 📊 **Current Exception Testing Landscape**
@@ -43,8 +43,8 @@ Summary Table:
 | tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | N/A | ✅ **REFACTORED** *(tests exception types only - matches simplified implementation)* |
 
 **CLI Formatting Patterns (in cli.py)**:
-- `"❌ {e}"` formatting on lines 198, 204
-- `"Try: youtube-to-xml --help"` help hints on lines 177, 199, 205
+- `"❌ {e}"` formatting patterns
+- `"Try: youtube-to-xml --help"` help hints
 
 
 ## 🚀 **High-Level Steps**

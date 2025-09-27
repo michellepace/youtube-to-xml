@@ -16,6 +16,7 @@ from youtube_to_xml.exceptions import (
     URLNotYouTubeError,
     URLRateLimitError,
     URLUnmappedError,
+    URLVideoIsPrivateError,
     URLVideoUnavailableError,
     map_yt_dlp_exception,
 )
@@ -192,6 +193,11 @@ class TestYtDlpExceptionMapping:
                 "ERROR: [youtube] ai_HGCf2w_w: Video unavailable",
                 URLVideoUnavailableError,
                 EXCEPTION_MESSAGES["url_video_unavailable_error"],
+            ),
+            (
+                "ERROR: [youtube] abc123: Private video",
+                URLVideoIsPrivateError,
+                EXCEPTION_MESSAGES["url_video_is_private_error"],
             ),
             (
                 "Some unknown error message",

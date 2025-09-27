@@ -45,7 +45,7 @@ def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
     """Unreachable domains should fail gracefully."""
     exit_code, output = run_script("https://nonexistent-domain-12345.com", tmp_path)
     assert exit_code == 1
-    assert "Unable to download webpage" in output
+    assert "unable to download webpage" in output.lower()
 
 
 # === YouTube URL Format ===

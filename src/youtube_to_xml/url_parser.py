@@ -313,7 +313,9 @@ def parse_youtube_url(url: str) -> TranscriptDocument:
         TranscriptDocument with video metadata and chapters containing transcript lines
 
     Raises:
-        BaseTranscriptError: Various yt-dlp errors mapped via map_yt_dlp_exception()
+        BaseTranscriptError: Domain-level failures (e.g., yt-dlp mapped errors via
+            map_yt_dlp_exception(), or URLTranscriptNotFoundError when no transcript
+            exists).
     """
     logger.info("Processing video: %s", url)
 
