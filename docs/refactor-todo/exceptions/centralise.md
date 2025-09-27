@@ -18,7 +18,7 @@
 
 **All Occurrences of Hardcoded Exception Messages**
 
-**Note**: Line numbers updated as of current implementation. All entries marked "✅ CONVERTED" have already been updated to use `EXCEPTION_MESSAGES` constants.
+**Note**: Line numbers updated as of current implementation. All entries marked "✅ CONVERTED" have been updated to use `EXCEPTION_MESSAGES` constants. Entry marked "✅ REFACTORED" was simplified to test exception types only, matching the implementation.
 
 Summary Table:
 
@@ -27,20 +27,20 @@ Summary Table:
 | **SRC DIRECTORY** | | | | |
 | src/url_parser.py | URLNotYouTubeError | URL is not a YouTube video | 317 | ✅ **UPDATED** *(docstring simplified)* |
 | **TESTS DIRECTORY** | | | | |
-| tests/test_cli.py | FileEmptyError | Your file is empty | 174 | ❌ **NOT CONVERTED** |
-| tests/test_cli.py | FileInvalidFormatError | Wrong format in transcript file | 186 | ❌ **NOT CONVERTED** |
-| tests/test_cli.py | FileNotExistsError | We couldn't find your file | 162 | ❌ **NOT CONVERTED** |
-| tests/test_cli.py | InvalidInputError | Input must be a YouTube URL or .txt file | [122, 136, 148] | ❌ **NOT CONVERTED** |
+| tests/test_cli.py | FileEmptyError | Your file is empty | 175 | ✅ **CONVERTED** |
+| tests/test_cli.py | FileInvalidFormatError | Wrong format in transcript file | 187 | ✅ **CONVERTED** |
+| tests/test_cli.py | FileNotExistsError | We couldn't find your file | 163 | ✅ **CONVERTED** |
+| tests/test_cli.py | InvalidInputError | Input must be a YouTube URL or .txt file | [123, 137, 149] | ✅ **CONVERTED** |
 | tests/test_end_to_end.py | FileInvalidFormatError | Wrong format in transcript file | 137 | ✅ **CONVERTED** |
 | tests/test_exceptions.py | BaseTranscriptError | Custom error message | 36 | *(test case - leave as-is)* |
 | tests/test_exceptions.py | BaseTranscriptError | Test message | 42 | *(test case - leave as-is)* |
-| tests/test_exceptions_url.py | URLIncompleteError | YouTube URL is incomplete | 57 | ❌ **NOT CONVERTED** |
-| tests/test_exceptions_url.py | URLIsInvalidError | Invalid URL format | 67 | ❌ **NOT CONVERTED** |
-| tests/test_exceptions_url.py | URLNotYouTubeError | URL is not a YouTube video | 40 | ❌ **NOT CONVERTED** |
-| tests/test_exceptions_url.py | URLTranscriptNotFoundError | This video doesn't have a transcript available | 97 | ❌ **NOT CONVERTED** |
-| tests/test_exceptions_url.py | URLVideoUnavailableError | YouTube video unavailable | 76 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLIncompleteError | YouTube URL is incomplete | 57 | ✅ **CONVERTED** |
+| tests/test_exceptions_url.py | URLIsInvalidError | Invalid URL format | 67 | ✅ **CONVERTED** |
+| tests/test_exceptions_url.py | URLNotYouTubeError | URL is not a YouTube video | 40 | ✅ **CONVERTED** |
+| tests/test_exceptions_url.py | URLTranscriptNotFoundError | This video doesn't have a transcript available | 97 | ✅ **CONVERTED** |
+| tests/test_exceptions_url.py | URLVideoUnavailableError | YouTube video unavailable | 76 | ✅ **CONVERTED** |
 | tests/test_exceptions_url.py | URLVideoIsPrivateError | Video is private and transcript cannot be downloaded | 84 | ✅ **CONVERTED** |
-| tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | [355, 360] | ❌ **NOT CONVERTED** |
+| tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | N/A | ✅ **REFACTORED** *(tests exception types only - matches simplified implementation)* |
 
 **CLI Formatting Patterns (in cli.py)**:
 - `"❌ {e}"` formatting on lines 198, 204

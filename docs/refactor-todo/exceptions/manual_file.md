@@ -1,6 +1,23 @@
 # Manual Testing Results - CLI Simplified Exception Pattern - FILE BASED
 
-**Last Updated**: 2025-09-27 - Re-tested after URLVideoIsPrivateError implementation
+**Last Updated**: 2025-09-27 - Re-tested after EXCEPTION_MESSAGES centralization completion - ALL 9 TEST CASES VERIFIED
+
+**CRITICAL:**
+1. Always run commands from clean terminal with `cd /tmp && uv run --directory /home/mp/projects/python/youtube-to-xml youtube-to-xml "URL" 2>&1` to capture exact CLI output as users see it. Do NOT assume or reorder output - copy exactly what appears in terminal.
+2. **MANDATORY: RUN ALL TEST CASES - NO SHORTCUTS:**
+   - **MUST** execute every single test case command, even if output looks recent
+   - **MUST** replace ALL "Actual Output" code blocks with fresh results from today
+   - **NEVER** skip test cases or assume previous outputs are still valid
+   - **VERIFY** every status marker [🟢/🟠/🔴] matches the fresh output
+3. Re-populate "## Report on Completed Run" for the completed run
+4. Update "**Last Updated**" above
+
+**VERIFICATION CHECKLIST:**
+- [x] Ran and updated ALL 9 test cases with fresh output (where n = total test cases)
+- [x] Updated "**Last Updated**" date
+- [x] Re-populated "## Report on Completed Run" section
+
+---
 
 ## Test Cases
 
@@ -121,16 +138,46 @@ Run: `uv run youtube-to-xml example_transcripts/introduction-to-cows.txt`
 
 🟢 **Status:** Perfect Match! - Success case works flawlessly
 
-## Summary
+---
 
-**Results Analysis:**
-- 🟢 **9 out of 9 test cases PERFECT** - All scenarios match expected behavior
-- ✨ **Exceptional improvements achieved**:
-  - Single exception handler in main() using BaseTranscriptError
-  - Clean user messages without technical stack traces
-  - Consistent "Try: youtube-to-xml --help" footer on all errors
+## 📄 Report on Completed Run
 
-**Architecture Analysis:**
-- **Exception Flow**: Built-in exceptions → Custom exceptions → Single handler in main()
-- **Clean Separation**: Processing functions bubble up typed exceptions, main() handles user messaging
-- **Consistent UX**: All error messages follow same format pattern
+### Important Test Case Notes
+
+1. **Perfect Match Consistency**: All 9 test cases produced exactly the same output as documented, confirming the EXCEPTION_MESSAGES centralization was successful
+2. **Clean Error Handling**: Every error scenario provides a clean, user-friendly message followed by "Try: youtube-to-xml --help"
+3. **Argparse Integration**: Multiple argument scenarios (test cases 1, 4) are handled naturally by argparse before reaching our custom validation
+4. **File Validation Flow**: Extension checking → existence checking → content checking works seamlessly
+
+### Summary of Results
+
+All file-based input validation is working perfectly. The centralized exception system provides consistent, clean error messages across all failure scenarios while maintaining the successful file processing path.
+
+| Test Case | Status | Error Type | Message Quality |
+|-----------|---------|------------|----------------|
+| 1. No arguments | 🟢 | Argparse | Clean with help hint |
+| 2. Random text | 🟢 | InvalidInputError | Perfect |
+| 3. Text with spaces | 🟢 | InvalidInputError | Perfect |
+| 4. Multiple args | 🟢 | Argparse | Clean with help hint |
+| 5. Invalid extension | 🟢 | InvalidInputError | Perfect |
+| 6. File not found | 🟢 | FileNotExistsError | Perfect |
+| 7. Empty file | 🟢 | FileEmptyError | Perfect |
+| 8. Wrong format | 🟢 | FileInvalidFormatError | Perfect |
+| 9. Valid file | 🟢 | Success | Perfect |
+
+### Summary of Issues
+
+**No issues found.** All test cases pass with perfect error handling and messaging.
+
+| Issue Type | Count | Details |
+|------------|-------|----------|
+| Broken functionality | 0 | All features working |
+| Poor error messages | 0 | All messages clear and helpful |
+| Inconsistent behavior | 0 | Uniform help hint pattern |
+| Missing validation | 0 | All edge cases covered |
+
+### Strategic Recommendations
+
+1. **Maintain Current Quality**: The file-based input validation is exemplary and should serve as the pattern for any future input validation features
+2. **Documentation Value**: This test suite demonstrates the value of comprehensive manual testing alongside automated tests
+3. **Error Message Template**: The "❌ [Clear error] + Try: youtube-to-xml --help" pattern should be preserved in future development

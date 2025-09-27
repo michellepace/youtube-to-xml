@@ -37,7 +37,7 @@ def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
     """Non-YouTube URLs should be rejected."""
     exit_code, output = run_script("https://www.google.com/", tmp_path)
     assert exit_code == 1
-    assert "URL is not a YouTube video" in output
+    assert EXCEPTION_MESSAGES["url_not_youtube_error"] in output
 
 
 @pytest.mark.slow
@@ -54,7 +54,7 @@ def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
     """Truncated video IDs should be detected."""
     exit_code, output = run_script("https://www.youtube.com/watch?v=Q4g", tmp_path)
     assert exit_code == 1
-    assert "YouTube URL is incomplete" in output
+    assert EXCEPTION_MESSAGES["url_incomplete_error"] in output
 
 
 @pytest.mark.slow
@@ -64,7 +64,7 @@ def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
         "https://www.youtube.com/watch?v=invalid-url", tmp_path
     )
     assert exit_code == 1
-    assert "Invalid URL format" in output
+    assert EXCEPTION_MESSAGES["url_is_invalid_error"] in output
 
 
 # === Video Availability ===
@@ -73,7 +73,7 @@ def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
     """Handles videos removed from YouTube."""
     exit_code, output = run_script("https://youtu.be/ai_HGCf2w_w", tmp_path)
     assert exit_code == 1
-    assert "YouTube video unavailable" in output
+    assert EXCEPTION_MESSAGES["url_video_unavailable_error"] in output
 
 
 @pytest.mark.slow
@@ -94,7 +94,7 @@ def test_video_without_transcript_raises_transcript_not_found_error(
         "https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path
     )
     assert exit_code == 1
-    assert "This video doesn't have a transcript available" in output
+    assert EXCEPTION_MESSAGES["url_transcript_not_found_error"] in output
 
 
 # === Network/Access ===
