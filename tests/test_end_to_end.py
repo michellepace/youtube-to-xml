@@ -17,6 +17,8 @@ from pathlib import Path
 
 import pytest
 
+from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
+
 # Test constants
 EXAMPLES_DIR = Path("example_transcripts")
 URL_CHAPTERS = "https://www.youtube.com/watch?v=Q4gsvJvRjCU"
@@ -132,7 +134,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 1
-    assert "❌ Wrong format in transcript file" in output
+    assert EXCEPTION_MESSAGES["file_invalid_format_error"] in output
 
 
 @pytest.mark.slow

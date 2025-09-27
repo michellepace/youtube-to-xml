@@ -313,14 +313,7 @@ def parse_youtube_url(url: str) -> TranscriptDocument:
         TranscriptDocument with video metadata and chapters containing transcript lines
 
     Raises:
-        URLBotProtectionError: If YouTube requires verification
-        URLNotYouTubeError: If URL is not a YouTube video
-        URLIncompleteError: If YouTube URL has incomplete video ID
-        URLIsInvalidError: If URL format is invalid
-        URLVideoUnavailableError: If YouTube video is unavailable
-        URLTranscriptNotFoundError: If no transcript is available
-        URLRateLimitError: If YouTube rate limit is encountered
-        URLUnmappedError: If an unexpected yt-dlp error occurs
+        BaseTranscriptError: Various yt-dlp errors mapped via map_yt_dlp_exception()
     """
     logger.info("Processing video: %s", url)
 

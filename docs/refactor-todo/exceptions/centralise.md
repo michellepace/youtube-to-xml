@@ -18,26 +18,29 @@
 
 **All Occurrences of Hardcoded Exception Messages**
 
+**Note**: Line numbers updated as of current implementation. All entries marked "✅ CONVERTED" have already been updated to use `EXCEPTION_MESSAGES` constants.
+
 Summary Table:
 
-| File | Exception Type | Exception Message | Lines |
-|---|---|---|---|
-| **SRC DIRECTORY** | | | |
-| src/url_parser.py | URLNotYouTubeError | URL is not a YouTube video | 317 |
-| **TESTS DIRECTORY** | | | |
-| tests/test_cli.py | FileEmptyError | Your file is empty | [155, 163] |
-| tests/test_cli.py | FileInvalidFormatError | Wrong format in transcript file | 175 |
-| tests/test_cli.py | FileNotExistsError | We couldn't find your file | 151 |
-| tests/test_cli.py | InvalidInputError | Input must be a YouTube URL or .txt file | [111, 125, 137] |
-| tests/test_end_to_end.py | FileInvalidFormatError | Wrong format in transcript file | 135 |
-| tests/test_exceptions.py | BaseTranscriptError | Custom error message | 48 |
-| tests/test_exceptions.py | BaseTranscriptError | Test message | 54 |
-| tests/test_exceptions_url.py | URLIncompleteError | YouTube URL is incomplete | 55 |
-| tests/test_exceptions_url.py | URLIsInvalidError | Invalid URL format | 65 |
-| tests/test_exceptions_url.py | URLNotYouTubeError | URL is not a YouTube video | 38 |
-| tests/test_exceptions_url.py | URLTranscriptNotFoundError | This video doesn't have a transcript available | 95 |
-| tests/test_exceptions_url.py | URLVideoUnavailableError | YouTube video unavailable | 74 |
-| tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | [351, 352] |
+| File | Exception Type | Exception Message | Current Lines | Status |
+|---|---|---|---|---|
+| **SRC DIRECTORY** | | | | |
+| src/url_parser.py | URLNotYouTubeError | URL is not a YouTube video | 317 | ✅ **UPDATED** *(docstring simplified)* |
+| **TESTS DIRECTORY** | | | | |
+| tests/test_cli.py | FileEmptyError | Your file is empty | 174 | ❌ **NOT CONVERTED** |
+| tests/test_cli.py | FileInvalidFormatError | Wrong format in transcript file | 186 | ❌ **NOT CONVERTED** |
+| tests/test_cli.py | FileNotExistsError | We couldn't find your file | 162 | ❌ **NOT CONVERTED** |
+| tests/test_cli.py | InvalidInputError | Input must be a YouTube URL or .txt file | [122, 136, 148] | ❌ **NOT CONVERTED** |
+| tests/test_end_to_end.py | FileInvalidFormatError | Wrong format in transcript file | 137 | ✅ **CONVERTED** |
+| tests/test_exceptions.py | BaseTranscriptError | Custom error message | 36 | *(test case - leave as-is)* |
+| tests/test_exceptions.py | BaseTranscriptError | Test message | 42 | *(test case - leave as-is)* |
+| tests/test_exceptions_url.py | URLIncompleteError | YouTube URL is incomplete | 57 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLIsInvalidError | Invalid URL format | 67 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLNotYouTubeError | URL is not a YouTube video | 40 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLTranscriptNotFoundError | This video doesn't have a transcript available | 97 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLVideoUnavailableError | YouTube video unavailable | 76 | ❌ **NOT CONVERTED** |
+| tests/test_exceptions_url.py | URLVideoIsPrivateError | Video is private and transcript cannot be downloaded | 84 | ✅ **CONVERTED** |
+| tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | [355, 360] | ❌ **NOT CONVERTED** |
 
 **CLI Formatting Patterns (in cli.py)**:
 - `"❌ {e}"` formatting on lines 198, 204
@@ -54,14 +57,24 @@ Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containi
 - **Pure messages only**: No CLI formatting (❌, help hints) in exception messages - keep exceptions framework-agnostic for potential API usage
 - **Scope**: Replace hardcoded exception messages with constants
 
+**CRITICAL: What NOT to Centralize**:
+- ❌ **DO NOT** add CLI formatting constants (❌, ✅, help hints) to `exceptions.py`
+- ❌ **DO NOT** centralize presentation layer concerns like success messages or error prefixes
+- ❌ **DO NOT** mix CLI surface patterns with business logic exception messages
+- **WHY**: This application will become a Python API service - exception messages must remain pure business logic without presentation formatting
+- **WHERE CLI formatting belongs**: Keep hardcoded in CLI layer only (`cli.py` and CLI tests)
+
 ### **Step 2: Update Tests to Use Message Constants**
 Update test assertions across 9 test files to import and reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded strings. Focus on exception message assertions only - leave XML/timestamp validation strings unchanged.
 
+**IMPORTANT**: Only replace hardcoded exception message strings. DO NOT touch CLI formatting patterns (❌, ✅, "Try: youtube-to-xml --help") - these remain hardcoded as presentation layer concerns.
+
 ### **Benefits**
-- **Single source of truth**: Change messages in one place
-- **Maintainable**: Update user-facing messages without breaking tests
-- **Simple**: No architectural changes, just centralised constants
-- **Testing clarity**: CLI tests focus on user experience (message content), unit tests focus on business logic (exception types)
+- **Single source of truth**: Change exception messages in one place
+- **Framework-agnostic**: Pure exception messages support future API service without CLI dependencies
+- **Maintainable**: Update business logic messages without breaking tests
+- **Architectural separation**: Business logic (exceptions) cleanly separated from presentation layer (CLI formatting)
+- **Simple**: No architectural changes, just centralised constants for exception messages only
 
 **Why This Approach?**: This approach preserves test architecture separation - CLI tests verify what users see via message constants, while unit tests verify internal behaviour via exception types. No need to assert exception types in CLI tests as that would break the subprocess-based testing pattern and mix concerns.
 
