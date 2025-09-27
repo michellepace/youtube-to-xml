@@ -1,4 +1,4 @@
-# 🧠 **UNVALIDATED THOUGHTS: Exception Testing Architecture & Strategy**
+# 🧠 **Centralising Exception Messages: Current State Analysis & High Level Steps**
 
 ## 🎯 **Problem Statement**
 
@@ -9,36 +9,45 @@
 
 ## 📊 **Current Exception Testing Landscape**
 
-**Exception Sources & Responsibilities**:
-```
-src/youtube_to_xml/exceptions.py → 14 custom exception classes with default messages (1 base + 13 specific)
-tests/test_exceptions.py       → Unit tests: inheritance, default messages, yt-dlp mapping
-tests/test_cli.py              → CLI-level: file processing errors + input validation
-tests/test_exceptions_url.py   → Slow tests: URL processing errors hitting yt-dlp API
-tests/test_end_to_end.py       → E2E: Success scenarios + format validation
-tests/test_file_parser.py      → Unit: File parsing logic exceptions
-```
-
 **Current Message Hardcoding Problem**:
 - 📍 **Exception classes**: Default messages in `__init__` methods (14 classes)
 - 📍 **CLI formatting**: `"❌ {e}"` and `"Try: youtube-to-xml --help"` in cli.py
-- 📍 **Duplication**: CLI error formatting pattern tested in `test_cli.py`, ❌ symbol appears in assertions across multiple files
-- 📍 **Test assertions**: Hardcoded expected messages across 9 test files (184 total string assertions):
-  - `test_xml_builder.py`: 48 assertions (XML structure validation)
-  - `test_time_utils.py`: 40 assertions (timestamp formatting)
-  - `test_file_parser.py`: 28 assertions (file parsing validation)
-  - `test_end_to_end.py`: 16 assertions (E2E workflow validation)
-  - `test_url_parser.py`: 16 assertions (URL parsing validation)
-  - `test_models.py`: 14 assertions (data structure validation)
-  - `test_cli.py`: 11 assertions (CLI behavior & error messages)
-  - `test_exceptions_url.py`: 8 assertions (URL error scenarios)
-  - `test_exceptions.py`: 3 assertions (exception inheritance)
+- 📍 **Hardcoded default exception messages (excluding `exceptions.py`)**:
+   - Across 1 file in `src/`
+   - Across 5 files in `tests/`
+
+**All Occurrences of Hardcoded Exception Messages**
+
+Summary Table:
+
+| File | Exception Type | Exception Message | Lines |
+|---|---|---|---|
+| **SRC DIRECTORY** | | | |
+| src/url_parser.py | URLNotYouTubeError | URL is not a YouTube video | 317 |
+| **TESTS DIRECTORY** | | | |
+| tests/test_cli.py | FileEmptyError | Your file is empty | [155, 163] |
+| tests/test_cli.py | FileInvalidFormatError | Wrong format in transcript file | 175 |
+| tests/test_cli.py | FileNotExistsError | We couldn't find your file | 151 |
+| tests/test_cli.py | InvalidInputError | Input must be a YouTube URL or .txt file | [111, 125, 137] |
+| tests/test_end_to_end.py | FileInvalidFormatError | Wrong format in transcript file | 135 |
+| tests/test_exceptions.py | BaseTranscriptError | Custom error message | 48 |
+| tests/test_exceptions.py | BaseTranscriptError | Test message | 54 |
+| tests/test_exceptions_url.py | URLIncompleteError | YouTube URL is incomplete | 55 |
+| tests/test_exceptions_url.py | URLIsInvalidError | Invalid URL format | 65 |
+| tests/test_exceptions_url.py | URLNotYouTubeError | URL is not a YouTube video | 38 |
+| tests/test_exceptions_url.py | URLTranscriptNotFoundError | This video doesn't have a transcript available | 95 |
+| tests/test_exceptions_url.py | URLVideoUnavailableError | YouTube video unavailable | 74 |
+| tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | [351, 352] |
+
+**CLI Formatting Patterns (in cli.py)**:
+- `"❌ {e}"` formatting on lines 198, 204
+- `"Try: youtube-to-xml --help"` help hints on lines 177, 199, 205
 
 
-## 🚀 **Implementation Plan**
+## 🚀 **High-Level Steps**
 
 ### **Step 1: Centralise Exception Messages**
-Add `MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containing all exception messages. Update all exception classes to reference `MESSAGES["key"]` instead of hardcoded defaults.
+Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containing all exception messages. Update all exception classes to reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded defaults.
 
 **Key design decisions**:
 - **Message keys**: Use snake_case matching exception class names (e.g., `URLIsInvalidError` → `"url_is_invalid_error"`)
@@ -46,7 +55,7 @@ Add `MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containing all exc
 - **Scope**: Replace hardcoded exception messages with constants
 
 ### **Step 2: Update Tests to Use Message Constants**
-Update test assertions across 9 test files to import and reference `MESSAGES["key"]` instead of hardcoded strings. Focus on exception message assertions only - leave XML/timestamp validation strings unchanged.
+Update test assertions across 9 test files to import and reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded strings. Focus on exception message assertions only - leave XML/timestamp validation strings unchanged.
 
 ### **Benefits**
 - **Single source of truth**: Change messages in one place

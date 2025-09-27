@@ -1,42 +1,30 @@
 """Tests for the enhanced exception module."""
 
+import inspect
+import re
+
 import pytest
 
+from youtube_to_xml import exceptions
 from youtube_to_xml.exceptions import (
+    EXCEPTION_MESSAGES,
     BaseTranscriptError,
     FileEmptyError,
-    FileEncodingError,
-    FileInvalidFormatError,
-    FileNotExistsError,
-    FilePermissionError,
-    InvalidInputError,
     URLBotProtectionError,
     URLIncompleteError,
     URLIsInvalidError,
     URLNotYouTubeError,
     URLRateLimitError,
-    URLTranscriptNotFoundError,
     URLUnmappedError,
     URLVideoUnavailableError,
     map_yt_dlp_exception,
 )
 
+# Auto-discover all exception classes that inherit from BaseTranscriptError
 ALL_EXCEPTION_CLASSES = [
-    # BaseTranscriptError excluded
-    FileEmptyError,
-    FileEncodingError,
-    FileInvalidFormatError,
-    FileNotExistsError,
-    FilePermissionError,
-    InvalidInputError,
-    URLBotProtectionError,
-    URLIncompleteError,
-    URLIsInvalidError,
-    URLNotYouTubeError,
-    URLRateLimitError,
-    URLTranscriptNotFoundError,
-    URLUnmappedError,
-    URLVideoUnavailableError,
+    cls
+    for name, cls in inspect.getmembers(exceptions, inspect.isclass)
+    if (issubclass(cls, BaseTranscriptError) and cls != BaseTranscriptError)
 ]
 
 
@@ -61,10 +49,57 @@ class TestExceptionMessages:
     def test_all_exceptions_have_default_messages(self) -> None:
         """Test that all exceptions have non-empty default messages."""
         for exception_class in ALL_EXCEPTION_CLASSES:
-            exception = exception_class()
+            # Test default constructor (no args) to verify default messages work
+            exception = exception_class()  # type: ignore[call-arg]
             assert str(exception), (
                 f"{type(exception).__name__} should have a default message"
             )
+
+    def test_all_exceptions_have_message_keys(self) -> None:
+        """Test that every exception class has a corresponding message key in MESSAGES."""
+        expected_keys = self._derive_expected_message_keys()
+        actual_keys = set(EXCEPTION_MESSAGES.keys())
+
+        missing_keys = expected_keys - actual_keys
+        assert not missing_keys, f"Missing EXCEPTION_MESSAGES keys: {missing_keys}"
+
+    def test_all_exceptions_use_messages_constants(self) -> None:
+        """Test all exception classes use messages from EXCEPTION_MESSAGES constant."""
+        for exception_class in ALL_EXCEPTION_CLASSES:
+            # Instantiate with default message to check actual message content
+            exception = exception_class()  # type: ignore[call-arg]
+            message = str(exception)
+
+            # Verify this message exists in MESSAGES values
+            assert message in EXCEPTION_MESSAGES.values(), (
+                f"{exception_class.__name__} uses hardcoded message: '{message}'"
+            )
+
+    def test_no_orphaned_message_keys(self) -> None:
+        """Test that no message keys exist without corresponding exception classes."""
+        expected_keys = self._derive_expected_message_keys()
+        actual_keys = set(EXCEPTION_MESSAGES.keys())
+
+        orphaned_keys = actual_keys - expected_keys
+        assert not orphaned_keys, (
+            f"Orphaned MESSAGES keys (no corresponding exception): {orphaned_keys}"
+        )
+
+    def _derive_expected_message_keys(self) -> set[str]:
+        """Derive expected message keys from exception class names in snake_case."""
+
+        def class_name_to_message_key(class_name: str) -> str:
+            # Handle special cases
+            name = class_name.replace("YouTube", "Youtube").replace("URL", "Url")
+
+            # E.g., URLIsInvalidError → url_is_invalid_error
+            parts = re.findall(r"[A-Z][a-z]*", name)
+            return "_".join(parts).lower()
+
+        return {
+            class_name_to_message_key(exc_class.__name__)
+            for exc_class in ALL_EXCEPTION_CLASSES
+        }
 
 
 class TestExceptionHierarchy:
@@ -73,7 +108,7 @@ class TestExceptionHierarchy:
     def test_all_exceptions_inherit_from_base(self) -> None:
         """Test that all custom exceptions inherit from BaseTranscriptError."""
         for exception_class in ALL_EXCEPTION_CLASSES:
-            exception = exception_class()
+            exception = exception_class()  # type: ignore[call-arg]
             assert isinstance(exception, BaseTranscriptError)
             assert isinstance(exception, Exception)
 
@@ -85,7 +120,7 @@ class TestExceptionHierarchy:
             raise exc
 
         for exception_class in ALL_EXCEPTION_CLASSES:
-            exception = exception_class()
+            exception = exception_class()  # type: ignore[call-arg]
             with pytest.raises(BaseTranscriptError):
                 _raise_exception(exception)
 
