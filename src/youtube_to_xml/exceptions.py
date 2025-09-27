@@ -34,7 +34,10 @@ class BaseTranscriptError(Exception):
 class FileEmptyError(BaseTranscriptError):
     """Raised when attempting to parse an empty transcript file."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["file_empty_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["file_empty_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -43,7 +46,8 @@ class FileInvalidFormatError(BaseTranscriptError):
     """Raised when transcript file doesn't follow expected manual format."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["file_invalid_format_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["file_invalid_format_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -52,7 +56,10 @@ class FileInvalidFormatError(BaseTranscriptError):
 class URLIsInvalidError(BaseTranscriptError):
     """Raised when URL format is invalid (empty or malformed text)."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["url_is_invalid_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["url_is_invalid_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -61,7 +68,8 @@ class URLVideoUnavailableError(BaseTranscriptError):
     """Raised when YouTube video exists but is unavailable."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["url_video_unavailable_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["url_video_unavailable_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -71,7 +79,8 @@ class URLVideoIsPrivateError(BaseTranscriptError):
     """Raised when YouTube video is private."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["url_video_is_private_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["url_video_is_private_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -81,7 +90,8 @@ class URLTranscriptNotFoundError(BaseTranscriptError):
     """Raised when YouTube video has no available transcript."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["url_transcript_not_found_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["url_transcript_not_found_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -102,7 +112,8 @@ class URLNotYouTubeError(BaseTranscriptError):
     """Raised when URL is not a YouTube video URL."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["url_not_youtube_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["url_not_youtube_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -111,7 +122,10 @@ class URLNotYouTubeError(BaseTranscriptError):
 class URLIncompleteError(BaseTranscriptError):
     """Raised when YouTube URL has incomplete video ID."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["url_incomplete_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["url_incomplete_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -120,7 +134,8 @@ class URLBotProtectionError(BaseTranscriptError):
     """Raised when YouTube requires verification to access video."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["url_bot_protection_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["url_bot_protection_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -129,7 +144,10 @@ class URLBotProtectionError(BaseTranscriptError):
 class URLUnmappedError(BaseTranscriptError):
     """Raised when YouTube processing fails for unknown/unmapped yt-dlp errors."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["url_unmapped_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["url_unmapped_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -138,7 +156,8 @@ class FileNotExistsError(BaseTranscriptError):
     """Raised when transcript file doesn't exist."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["file_not_exists_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["file_not_exists_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -148,7 +167,8 @@ class FilePermissionError(BaseTranscriptError):
     """Raised when file cannot be read due to permission issues."""
 
     def __init__(
-        self, message: str = EXCEPTION_MESSAGES["file_permission_error"]
+        self,
+        message: str = EXCEPTION_MESSAGES["file_permission_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -157,7 +177,10 @@ class FilePermissionError(BaseTranscriptError):
 class FileEncodingError(BaseTranscriptError):
     """Raised when file is not UTF-8 encoded."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["file_encoding_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["file_encoding_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
@@ -165,7 +188,10 @@ class FileEncodingError(BaseTranscriptError):
 class InvalidInputError(BaseTranscriptError):
     """Raised when input is neither a valid URL nor .txt file."""
 
-    def __init__(self, message: str = EXCEPTION_MESSAGES["invalid_input_error"]) -> None:
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["invalid_input_error"],
+    ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
 
