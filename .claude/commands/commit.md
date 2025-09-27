@@ -32,6 +32,7 @@ Create a useful and representative commit message:
 - `perf:` Performance improvements
 - `fix:` Bug fixes (fixes broken functionality)
 - `refactor:` Code changes that neither fix bugs nor add features
+- `style:` Code formatting, visual consistency, linting fixes; no functional change
 - `chore:` Dev workflow, workspace config, dependency updates, dev tools e.g. `.vscode/**/*`, `pyproject.toml`, `.gitignore`
 - `docs:` Documentation changes only e.g. `README.md`, `docs/**/*.md`
 - `feature:` New feature for users (adds functionality)
