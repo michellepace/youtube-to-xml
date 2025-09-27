@@ -63,6 +63,17 @@ def test_is_valid_url_rejects_non_urls() -> None:
         assert _is_valid_url(input_str) is False
 
 
+def test_is_valid_url_rejects_urls_without_tld() -> None:
+    """URLs without TLD should be rejected to avoid DNS resolution errors."""
+    urls_without_tld = [
+        "https://ailearnlog",
+        "http://localhost",
+        "https://intranet",
+    ]
+    for url in urls_without_tld:
+        assert _is_valid_url(url) is False
+
+
 def test_has_txt_extension_accepts_txt_files() -> None:
     """Accepts .txt files with absolute, relative, and local paths."""
     txt_files = [

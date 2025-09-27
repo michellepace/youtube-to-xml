@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
+
 
 def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
     """Run youtube-to-xml CLI and return (exit_code, output)."""
@@ -41,7 +43,7 @@ def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
     """Unreachable domains should fail gracefully."""
-    exit_code, output = run_script("https://ailearnlog", tmp_path)
+    exit_code, output = run_script("https://nonexistent-domain-12345.com", tmp_path)
     assert exit_code == 1
     assert "Unable to download webpage" in output
 
@@ -75,11 +77,11 @@ def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
 
 
 @pytest.mark.slow
-def test_private_video_raises_unavailable_error(tmp_path: Path) -> None:
+def test_private_video_raises_private_error(tmp_path: Path) -> None:
     """Handles private/restricted videos."""
     exit_code, output = run_script("https://youtu.be/15vClfaR35w", tmp_path)
     assert exit_code == 1
-    assert "Private video" in output
+    assert EXCEPTION_MESSAGES["url_video_is_private_error"] in output
 
 
 # === Transcript Availability ===

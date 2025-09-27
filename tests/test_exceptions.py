@@ -158,42 +158,54 @@ class TestYtDlpExceptionMapping:
     def test_map_yt_dlp_exception_patterns(self) -> None:
         """Test that error patterns map to correct exception types with messages."""
         test_cases = [
-            ("HTTP Error 429", URLRateLimitError, "limiting"),
+            (
+                "HTTP Error 429",
+                URLRateLimitError,
+                EXCEPTION_MESSAGES["url_rate_limit_error"],
+            ),
             (
                 "ERROR: [youtube] Q4gsvJvRjCU: Sign in to confirm you're not a bot",
                 URLBotProtectionError,
-                "verification",
+                EXCEPTION_MESSAGES["url_bot_protection_error"],
             ),
             (
                 "ERROR: Unsupported URL: https://www.google.com/",
                 URLNotYouTubeError,
-                "not a youtube",
+                EXCEPTION_MESSAGES["url_not_youtube_error"],
             ),
             (
                 "ERROR: [youtube:truncated_id] Q4g: Incomplete YouTube ID Q4g",
                 URLIncompleteError,
-                "incomplete",
+                EXCEPTION_MESSAGES["url_incomplete_error"],
             ),
-            ("ERROR: [generic] '' is not a valid URL", URLIsInvalidError, "invalid"),
+            (
+                "ERROR: [generic] '' is not a valid URL",
+                URLIsInvalidError,
+                EXCEPTION_MESSAGES["url_is_invalid_error"],
+            ),
             (
                 "ERROR: [youtube] invalid-url: Video unavailable",
                 URLIsInvalidError,
-                "invalid",
+                EXCEPTION_MESSAGES["url_is_invalid_error"],
             ),
             (
                 "ERROR: [youtube] ai_HGCf2w_w: Video unavailable",
                 URLVideoUnavailableError,
-                "unavailable",
+                EXCEPTION_MESSAGES["url_video_unavailable_error"],
             ),
-            ("Some unknown error message", URLUnmappedError, "error"),
+            (
+                "Some unknown error message",
+                URLUnmappedError,
+                "Some unknown error message",
+            ),
         ]
 
-        for error_msg, expected_type, expected_text in test_cases:
+        for error_msg, expected_type, expected_message in test_cases:
             error = Exception(error_msg)
             result = map_yt_dlp_exception(error)
             assert isinstance(result, expected_type)
             assert isinstance(result, BaseTranscriptError)
-            assert expected_text in str(result).lower()
+            assert str(result) == expected_message
 
     def test_rate_limit_error_message(self) -> None:
         """Test URLRateLimitError with custom message."""

@@ -1,5 +1,7 @@
 # Manual Testing Results - CLI Simplified Exception Pattern - FILE BASED
 
+**Last Updated**: 2025-09-27 - Re-tested after URLVideoIsPrivateError implementation
+
 ## Test Cases
 
 ### 1. No arguments
@@ -84,7 +86,7 @@ Try: youtube-to-xml --help
 
 ### 7. Empty file
 
-Run: `uv run youtube-to-xml xEMPTY.txt`
+Run: `uv run youtube-to-xml /tmp/empty-test.txt`
 
 **Actual Output:**
 ```bash
@@ -97,7 +99,7 @@ Try: youtube-to-xml --help
 
 ### 8. Wrong format file
 
-Run: `uv run youtube-to-xml e-text-wrong-format.txt`
+Run: `uv run youtube-to-xml example_transcripts/x0-chapters-invalid-format.txt`
 
 **Actual Output:**
 ```bash
@@ -127,7 +129,6 @@ Run: `uv run youtube-to-xml example_transcripts/introduction-to-cows.txt`
   - Single exception handler in main() using BaseTranscriptError
   - Clean user messages without technical stack traces
   - Consistent "Try: youtube-to-xml --help" footer on all errors
-  - Custom exception classes with meaningful default messages
 
 **Architecture Analysis:**
 - **Exception Flow**: Built-in exceptions → Custom exceptions → Single handler in main()

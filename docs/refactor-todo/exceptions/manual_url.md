@@ -1,5 +1,7 @@
 # Manual Testing Results - CLI Exception Pattern - URL Processing & Routing
 
+**Last Updated**: 2025-09-27 - Re-tested after URLVideoIsPrivateError implementation and EXCEPTION_MESSAGES centralization
+
 ## Test Cases
 
 ### 1. Empty URL (InvalidInputError - CLI routing)
@@ -53,25 +55,21 @@ Try: youtube-to-xml --help
 
 🟠 **Status:** MESSAGE IS CORRECT but shows yt-dlp processing noise before clean error message. Unlike file processing which is completely clean, URL processing exposes yt-dlp technical output to users.
 
-### 4. Invalid domain (URLUnmappedError)
+### 4. Invalid domain - No TLD (InvalidInputError - CLI routing)
 
 Run: `uv run youtube-to-xml https://ailearnlog`
 
-**Note:** yt-dlp error doesn't match known patterns, so URLUnmappedError preserves original message.
+**Note:** URL validation now requires TLD, so malformed URLs are caught at CLI level before reaching yt-dlp.
 
 **Actual Output:**
 
 ```bash
-[generic] Extracting URL: https://ailearnlog
-🎬 Processing: https://ailearnlog
-[generic] ailearnlog: Downloading webpage
-ERROR: [generic] Unable to download webpage: [Errno -3] Temporary failure in name resolution (caused by TransportError('[Errno -3] Temporary failure in name resolution'))
-❌ [generic] Unable to download webpage: [Errno -3] Temporary failure in name resolution (caused by TransportError('[Errno -3] Temporary failure in name resolution'))
+❌ Input must be a YouTube URL or .txt file
 
 Try: youtube-to-xml --help
 ```
 
-🟠 **Status:** URLUnmappedError working correctly but shows technical yt-dlp noise AND preserves overly technical error message. Should be simplified to just "Unable to download webpage" without technical details.
+🟢 **Status:** Perfect Match! - MAJOR IMPROVEMENT! URL validation now catches malformed URLs (missing TLD) at CLI level, preventing DNS resolution errors and technical noise. Clean InvalidInputError instead of confusing URLUnmappedError with technical details.
 
 ### 5. Incomplete YouTube ID (URLIncompleteError)
 
@@ -148,12 +146,12 @@ Run: `uv run youtube-to-xml https://youtu.be/15vClfaR35w`
 [youtube] 15vClfaR35w: Downloading tv client config
 [youtube] 15vClfaR35w: Downloading tv player API JSON
 ERROR: [youtube] 15vClfaR35w: Private video. Sign in if you've been granted access to this video. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
-❌ [youtube] 15vClfaR35w: Private video. Sign in if you've been granted access to this video. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+❌ Video is private and transcript cannot be downloaded
 
 Try: youtube-to-xml --help
 ```
 
-🔴 **Status:** MAJOR ISSUE - URLUnmappedError preserves entire technical error message (3 lines of cookie authentication instructions). Should be simplified to just "Private video" or "Video requires sign-in".
+🟢 **Status:** PERFECT MATCH! - URLVideoIsPrivateError now shows clean message "Video is private and transcript cannot be downloaded" instead of technical instructions. Major improvement from previous technical 3-line message!
 
 ### 9. Video without transcript (URLTranscriptNotFoundError)
 
@@ -302,12 +300,12 @@ Run: `uv run youtube-to-xml https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=2
 - **URLUnmappedError**: Used when yt-dlp error doesn't match known patterns in `map_yt_dlp_exception()`
 - **Pattern matching**: Only specific error text patterns (e.g., "video unavailable") trigger clean exception types
 - **Examples**:
-  - "Private video" → URLUnmappedError("Private video")
+  - "Private video" → URLVideoIsPrivateError("Video is private and transcript cannot be downloaded")
   - "Unable to download webpage" → URLUnmappedError("Unable to download webpage")
   - "VIDEO UNAVAILABLE" → URLVideoUnavailableError("YouTube video unavailable")
 
 ### Exception Coverage
-- **All URL exception types covered**: URLIsInvalidError, URLNotYouTubeError, URLIncompleteError, URLVideoUnavailableError, URLTranscriptNotFoundError, URLBotProtectionError, URLRateLimitError, URLUnmappedError
+- **All URL exception types covered**: URLIsInvalidError, URLNotYouTubeError, URLIncompleteError, URLVideoUnavailableError, URLVideoIsPrivateError, URLTranscriptNotFoundError, URLBotProtectionError, URLRateLimitError, URLUnmappedError
 - **CLI exceptions covered**: InvalidInputError (routing-level validation)
 
 ## Summary of Issues
@@ -316,12 +314,13 @@ The URL processing functionality is **excellent at the core level** - exception 
 
 The primary problem is **yt-dlp output noise**: every URL operation (both success and error) exposes 4-12 lines of technical processing output before showing clean results. This creates a jarring inconsistency where file processing is completely silent until the final result, while URL processing shows extensive technical chatter.
 
-Additionally, unmapped errors preserve overly technical yt-dlp messages instead of providing simplified user-friendly alternatives.
+Additionally, some unmapped errors still preserve overly technical yt-dlp messages instead of providing simplified user-friendly alternatives (though private video errors are now fixed with URLVideoIsPrivateError).
 
 | Category | Issue | Impact | Tests Affected |
 |----------|-------|--------|---------------|
 | **Critical** | yt-dlp technical output exposed to users | All URL operations appear noisy/unprofessional | 3-14 (all URL tests) |
-| **Major** | URLUnmappedError preserves raw technical messages | Overwhelming technical instructions shown to users | Test 8 (Private video) |
+| **Major** | Some URLUnmappedError still preserve raw technical messages | Overwhelming technical details shown to users | Test 4 (Invalid domain) |
+| **✅ FIXED** | Private video technical instructions | URLVideoIsPrivateError now shows clean message | Test 8 (Private video) |
 | **Consistency** | File vs URL UX inconsistency | Confusing dual experience for users | All URL vs file comparisons |
 
 ## Actionable Recommendations

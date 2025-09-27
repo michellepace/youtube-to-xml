@@ -11,6 +11,7 @@ EXCEPTION_MESSAGES = {
     # URL-related errors
     "url_is_invalid_error": "Invalid URL format",
     "url_video_unavailable_error": "YouTube video unavailable",
+    "url_video_is_private_error": "Video is private and transcript cannot be downloaded",
     "url_transcript_not_found_error": "This video doesn't have a transcript available",
     "url_rate_limit_error": "YouTube is temporarily limiting requests - try again later",
     "url_not_youtube_error": "URL is not a YouTube video",
@@ -61,6 +62,16 @@ class URLVideoUnavailableError(BaseTranscriptError):
 
     def __init__(
         self, message: str = EXCEPTION_MESSAGES["url_video_unavailable_error"]
+    ) -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class URLVideoIsPrivateError(BaseTranscriptError):
+    """Raised when YouTube video is private."""
+
+    def __init__(
+        self, message: str = EXCEPTION_MESSAGES["url_video_is_private_error"]
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)
@@ -174,6 +185,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     error_patterns = [
         ("429", URLRateLimitError),
         ("sign in to confirm you're not a bot", URLBotProtectionError),
+        ("private video", URLVideoIsPrivateError),
         ("unsupported url", URLNotYouTubeError),
         ("incomplete youtube id", URLIncompleteError),
         ("is not a valid url", URLIsInvalidError),
