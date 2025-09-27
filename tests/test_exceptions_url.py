@@ -11,7 +11,7 @@ import pytest
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 
-def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
+def run_cli(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
     """Run youtube-to-xml CLI and return (exit_code, output)."""
     result = subprocess.run(  # noqa: S603
         ["uv", "run", "youtube-to-xml", url],
@@ -35,7 +35,7 @@ def run_script(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
 @pytest.mark.slow
 def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
     """Non-YouTube URLs should be rejected."""
-    exit_code, output = run_script("https://www.google.com/", tmp_path)
+    exit_code, output = run_cli("https://www.google.com/", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_not_youtube_error"] in output
 
@@ -43,7 +43,7 @@ def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
     """Unreachable domains should fail gracefully."""
-    exit_code, output = run_script("https://nonexistent-domain-12345.com", tmp_path)
+    exit_code, output = run_cli("https://nonexistent-domain-12345.com", tmp_path)
     assert exit_code == 1
     assert "unable to download webpage" in output.lower()
 
@@ -52,7 +52,7 @@ def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
     """Truncated video IDs should be detected."""
-    exit_code, output = run_script("https://www.youtube.com/watch?v=Q4g", tmp_path)
+    exit_code, output = run_cli("https://www.youtube.com/watch?v=Q4g", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_incomplete_error"] in output
 
@@ -60,9 +60,7 @@ def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
     """Invalid character patterns in video IDs should be caught."""
-    exit_code, output = run_script(
-        "https://www.youtube.com/watch?v=invalid-url", tmp_path
-    )
+    exit_code, output = run_cli("https://www.youtube.com/watch?v=invalid-url", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_is_invalid_error"] in output
 
@@ -71,7 +69,7 @@ def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
     """Handles videos removed from YouTube."""
-    exit_code, output = run_script("https://youtu.be/ai_HGCf2w_w", tmp_path)
+    exit_code, output = run_cli("https://youtu.be/ai_HGCf2w_w", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_video_unavailable_error"] in output
 
@@ -79,7 +77,7 @@ def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_private_video_raises_private_error(tmp_path: Path) -> None:
     """Handles private/restricted videos."""
-    exit_code, output = run_script("https://youtu.be/15vClfaR35w", tmp_path)
+    exit_code, output = run_cli("https://youtu.be/15vClfaR35w", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_video_is_private_error"] in output
 
@@ -90,9 +88,7 @@ def test_video_without_transcript_raises_transcript_not_found_error(
     tmp_path: Path,
 ) -> None:
     """Handles videos that exist but lack transcripts."""
-    exit_code, output = run_script(
-        "https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path
-    )
+    exit_code, output = run_cli("https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_transcript_not_found_error"] in output
 
@@ -102,9 +98,7 @@ def test_video_without_transcript_raises_transcript_not_found_error(
 def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
     """Intermittent bot protection should either succeed or fail cleanly."""
     # This is intermittent - could succeed (0) or fail (1) due to bot protection
-    exit_code, output = run_script(
-        "https://www.youtube.com/watch?v=Q4gsvJvRjCU", tmp_path
-    )
+    exit_code, output = run_cli("https://www.youtube.com/watch?v=Q4gsvJvRjCU", tmp_path)
     assert exit_code in [0, 1]  # Either works or fails gracefully
     if exit_code == 1:
         # If it fails, should be due to bot protection
@@ -124,9 +118,7 @@ def test_valid_video_with_transcript_creates_xml_successfully(
 ) -> None:
     """End-to-end success with stable public video."""
     # Using Rick Astley - Never Gonna Give You Up (stable, public video)
-    exit_code, output = run_script(
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path
-    )
+    exit_code, output = run_cli("https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path)
     assert exit_code == 0
     assert "✅ Created" in output
     # Verify XML file was created in tmp directory

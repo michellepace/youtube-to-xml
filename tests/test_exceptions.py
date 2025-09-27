@@ -57,7 +57,7 @@ class TestExceptionMessages:
             )
 
     def test_all_exceptions_have_message_keys(self) -> None:
-        """Test that every exception class has a corresponding message key in MESSAGES."""
+        """Test every exception class has a message key in EXCEPTION_MESSAGES."""
         expected_keys = self._derive_expected_message_keys()
         actual_keys = set(EXCEPTION_MESSAGES.keys())
 
@@ -83,7 +83,8 @@ class TestExceptionMessages:
 
         orphaned_keys = actual_keys - expected_keys
         assert not orphaned_keys, (
-            f"Orphaned MESSAGES keys (no corresponding exception): {orphaned_keys}"
+            f"Orphaned EXCEPTION_MESSAGES keys (no corresponding exception): "
+            f"{orphaned_keys}"
         )
 
     def _derive_expected_message_keys(self) -> set[str]:
@@ -157,7 +158,11 @@ class TestYtDlpExceptionMapping:
     """Tests for yt-dlp exception mapping to custom exceptions."""
 
     def test_map_yt_dlp_exception_patterns(self) -> None:
-        """Test that error patterns map to correct exception types with messages."""
+        """Test that error patterns map to correct exception types with messages.
+
+        Note: Pattern order encodes precedence - more specific patterns should
+        come before general ones to ensure correct mapping.
+        """
         test_cases = [
             (
                 "HTTP Error 429",

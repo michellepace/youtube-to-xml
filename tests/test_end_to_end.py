@@ -5,7 +5,7 @@ Tests complete successful workflows from user input to final output:
 - URL-based workflow: YouTube URL → url_to_transcript.py → YouTube API → XML output
 - File vs URL equivalence verification
 
-Uses unified run_script() helper with automatic rate limiting protection.
+Uses unified run_cli() helper with automatic rate limiting protection.
 Tests that hit YouTube API are marked with @pytest.mark.slow.
 For error scenarios, see tests/test_exceptions_url.py.
 """
@@ -29,7 +29,7 @@ URL_PLAYLIST = (
 )
 
 
-def run_script(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, str]:
+def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, str]:
     """Run script and return (exit_code, output).
 
     Args:
@@ -96,7 +96,7 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x4-chapters.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 0
     assert "Created:" in output
@@ -114,7 +114,7 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x3-chapters-with-blanks.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 0
     assert "Created:" in output
@@ -131,7 +131,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "x0-chapters-invalid-format.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    exit_code, output = run_script("youtube-to-xml", ["input.txt"], tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", ["input.txt"], tmp_path)
 
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["file_invalid_format_error"] in output
@@ -140,7 +140,7 @@ def test_file_invalid_format_error(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_url_multi_chapters_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with multi-chapter video."""
-    exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS, tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", URL_CHAPTERS, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -157,7 +157,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with shared URL format containing parameters."""
-    exit_code, output = run_script("youtube-to-xml", URL_CHAPTERS_SHARED, tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", URL_CHAPTERS_SHARED, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -174,7 +174,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_url_single_chapter_success(tmp_path: Path) -> None:
     """Test YouTube fetcher with single-chapter video."""
-    exit_code, output = run_script("youtube-to-xml", URL_NO_CHAPTERS, tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", URL_NO_CHAPTERS, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -191,7 +191,7 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
     """Test YouTube fetcher processes single video from playlist URL, not playlist."""
-    exit_code, output = run_script("youtube-to-xml", URL_PLAYLIST, tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", URL_PLAYLIST, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
@@ -211,10 +211,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     input_file = EXAMPLES_DIR / "how-claude-code-hooks-save-me-hours-daily.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
-    file_exit_code = run_script("youtube-to-xml", ["input.txt"], tmp_path)[0]
+    file_exit_code = run_cli("youtube-to-xml", ["input.txt"], tmp_path)[0]
 
     # Process URL method
-    url_exit_code = run_script("youtube-to-xml", URL_CHAPTERS, tmp_path)[0]
+    url_exit_code = run_cli("youtube-to-xml", URL_CHAPTERS, tmp_path)[0]
 
     assert file_exit_code == 0
     assert url_exit_code == 0
@@ -280,7 +280,7 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     """Test manual transcripts are prioritised over auto-generated (higher quality)."""
     test_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-    exit_code, output = run_script("youtube-to-xml", test_url, tmp_path)
+    exit_code, output = run_cli("youtube-to-xml", test_url, tmp_path)
 
     assert exit_code == 0
     assert "✅ Created" in output
