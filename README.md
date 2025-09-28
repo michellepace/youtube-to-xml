@@ -23,15 +23,15 @@ The `youtube-to-xml` command intelligently auto-detects whether you're providing
 
 ### Option 1: URL Method (Easiest)
 
+Convert directly from YouTube URL:
 ```bash
-# Convert directly from YouTube URL
 youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 
 🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
-**Output XML (condensed - 4 chapters, 163 lines total):**
+Output XML (condensed - 4 chapters, 163 lines total):
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily"
@@ -67,7 +67,7 @@ youtube-to-xml my_transcript.txt
 # ✅ Created: my_transcript.xml
 ```
 
-**Copy-Paste Exact YT Format for `my_transcript.txt`:**
+Copy-Paste Exact YT Format for `my_transcript.txt`:
 ```text
 Introduction to Cows
 0:02
@@ -79,7 +79,7 @@ Washing the cow
 First, we'll start with the patches
 ```
 
-**Output XML:**
+Output XML:
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="" video_published="" video_duration="" video_url="">
@@ -96,7 +96,14 @@ First, we'll start with the patches
 </transcript>
 ```
 
-> 📁 **[View example files →](example_transcripts/introduction-to-cows.txt)** | **[Output XML →](example_transcripts/introduction-to-cows.xml)**
+## 📊 Technical Details
+
+- **Architecture**: Pure functions with clear module separation
+- **Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
+- **Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
+- **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
+- **Test Driven Development**: 118 tests (15 slow, 103 unit, ~62 seconds)
+- **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 <figure align="center">
   <a href="docs/terminology.md">
@@ -105,36 +112,22 @@ First, we'll start with the patches
   <figcaption>YouTube transcript terminology throughout codebase: (click to read)</figcaption>
 </figure>
 
-## 📊 Technical Details
-
-**Architecture**: Pure functions with clear module separation
-
-**Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
-
-**Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
-
-**Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
-
-**Test Driven Development**: 118 tests (15 slow, 103 unit, ~62 seconds)
-
-**Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
-
 ## 🛠️ Development
 
-**Setup:**
+Setup:
 ```bash
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
 uv sync
 ```
 
-**Code Quality:**
+Code Quality:
 ```bash
 uv run ruff check --fix           # Lint and auto-fix (see pyproject.toml)
 uv run ruff format                # Format code (see pyproject.toml)
 ```
 
-**Testing:**
+Testing:
 ```bash
 uv run pytest                     # All tests
 uv run pytest -m "slow"           # Only slow tests (internet required)
@@ -146,14 +139,14 @@ uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 
 ## 📕 *Own Notes*
 
-**Learning Notes**
+Learnt:
 - [CodeRabbit for PR review](https://www.anthropic.com/customers/coderabbit)
 - [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs)
 - [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index)
 - [Manage MCPs nicely](docs/knowledge/manage-mcps-nicely.md)
 - [Git branch workflow](docs/knowledge/git-branch-flow.md)
 
-**Outstanding Questions**
+Open Questions:
 - **Q1.** Is there something I could have done better with UV?
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
 - **Q3.** Are [tests](/tests/) clear and sane, or over-engineered?
@@ -161,6 +154,6 @@ uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 - **Q5.** Is the code clean and clear?
 - **Q6.** Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
 
-**To Do**
+To Do:
 - [ ] Evals to prove XML format vs plain. Use Hamel's [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
 - [ ] If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?
