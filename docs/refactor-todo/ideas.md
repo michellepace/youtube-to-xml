@@ -123,3 +123,11 @@ see `fix-url-exceptions.md`
 ## Fix Not Nice Filename:
 
 `rick-astley---never-gonna-give-you-up-official-video-4k-remaster.xml`
+
+## Fix URL errors
+
+**Separate Follow-up (Next PR):**
+1. 🔴 Create dedicated issue for playlist URL handling
+2. 🔴 Implement proper playlist rejection with clean error message
+3. 🔴 Add playlist URL test coverage
+4. 🔴 Update manual testing documentation

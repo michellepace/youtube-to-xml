@@ -49,7 +49,7 @@ Summary Table:
 
 ## 🚀 **High-Level Steps**
 
-### **Step 1: Centralise Exception Messages**
+### **Step 1: Centralise Exception Messages** - ✅ **DONE**
 Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containing all exception messages. Update all exception classes to reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded defaults.
 
 **Key design decisions**:
@@ -64,7 +64,7 @@ Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containi
 - **WHY**: This application will become a Python API service - exception messages must remain pure business logic without presentation formatting
 - **WHERE CLI formatting belongs**: Keep hardcoded in CLI layer only (`cli.py` and CLI tests)
 
-### **Step 2: Update Tests to Use Message Constants**
+### **Step 2: Update Tests to Use Message Constants** - ✅ **DONE**
 Update test assertions across 9 test files to import and reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded strings. Focus on exception message assertions only - leave XML/timestamp validation strings unchanged.
 
 **IMPORTANT**: Only replace hardcoded exception message strings. DO NOT touch CLI formatting patterns (❌, ✅, "Try: youtube-to-xml --help") - these remain hardcoded as presentation layer concerns.
