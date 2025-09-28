@@ -1,6 +1,7 @@
 """YouTube to XML converter CLI entry point."""
 
 import argparse
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -35,12 +36,10 @@ def _has_txt_extension(input_string: str) -> bool:
     return Path(input_string).suffix.lower() == ".txt"
 
 
-def _sanitize_video_title_for_filename(video_title: str) -> str:
+def _sanitise_video_title_for_filename(video_title: str) -> str:
     """Convert video title to safe filename by removing special characters."""
-    sanitized = video_title.lower()
-    sanitized = "".join(c if c.isalnum() or c in " -" else "" for c in sanitized)
-    sanitized = sanitized.replace(" ", "-").strip("-")
-    return f"{sanitized}.xml" if sanitized else "transcript.xml"
+    sanitised = re.sub(r"[^a-z0-9]+", "-", video_title.lower()).strip("-")
+    return f"{sanitised}.xml" if sanitised else "transcript.xml"
 
 
 def _process_url_input(url: str, execution_id: str) -> tuple[str, str]:
@@ -64,7 +63,7 @@ def _process_url_input(url: str, execution_id: str) -> tuple[str, str]:
     # Let all URL processing errors bubble up to main()
     document = parse_youtube_url(url)
     xml_content = transcript_to_xml(document)
-    output_filename = _sanitize_video_title_for_filename(document.metadata.video_title)
+    output_filename = _sanitise_video_title_for_filename(document.metadata.video_title)
     return xml_content, output_filename
 
 

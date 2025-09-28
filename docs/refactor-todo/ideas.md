@@ -1,6 +1,7 @@
 # ISSUES
 
 ## DEBUG LOGGING FOR TRANSCRIPT SELECTION
+
 Add debug logging to show which transcript file was chosen and its priority. This would help diagnose language selection and file picking issues. CodeRabbit suggested adding:
 
 ```python
@@ -28,10 +29,6 @@ https://youtu.be/Q4gsvJvRjCU?si=HXoO3rP77S6b5HG2
 - URL testing in both `test_cli.py` AND `test_url_parser.py`
 - duplicate method: by the `yt-dlp` library (dependable but what about Vimeo links). Catch it early in the CLI first to ensure YouTube?
 
-## ADJUST PYPROJECT:
-- CLI entry points in PYPROJECT ?
-- Latest version as per github yt-dlp 2025.09.23 and **see readme install** (what date format?)
-
 ## REFACTOR TO NAMED TUPLES
 "For any new function returning multiple values, use NamedTuple with descriptive field names instead of plain tuples to make the return type self-documenting and enable IDE autocomplete."
 
@@ -41,7 +38,7 @@ https://youtu.be/Q4gsvJvRjCU?si=HXoO3rP77S6b5HG2
 # Use: -> ProcessResult, where ProcessResult = NamedTuple('ProcessResult', [('content', str), ('count', int)])
 ```
 
-## Assert Errors Thrown
+## Assert Exceptions Thrown
 
 What I am having difficulty with on this `test_exceptions_ytdlp.py` test is: I would like to assert the actual error that is thrown rather than asserting the actual error's message. The latter is brittle. Is there a way to do this elegantly?
 
@@ -52,8 +49,8 @@ Here's the formatted output with proper line wrapping:
 
 **Looking at your CLI code and test, I see the issue. Currently, your CLI catches the FileInvalidFormatError internally and prints it, so the test can only assert on the printed message. To make this more robust, you have a few elegant options:**
 
-## Option 0: (Michelle's idea)
-Extract error messages to a config file. Assert on the actual string.
+## Option 0 (Michelle):
+All default exception messages are in a constant in `exceptions.py`: why not just assert the constant and keep it simple?
 
 ## Option 1: Test the Exception Class (Recommended)
 
@@ -102,8 +99,7 @@ def test_empty_input_raises_file_invalid_format_error():
 The second option allows you to test the exception directly rather than relying on string matching, making your tests more robust and less brittle to changes in error message formatting.
 </options>
 
-## Other exception notes:
-### Test File Analysis:
+## Test File Analysis (potentially stale):
 
 **`test_exceptions.py`**:
 - ✅ **Complete unit test coverage** for all 15 exceptions
@@ -114,20 +110,15 @@ The second option allows you to test the exception directly rather than relying 
 - ❌ **No exception class testing** - only CLI integration tests
 - ℹ️  Tests real YouTube API behavior, but doesn't test specific exception types
 
-## Config for error messages
+## Standardise Noisy URL exceptions like file
 
-## Standardise YOUTUBE exceptions like file
+See potentially stale info in 
+- `fix-url-exceptions.md`
+- `test_file.py` and `test_url.py`
 
-see `fix-url-exceptions.md`
-
-## Fix Not Nice Filename:
-
-`rick-astley---never-gonna-give-you-up-official-video-4k-remaster.xml`
-
-## Fix URL errors
-
-**Separate Follow-up (Next PR):**
-1. 🔴 Create dedicated issue for playlist URL handling
+## Deal with the "PlayList" scenario
+See `test_url.py`:
+1. 🔴 Create dedicated issue for playlist URL handling (Make a new Exception?)
 2. 🔴 Implement proper playlist rejection with clean error message
 3. 🔴 Add playlist URL test coverage
 4. 🔴 Update manual testing documentation
