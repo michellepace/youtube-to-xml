@@ -120,10 +120,6 @@ The second option allows you to test the exception directly rather than relying 
 
 see `fix-url-exceptions.md`
 
-## Fix Not Nice Filename:
-
-`rick-astley---never-gonna-give-you-up-official-video-4k-remaster.xml`
-
 ## Fix URL errors
 
 **Separate Follow-up (Next PR):**

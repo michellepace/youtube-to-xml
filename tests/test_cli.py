@@ -3,7 +3,11 @@
 import subprocess
 from pathlib import Path
 
-from youtube_to_xml.cli import _has_txt_extension, _is_valid_url
+from youtube_to_xml.cli import (
+    _has_txt_extension,
+    _is_valid_url,
+    _sanitise_video_title_for_filename,
+)
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 
@@ -96,6 +100,14 @@ def test_has_txt_extension_rejects_non_txt() -> None:
     ]
     for input_str in non_txt_files:
         assert _has_txt_extension(input_str) is False
+
+
+def test_sanitise_video_title_for_filename_comprehensive() -> None:
+    """Test dash/space/special chars/emoji normalization to single dashes."""
+    title = "A - B --  C  (Multi   Spaces) & 😁 Special!@# Chars: Test"
+    result = _sanitise_video_title_for_filename(title)
+    expected = "a-b-c-multi-spaces-special-chars-test.xml"
+    assert result == expected
 
 
 # =============================================================================
