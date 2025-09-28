@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from youtube_to_xml.cli import _has_txt_extension, _is_valid_url
+from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 
 def run_cli(args: str | list[str], tmp_path: Path) -> tuple[int, str]:
@@ -63,6 +64,17 @@ def test_is_valid_url_rejects_non_urls() -> None:
         assert _is_valid_url(input_str) is False
 
 
+def test_is_valid_url_rejects_urls_without_tld() -> None:
+    """URLs without TLD should be rejected to avoid DNS resolution errors."""
+    urls_without_tld = [
+        "https://ailearnlog",
+        "http://localhost",
+        "https://intranet",
+    ]
+    for url in urls_without_tld:
+        assert _is_valid_url(url) is False
+
+
 def test_has_txt_extension_accepts_txt_files() -> None:
     """Accepts .txt files with absolute, relative, and local paths."""
     txt_files = [
@@ -108,7 +120,7 @@ def test_cli_shows_error_for_non_url_non_txt_input(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "Input must be a YouTube URL or .txt file" in output
+    assert EXCEPTION_MESSAGES["invalid_input_error"] in output
 
 
 # =============================================================================
@@ -122,7 +134,7 @@ def test_cli_shows_error_for_nonexistent_non_txt_extension(tmp_path: Path) -> No
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "Input must be a YouTube URL or .txt file" in output
+    assert EXCEPTION_MESSAGES["invalid_input_error"] in output
 
 
 def test_cli_shows_error_for_existing_non_txt_extension(tmp_path: Path) -> None:
@@ -134,7 +146,7 @@ def test_cli_shows_error_for_existing_non_txt_extension(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "Input must be a YouTube URL or .txt file" in output
+    assert EXCEPTION_MESSAGES["invalid_input_error"] in output
 
 
 # =============================================================================
@@ -148,11 +160,11 @@ def test_cli_shows_error_for_nonexistent_txt_file(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "We couldn't find your file" in output
+    assert EXCEPTION_MESSAGES["file_not_exists_error"] in output
 
 
 def test_cli_shows_error_for_empty_txt_file(tmp_path: Path) -> None:
-    """Zero-byte file shows 'Your file is empty' error."""
+    """Zero-byte file shows appropriate error."""
     test_file = tmp_path / "empty.txt"
     test_file.write_text("", encoding="utf-8")
 
@@ -160,7 +172,7 @@ def test_cli_shows_error_for_empty_txt_file(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "Your file is empty" in output
+    assert EXCEPTION_MESSAGES["file_empty_error"] in output
 
 
 def test_cli_shows_error_for_invalid_txt_format(tmp_path: Path) -> None:
@@ -172,4 +184,4 @@ def test_cli_shows_error_for_invalid_txt_format(tmp_path: Path) -> None:
 
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
-    assert "Wrong format in transcript file" in output
+    assert EXCEPTION_MESSAGES["file_invalid_format_error"] in output

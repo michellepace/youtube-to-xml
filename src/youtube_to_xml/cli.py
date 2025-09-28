@@ -22,10 +22,10 @@ ARGPARSE_ERROR_CODE = 2  # argparse uses exit code 2 for argument errors
 
 
 def _is_valid_url(input_string: str) -> bool:
-    """Check if input is a proper URL with scheme and netloc."""
+    """Check if input is a proper URL with scheme, netloc, and TLD."""
     try:
         parsed = urlparse(input_string)
-        return bool(parsed.scheme and parsed.netloc)
+        return bool(parsed.scheme and parsed.netloc and "." in parsed.netloc)
     except ValueError:
         return False
 

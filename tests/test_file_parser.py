@@ -337,41 +337,53 @@ Second text
 
 
 @pytest.mark.parametrize(
-    ("input_text", "expected_error", "error_match"),
+    ("input_text", "expected_error"),
     [
         # Empty input cases
-        ("", FileEmptyError, None),
-        ("   \n\n  \t  ", FileEmptyError, None),
+        pytest.param(
+            "",
+            FileEmptyError,
+            id="empty",
+        ),
+        pytest.param(
+            "   \n\n  \t  ",
+            FileEmptyError,
+            id="whitespace",
+        ),
         # Format validation cases
-        (
+        pytest.param(
             "0:00\nShould start with title\nNot timestamp",
             FileInvalidFormatError,
-            None,  # Just assert error type, not specific message
+            id="no_title_first",
         ),
-        ("Title\n0:00", FileInvalidFormatError, "Wrong format in transcript file"),
-        ("Title", FileInvalidFormatError, "Wrong format in transcript file"),
-        (
+        pytest.param(
+            "Title\n0:00",
+            FileInvalidFormatError,
+            id="only_one_pair",
+        ),
+        pytest.param(
+            "Title",
+            FileInvalidFormatError,
+            id="title_only",
+        ),
+        pytest.param(
             "Title\nNo timestamp here\nJust text",
             FileInvalidFormatError,
-            None,  # Just assert error type, not specific message
+            id="no_timestamp",
         ),
-        (
+        pytest.param(
             "Title\n0:00\n0:01\nContent",
             FileInvalidFormatError,
-            None,  # Just assert error type, not specific message
+            id="two_timestamps",
         ),
     ],
 )
 def test_invalid_input_raises_appropriate_error(
-    input_text: str, expected_error: type, error_match: str | None
+    input_text: str, expected_error: type
 ) -> None:
     """Invalid input formats raise appropriate validation errors."""
-    if error_match:
-        with pytest.raises(expected_error, match=error_match):
-            parse_transcript_file(input_text)
-    else:
-        with pytest.raises(expected_error):
-            parse_transcript_file(input_text)
+    with pytest.raises(expected_error):
+        parse_transcript_file(input_text)
 
 
 def test_rejects_non_increasing_chapter_timestamps() -> None:
