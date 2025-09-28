@@ -28,7 +28,7 @@
 
 **Entry Point Flow**: CLI command `youtube-to-xml` → `main()` in `cli.py` → orchestrates file_parser, xml_builder, and exceptions modules following "one module, one purpose"
 
-**URL Flow (experimental)**: CLI command `url-to-transcript` → `url_to_transcript_wrapper.main()` → `scripts/url_to_transcript.py` → fetch metadata/subtitles → `parse_transcript_api()` → XML
+~~**URL Flow (experimental)**: CLI command `url-to-transcript` → `url_to_transcript_wrapper.main()` → `scripts/url_to_transcript.py` → fetch metadata/subtitles → `parse_transcript_api()` → XML~~ *(removed 2025-09-28 - experimental code from prior development, superseded by unified CLI)*
 
 ### Architecture & Data Flow
 
