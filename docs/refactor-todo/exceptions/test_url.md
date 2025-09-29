@@ -1,25 +1,36 @@
-# Manual Testing Results - CLI Exception Pattern - URL Processing & Routing
+# Manual Testing Report: CLI Simplified Exception Pattern (URL-based)
 
-**Last Updated**: 2025-09-27 - Re-tested after EXCEPTION_MESSAGES centralization completion - ALL 15 TEST CASES VERIFIED
+## Your Tasks
 
-**CRITICAL:**
-1. Always run commands from clean terminal with `cd /tmp && uv run --directory /home/mp/projects/python/youtube-to-xml youtube-to-xml "URL" 2>&1` to capture exact CLI output as users see it. Do NOT assume or reorder output - copy exactly what appears in terminal.
-2. **MANDATORY: RUN ALL TEST CASES - NO SHORTCUTS:**
-   - **MUST** execute every single test case command, even if output looks recent
-   - **MUST** replace ALL "Actual Output" code blocks with fresh results from today
-   - **NEVER** skip test cases or assume previous outputs are still valid
-   - **VERIFY** every status marker [🟢/🟠/🔴] matches the fresh output
-3. Re-populate "## Report on Completed Run" for the completed run
-4. Update "**Last Updated**" above
+1. **Run each test command**: `cd /tmp && uv run --directory /home/mp/projects/python/youtube-to-xml youtube-to-xml [test-input] 2>&1`
 
-**VERIFICATION CHECKLIST:**
-- [x] Ran and updated ALL 15 test cases with fresh output (where n = total test cases)
-- [x] Updated "**Last Updated**" date
-- [x] Re-populated "## Report on Completed Run" section
+2. **Document test cases with forensic accuracy**:
+   - **CRITICAL**: Must REPLACE entire "Actual Output" code block with exact terminal output character-by-character
+   - Do NOT assume output matches expectations - copy the exact raw output including any typos, garbled text, or formatting issues
+   - Compare old vs new output line-by-line to identify ALL differences (grammar fixes, typos corrected, format changes)
+   - Re-evaluate status marker [🔴/🟡/🟢] based on whether actual output is clean and correct (not whether it matches previous expectations)
+   - Document what changed in the status comment (e.g., "typo fixed: 'errollowing' → 'error: the following'")
+
+3. **Update **ALL** Remaining Reporting sections**:
+The goal is to accurately reflect the current status. Delete the existing content and re-write.
+
+4. **Verify Success Criteria**:
+- [ ] Task 1 completed
+- [ ] Task 2 completed - "Actual Output" and "Status" updated for all cases
+- [ ] Task 3 completed - All reporting documentation updated coherently
+- [ ] The full document is coherent and accurate against current status
 
 ---
 
-## Test Cases
+## Executive Summary (As Of: 2025-09-29)
+
+**CRITICAL BUG REMAINS**: Playlist URLs still trigger unhandled AssertionError with Python traceback (Test case 11).
+
+**Overall Status**: 12 of 13 testable cases show correct error handling with clean messages. One critical bug (playlists) exposes technical traceback to users. Success cases (14, 15) work perfectly but show extensive yt-dlp technical noise. Bot protection test (10) did not trigger this run - video processed successfully instead.
+
+---
+
+## Test Cases (Last Run: 2025-09-29)
 
 ### 1. Empty URL (InvalidInputError - CLI routing)
 
@@ -219,14 +230,16 @@ Actual Output:
 [youtube] Q4gsvJvRjCU: Downloading tv client config
 [youtube] Q4gsvJvRjCU: Downloading tv player API JSON
 [info] Q4gsvJvRjCU: Downloading subtitles: en, en-orig
-[info] Writing video subtitles to: /tmp/tmpxb0qen8b/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en.json3
-[download] Destination: /tmp/tmpxb0qen8b/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en.json3
+[info] Writing video subtitles to: /tmp/tmpidhk7zxr/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en.json3
+[download] Destination: /tmp/tmpidhk7zxr/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en.json3
 [download] Download completed
-[info] Writing video subtitles to: /tmp/tmpxb0qen8b/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en-orig.json3
-[download] Destination: /tmp/tmpxb0qen8b/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en-orig.json3
+[info] Writing video subtitles to: /tmp/tmpidhk7zxr/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en-orig.json3
+[download] Destination: /tmp/tmpidhk7zxr/How Claude Code Hooks Save Me HOURS Daily [Q4gsvJvRjCU].en-orig.json3
 [download] Download completed
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
+
+🟠 Status: Bot protection NOT triggered this run - video processed successfully. Bot protection is intermittent and depends on IP/usage patterns (no changes from previous run).
 
 ### 11. YouTube Playlist
 
@@ -241,39 +254,46 @@ Actual Output:
 [youtube:tab] PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e: Redownloading playlist API JSON with unavailable videos
 [download] Downloading playlist: AI - Spec +CC
 [youtube:tab] PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e page 1: Downloading API JSON
-[youtube:tab] Playlist AI - Spec +CC: Downloading 3 items of 3
-[download] Downloading item 1 of 3
-[youtube] Extracting URL: https://www.youtube.com/watch?v=LorEJPrALcg
-[youtube] LorEJPrALcg: Downloading webpage
-[youtube] LorEJPrALcg: Downloading tv simply player API JSON
-[youtube] LorEJPrALcg: Downloading tv client config
-[youtube] LorEJPrALcg: Downloading tv player API JSON
-[info] LorEJPrALcg: Downloading subtitles: en, en-orig
-[download] Downloading item 2 of 3
+[youtube:tab] Playlist AI - Spec +CC: Downloading 4 items of 4
+[download] Downloading item 1 of 4
 [youtube] Extracting URL: https://www.youtube.com/watch?v=-luIhKkqjxE
 [youtube] -luIhKkqjxE: Downloading webpage
 [youtube] -luIhKkqjxE: Downloading tv simply player API JSON
 [youtube] -luIhKkqjxE: Downloading tv client config
 [youtube] -luIhKkqjxE: Downloading tv player API JSON
 [info] -luIhKkqjxE: Downloading subtitles: en, en-orig
-[download] Downloading item 3 of 3
+[download] Downloading item 2 of 4
 [youtube] Extracting URL: https://www.youtube.com/watch?v=A1zN6XhiWVo
 [youtube] A1zN6XhiWVo: Downloading webpage
 [youtube] A1zN6XhiWVo: Downloading tv simply player API JSON
 [youtube] A1zN6XhiWVo: Downloading tv client config
 [youtube] A1zN6XhiWVo: Downloading tv player API JSON
 [info] A1zN6XhiWVo: Downloading subtitles: en, en-orig
+[download] Downloading item 3 of 4
+[youtube] Extracting URL: https://www.youtube.com/watch?v=CAxtf2nsnKE
+[youtube] CAxtf2nsnKE: Downloading webpage
+[youtube] CAxtf2nsnKE: Downloading tv simply player API JSON
+[youtube] CAxtf2nsnKE: Downloading tv client config
+[youtube] CAxtf2nsnKE: Downloading tv player API JSON
+[info] CAxtf2nsnKE: Downloading subtitles: en, en-orig
+[download] Downloading item 4 of 4
+[youtube] Extracting URL: https://www.youtube.com/watch?v=LorEJPrALcg
+[youtube] LorEJPrALcg: Downloading webpage
+[youtube] LorEJPrALcg: Downloading tv simply player API JSON
+[youtube] LorEJPrALcg: Downloading tv client config
+[youtube] LorEJPrALcg: Downloading tv player API JSON
+[info] LorEJPrALcg: Downloading subtitles: en, en-orig
 [download] Finished downloading playlist: AI - Spec +CC
 Traceback (most recent call last):
   File "/home/mp/projects/python/youtube-to-xml/.venv/bin/youtube-to-xml", line 10, in <module>
     sys.exit(main())
              ~~~~^^
-  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/cli.py", line 188, in main
+  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/cli.py", line 187, in main
     xml_content, output_filename = _process_url_input(user_input, execution_id)
                                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/cli.py", line 65, in _process_url_input
+  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/cli.py", line 64, in _process_url_input
     document = parse_youtube_url(url)
-  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/url_parser.py", line 322, in parse_youtube_url
+  File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/url_parser.py", line 324, in parse_youtube_url
     _fetch_video_metadata_and_transcript(url)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
   File "/home/mp/projects/python/youtube-to-xml/src/youtube_to_xml/url_parser.py", line 197, in _fetch_video_metadata_and_transcript
@@ -289,7 +309,7 @@ Traceback (most recent call last):
 AssertionError
 ```
 
-🔴 Status: CRITICAL BUG! - Playlist URLs cause unhandled AssertionError with full Python traceback exposed to users. This is a major regression from previous behavior and breaks the clean error handling pattern. Should show user-friendly error message instead of technical stacktrace.
+🔴 Status: CRITICAL BUG! - Playlist URLs cause unhandled AssertionError with full Python traceback exposed to users. Minor change: playlist now has 4 items instead of 3, line numbers shifted slightly in traceback. Major bug persists: should show user-friendly error message instead of technical stacktrace.
 
 
 ### 12. Rate limiting scenario (URLRateLimitError - Intermittent/Unpredictable)
@@ -341,16 +361,16 @@ Actual Output:
 [youtube] UdoY2l5TZaA: Downloading tv client config
 [youtube] UdoY2l5TZaA: Downloading tv player API JSON
 [info] UdoY2l5TZaA: Downloading subtitles: en, en-orig
-[info] Writing video subtitles to: /tmp/tmpc4gn4pqy/Pick up where you left off with Claude [UdoY2l5TZaA].en.json3
-[download] Destination: /tmp/tmpc4gn4pqy/Pick up where you left off with Claude [UdoY2l5TZaA].en.json3
+[info] Writing video subtitles to: /tmp/tmphs_8eujc/Pick up where you left off with Claude [UdoY2l5TZaA].en.json3
+[download] Destination: /tmp/tmphs_8eujc/Pick up where you left off with Claude [UdoY2l5TZaA].en.json3
 [download] Download completed
-[info] Writing video subtitles to: /tmp/tmpc4gn4pqy/Pick up where you left off with Claude [UdoY2l5TZaA].en-orig.json3
-[download] Destination: /tmp/tmpc4gn4pqy/Pick up where you left off with Claude [UdoY2l5TZaA].en-orig.json3
+[info] Writing video subtitles to: /tmp/tmphs_8eujc/Pick up where you left off with Claude [UdoY2l5TZaA].en-orig.json3
+[download] Destination: /tmp/tmphs_8eujc/Pick up where you left off with Claude [UdoY2l5TZaA].en-orig.json3
 [download] Download completed
 ✅ Created: pick-up-where-you-left-off-with-claude.xml
 ```
 
-🟠 Status: SUCCESS case but shows extensive yt-dlp technical noise (12 lines of processing output). Functionality working perfectly but UX is noisy.
+🟠 Status: SUCCESS case but shows extensive yt-dlp technical noise (12 lines of processing output). Functionality working perfectly but UX is noisy (no changes from previous run).
 
 ### 15. Valid video without chapters (Success case)
 
@@ -366,78 +386,77 @@ Actual Output:
 [youtube] vioOIXrOAa0: Downloading tv client config
 [youtube] vioOIXrOAa0: Downloading tv player API JSON
 [info] vioOIXrOAa0: Downloading subtitles: en, en-orig
-[info] Writing video subtitles to: /tmp/tmpfl7llw9y/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en.json3
-[download] Destination: /tmp/tmpfl7llw9y/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en.json3
+[info] Writing video subtitles to: /tmp/tmpx0guwlvh/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en.json3
+[download] Destination: /tmp/tmpx0guwlvh/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en.json3
 [download] Download completed
-[info] Writing video subtitles to: /tmp/tmpfl7llw9y/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en-orig.json3
-[download] Destination: /tmp/tmpfl7llw9y/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en-orig.json3
+[info] Writing video subtitles to: /tmp/tmpx0guwlvh/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en-orig.json3
+[download] Destination: /tmp/tmpx0guwlvh/The Cast Remembers ｜ Game of Thrones： Season 8 (HBO) [vioOIXrOAa0].en-orig.json3
 [download] Download completed
-✅ Created: the-cast-remembers--game-of-thrones-season-8-hbo.xml
+✅ Created: the-cast-remembers-game-of-thrones-season-8-hbo.xml
 ```
 
-🟠 Status: SUCCESS case but shows extensive yt-dlp technical noise (12 lines of processing output). Functionality working perfectly but UX is noisy. 
+🟠 Status: SUCCESS case but shows extensive yt-dlp technical noise (12 lines of processing output). Filename changed: double dash removed (now single dash between words). Functionality working perfectly but UX is noisy. 
 
-## Report on Completed Run
+---
 
-### Important Test Case Notes
+## 📄 Important Test Case Notes (Revised: 2025-09-29)
 
-**Date**: 2025-09-27
-**Test Environment**: `/tmp` directory with `uv run --directory /home/mp/projects/python/youtube-to-xml`
-**Significant Finding**: One critical bug discovered (Test Case 11 - Playlist URLs)
+1. **Critical Bug Persists**: Playlist URLs (test 11) continue to cause unhandled AssertionError - playlist now has 4 videos instead of 3, but same bug remains
+2. **Success Case Filename Change**: Test 15 now generates single-dash filenames (no double dashes), consistent with filename normalization improvements
+3. **Bot Protection Not Triggered**: Test 10 processed successfully this run - bot protection is intermittent and depends on IP/usage patterns
+4. **yt-dlp Noise Pattern**: All URL-based operations show technical yt-dlp output (extracting, downloading, API calls) before final message - stark contrast to clean file-based processing
+5. **Clean Error Messages**: When exceptions are caught properly (12 of 13 testable cases), error messages follow the consistent "❌ [message] + Try: youtube-to-xml --help" pattern
 
-**Key Testing Observations:**
-- **Test Case 10**: Previously expected to fail with bot protection actually succeeded, showing system resilience
-- **Test Case 11**: CRITICAL BUG - Playlist URLs cause unhandled Python traceback instead of clean error message
-- **Test Cases 13-15**: All success/error cases working as expected with consistent patterns
+---
 
-### Summary of Results
+## 📄 Summary of Results Table (Revised: 2025-09-29)
 
-**🔴 CRITICAL ISSUE DETECTED: 1 major bug found**
+**🔴 CRITICAL ISSUE DETECTED: 1 major bug persists (Playlist handling)**
 
-**Exception Handling Performance:**
-- **🟢 CLI Input Validation (Cases 1, 2, 4)**: Perfect - Clean `InvalidInputError` with no technical noise
-- **🟠 URL Processing Errors (Cases 3, 5-9, 13)**: Good error messages but all show yt-dlp technical noise
-- **🟢 Private Video Handling (Case 8)**: Excellent - Clean user-friendly message replaces technical instructions
-- **🟠 Success Cases (Cases 10, 14, 15)**: Functional but noisy with 8-12 lines of yt-dlp output
-- **🔴 Playlist Handling (Case 11)**: BROKEN - Shows full Python traceback to users
+| Test Case | Status | Exception Type | Message Quality | yt-dlp Noise |
+|-----------|---------|----------------|-----------------|--------------|
+| 1. Empty URL | 🟢 | InvalidInputError (CLI) | Perfect | None (CLI level) |
+| 2. Plain text | 🟢 | InvalidInputError (CLI) | Perfect | None (CLI level) |
+| 3. Non-YouTube URL | 🟠 | URLNotYouTubeError | Perfect | 4 lines |
+| 4. No TLD | 🟢 | InvalidInputError (CLI) | Perfect | None (CLI level) |
+| 5. Incomplete YouTube ID | 🟠 | URLIncompleteError | Perfect | 3 lines |
+| 6. Invalid YouTube ID | 🟠 | URLIsInvalidError | Perfect | 6 lines |
+| 7. Removed video | 🟠 | URLVideoUnavailableError | Perfect | 5 lines |
+| 8. Private video | 🟢 | URLVideoIsPrivateError | Perfect | 5 lines |
+| 9. No transcript | 🟠 | URLTranscriptNotFoundError | Perfect | 5 lines |
+| 10. Bot protection | 🟠 | N/A (success) | N/A | 12 lines (success) |
+| 11. Playlist | 🔴 | **UNHANDLED** | **Traceback exposed** | **40+ lines** |
+| 12. Rate limiting | ⚪ | Cannot test | N/A | N/A |
+| 13. Shorts no transcript | 🟠 | URLTranscriptNotFoundError | Perfect | 5 lines |
+| 14. Valid with chapters | 🟠 | Success | Perfect | 12 lines |
+| 15. Valid no chapters | 🟠 | Success | Perfect (filename improved) | 12 lines |
 
-**Detailed Results:**
-- **Clean/Perfect (4 cases)**: CLI validation + private video message
-- **Functional but noisy (9 cases)**: Correct error messages buried in technical output
-- **Critical failures (1 case)**: Unhandled exception with traceback
-- **Cannot test (1 case)**: Rate limiting is intermittent
+---
 
-### Summary of Issues
+## 📄 Summary of Issues (Revised: 2025-09-29)
 
-**🔴 CRITICAL BUG (Requires Immediate Fix):**
-1. **Playlist URLs (Case 11)**: Unhandled `AssertionError` exposes full Python traceback to users, violating clean error handling principles
+| Issue Type | Count | Severity | Details |
+|------------|-------|----------|---------|
+| **Unhandled exceptions** | **1** | **🔴 CRITICAL** | **Playlist URLs expose Python traceback to users** |
+| yt-dlp technical noise | 10 | 🟠 Medium | All URL operations show processing output before final message |
+| Inconsistent UX | 1 | 🟠 Medium | URL processing noisy vs file processing clean |
+| Missing functionality | 0 | N/A | All error cases properly handled except playlists |
+| Poor error messages | 0 | ✅ None | All caught exceptions show clear, helpful messages |
 
-**🟠 USER EXPERIENCE ISSUES (Should Address):**
-1. **yt-dlp Noise**: 10 out of 14 testable cases show technical output before clean error messages
-2. **Success Case Verbosity**: Even successful operations show 8-12 lines of processing noise
+**Priority Fix Required**: Playlist handling must catch AssertionError or validate URL type before yt-dlp processing to show user-friendly message.
 
-**🟢 WORKING WELL:**
-- Exception message centralization functioning correctly
-- Error pattern matching works for all mapped scenarios
-- Clean CLI-level input validation prevents most technical noise
-- Private video error message is exemplary user experience
+---
 
-### Strategic Recommendations
+## 📄 Strategic Recommendations (Revised: 2025-09-29)
 
-**🚨 IMMEDIATE ACTION REQUIRED:**
-1. **Fix Playlist Bug**: Add exception handling for playlist URLs in `url_parser.py` to show clean error message instead of traceback
-2. **Add Playlist Test**: Create proper test coverage for playlist URL rejection
+### 🔴 Critical Priority
+1. **Fix Playlist Bug**: Add playlist detection/handling before yt-dlp processing or wrap `process_info()` call to catch AssertionError and provide user-friendly message
 
-**📋 MEDIUM PRIORITY IMPROVEMENTS:**
-1. **Suppress yt-dlp Verbosity**: Consider capturing and suppressing yt-dlp technical output while preserving error information
-2. **Consistent UX**: Aim for file-processing level of clean output (zero technical noise) across URL processing
+### 🟠 Medium Priority
+2. **Reduce yt-dlp Noise**: Consider suppressing/filtering yt-dlp output to match the clean UX of file-based processing
+3. **Consistent UX**: URL-based processing should aim for the same clean output as file-based (which shows zero technical noise)
 
-**✅ MAINTAIN CURRENT STANDARDS:**
-- Keep the excellent CLI input validation that prevents technical noise
-- Preserve the clean private video error message as a model for other errors
-- Continue using the established emoji + help hint pattern
-
-**🔍 MONITORING:**
-- Test playlist URLs before any major releases
-- Verify yt-dlp output suppression doesn't break error pattern matching
-- Ensure any UX improvements maintain current error message quality
+### ✅ Working Well
+4. **Error Message Pattern**: The "❌ [Clear error] + Try: youtube-to-xml --help" pattern is consistent and effective across all properly-handled cases
+5. **Filename Normalization**: Single-dash filenames (test 15) show improvement from previous double-dash behavior
+6. **Exception Mapping**: Pattern matching for yt-dlp errors (incomplete ID, private video, no transcript, etc.) works correctly when reached
