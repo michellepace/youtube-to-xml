@@ -24,6 +24,8 @@ import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
 
 from youtube_to_xml.exceptions import (
+    URLNotYouTubeError,
+    URLPlaylistNotSupportedError,
     URLTranscriptNotFoundError,
     map_yt_dlp_exception,
 )
@@ -103,6 +105,38 @@ def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
     )
 
 
+def _validate_url_is_youtube_video(url: str) -> None:
+    """Validate URL is a YouTube video using lightweight yt-dlp check.
+
+    Uses process=False for fast validation (~1.5s vs ~17s for playlists).
+    Validates: (1) URL is from YouTube (2) URL is video not playlist
+
+    Args:
+        url: URL to validate
+
+    Raises:
+        URLNotYouTubeError: If URL is not from YouTube
+        URLPlaylistNotSupportedError: If URL is a YouTube playlist
+        Other URL*Error: Mapped from yt-dlp errors (invalid, unavailable, etc.)
+    """
+    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True}) as ydl:
+        try:
+            info = ydl.extract_info(url, download=False, process=False)
+
+            # Validation 1: YouTube extractor?
+            extractor = info.get("extractor", "").lower()
+            if "youtube" not in extractor:
+                raise URLNotYouTubeError
+
+            # Validation 2: Video type (not playlist)?
+            if info.get("_type") == "playlist":
+                raise URLPlaylistNotSupportedError
+
+        except (DownloadError, ExtractorError, UnsupportedError) as e:
+            mapped_exception = map_yt_dlp_exception(e)
+            raise mapped_exception from e
+
+
 def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
     """Handle yt-dlp configuration and download of transcript.
 
@@ -113,6 +147,9 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
     Returns:
         Raw metadata dictionary from yt-dlp
     """
+    # Validate URL is YouTube video before expensive operations
+    _validate_url_is_youtube_video(url)
+
     yt_dlp_options = {
         # Core purpose: Download transcripts
         "writesubtitles": True,

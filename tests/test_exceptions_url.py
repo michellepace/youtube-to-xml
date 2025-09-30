@@ -65,6 +65,17 @@ def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
     assert EXCEPTION_MESSAGES["url_is_invalid_error"] in output
 
 
+@pytest.mark.slow
+def test_playlist_url_raises_playlist_not_supported_error(tmp_path: Path) -> None:
+    """Playlist URLs should be rejected with clear error message."""
+    exit_code, output = run_cli(
+        "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e",
+        tmp_path,
+    )
+    assert exit_code == 1
+    assert EXCEPTION_MESSAGES["url_playlist_not_supported_error"] in output
+
+
 # === Video Availability ===
 @pytest.mark.slow
 def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:

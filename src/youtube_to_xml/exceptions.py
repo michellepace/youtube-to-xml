@@ -17,6 +17,7 @@ EXCEPTION_MESSAGES = {
     "url_not_youtube_error": "URL is not a YouTube video",
     "url_incomplete_error": "YouTube URL is incomplete",
     "url_bot_protection_error": "YouTube requires verification - try switching networks",
+    "url_playlist_not_supported_error": ("It's a YouTube playlist, provide a video URL"),
     "url_unmapped_error": "YouTube processing failed - unmapped error",
     # Input validation errors
     "invalid_input_error": "Input must be a YouTube URL or .txt file",
@@ -136,6 +137,17 @@ class URLBotProtectionError(BaseTranscriptError):
     def __init__(
         self,
         message: str = EXCEPTION_MESSAGES["url_bot_protection_error"],
+    ) -> None:
+        """Initialise with custom message."""
+        super().__init__(message)
+
+
+class URLPlaylistNotSupportedError(BaseTranscriptError):
+    """Raised when URL is a playlist rather than a single video."""
+
+    def __init__(
+        self,
+        message: str = EXCEPTION_MESSAGES["url_playlist_not_supported_error"],
     ) -> None:
         """Initialise with custom message."""
         super().__init__(message)

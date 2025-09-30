@@ -8,7 +8,13 @@ import inspect
 from pathlib import Path
 from typing import get_args
 
+import pytest
+
 import youtube_to_xml.url_parser as url_parser_module
+from youtube_to_xml.exceptions import (
+    URLNotYouTubeError,
+    URLPlaylistNotSupportedError,
+)
 from youtube_to_xml.models import (
     Chapter,
     TranscriptDocument,
@@ -23,6 +29,7 @@ from youtube_to_xml.url_parser import (
     _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
+    _validate_url_is_youtube_video,
     parse_youtube_url,
 )
 
@@ -278,3 +285,33 @@ class TestDecomposedFunctions:
         assert result.video_published == ""
         assert result.video_duration == 0
         assert result.video_url == "https://youtube.com/watch?v=fallback"
+
+
+class TestValidateUrlIsYoutubeVideo:
+    """Test URL validation for YouTube videos vs playlists/non-YouTube."""
+
+    @pytest.mark.slow
+    def test_rejects_youtube_playlist_urls(self) -> None:
+        """Playlist URLs should raise URLPlaylistNotSupportedError."""
+        playlist_url = (
+            "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
+        )
+
+        with pytest.raises(URLPlaylistNotSupportedError):
+            _validate_url_is_youtube_video(playlist_url)
+
+    @pytest.mark.slow
+    def test_rejects_non_youtube_urls(self) -> None:
+        """Non-YouTube URLs should raise URLNotYouTubeError."""
+        non_youtube_url = "https://www.google.com/"
+
+        with pytest.raises(URLNotYouTubeError):
+            _validate_url_is_youtube_video(non_youtube_url)
+
+    @pytest.mark.slow
+    def test_accepts_youtube_video_urls(self) -> None:
+        """Valid YouTube video URLs should not raise exceptions."""
+        video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+        # Should complete without raising exception
+        _validate_url_is_youtube_video(video_url)
