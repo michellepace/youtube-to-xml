@@ -102,7 +102,7 @@ Output XML:
 - **Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
 - **Dependencies**: Python 3.13+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 - **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
-- **Test Driven Development**: 123 tests (19 slow, 104 unit, ~107 seconds)
+- **Test Driven Development**: 123 tests (20 slow, 103 unit, ~102 seconds)
 - **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 <figure align="center">

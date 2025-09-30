@@ -1,17 +1,9 @@
 """YouTube URL parser module for extracting transcripts and metadata.
 
-This module provides the main interface for parsing YouTube URLs into
-TranscriptDocument objects, extracted from scripts/url_to_transcript.py.
+Provides the main interface for parsing YouTube URLs into TranscriptDocument objects.
 
-Public functions:
-- parse_youtube_url(): Main interface that takes a URL and returns TranscriptDocument
-
-Private functions:
-- _fetch_video_metadata_and_transcript(): Downloads metadata and transcript from YouTube
-- _extract_transcript_lines_from_files(): Processes downloaded transcript files into lines
-- _extract_transcript_lines_from_json3(): Converts YouTube JSON3 to TranscriptLine objects
-- _assign_transcript_lines_to_chapters(): Groups transcript lines by chapters
-- _get_youtube_transcript_file_priority(): Determines transcript file selection priority
+Public API:
+    parse_youtube_url(url: str) -> TranscriptDocument
 """
 
 import json
@@ -19,11 +11,13 @@ import math
 import tempfile
 from pathlib import Path
 from typing import TypedDict
+from urllib.parse import urlparse
 
 import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
 
 from youtube_to_xml.exceptions import (
+    URLIsInvalidError,
     URLNotYouTubeError,
     URLPlaylistNotSupportedError,
     URLTranscriptNotFoundError,
@@ -87,6 +81,26 @@ def _get_youtube_transcript_file_priority(transcript_file_path: Path) -> int:
     return len(_TRANSCRIPT_LANGUAGE_PREFERENCES)
 
 
+def _validate_basic_url_structure(url: str) -> None:
+    """Validate basic URL structure before expensive operations.
+
+    Tier 1 validation (~0.0002s): Checks scheme, netloc, and TLD presence.
+    Rejects obviously invalid URLs instantly to save processing time.
+
+    Args:
+        url: URL string to validate
+
+    Raises:
+        URLIsInvalidError: If URL lacks scheme, netloc, or TLD
+    """
+    try:
+        parsed = urlparse(url)
+        if not (parsed.scheme and parsed.netloc and "." in parsed.netloc):
+            raise URLIsInvalidError
+    except ValueError:
+        raise URLIsInvalidError from None
+
+
 def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
     """Build VideoMetadata object from raw yt-dlp metadata.
 
@@ -106,29 +120,47 @@ def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
 
 
 def _validate_url_is_youtube_video(url: str) -> None:
-    """Validate URL is a YouTube video using lightweight yt-dlp check.
+    """Validate URL is a YouTube video using three-tier validation.
 
-    Uses process=False for fast validation (~1.5s vs ~17s for playlists).
-    Validates: (1) URL is from YouTube (2) URL is video not playlist
+    Three-tier fast-fail validation strategy for optimal UX:
+    - Tier 1 (~0.0002s): Basic URL structure (scheme, netloc, TLD)
+    - Tier 2 (~0.0002s): YouTube domain check (youtube.com, youtu.be, etc.)
+    - Tier 3 (~1.5s): yt-dlp validation with process=False (playlist check, etc.)
 
     Args:
         url: URL to validate
 
     Raises:
-        URLNotYouTubeError: If URL is not from YouTube
-        URLPlaylistNotSupportedError: If URL is a YouTube playlist
+        URLIsInvalidError: If URL structure is invalid (Tier 1)
+        URLNotYouTubeError: If URL is not from YouTube (Tier 2/3)
+        URLPlaylistNotSupportedError: If URL is a YouTube playlist (Tier 3)
         Other URL*Error: Mapped from yt-dlp errors (invalid, unavailable, etc.)
     """
+    # Tier 1: Basic URL structure validation (~0.0002s)
+    _validate_basic_url_structure(url)
+
+    # Tier 2: YouTube domain check (~0.0002s)
+    parsed = urlparse(url)
+    domain = parsed.netloc.lower()
+    valid_domains = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
+    if not any(yt_domain in domain for yt_domain in valid_domains):
+        raise URLNotYouTubeError
+
+    # Tier 3: yt-dlp validation (~1.5s with process=False)
     with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True}) as ydl:
         try:
             info = ydl.extract_info(url, download=False, process=False)
 
-            # Validation 1: YouTube extractor?
+            # Validate info was returned
+            if info is None:
+                raise URLIsInvalidError
+
+            # Double-check extractor (yt-dlp may redirect)
             extractor = info.get("extractor", "").lower()
             if "youtube" not in extractor:
                 raise URLNotYouTubeError
 
-            # Validation 2: Video type (not playlist)?
+            # Check for playlist type
             if info.get("_type") == "playlist":
                 raise URLPlaylistNotSupportedError
 

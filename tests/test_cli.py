@@ -5,7 +5,6 @@ from pathlib import Path
 
 from youtube_to_xml.cli import (
     _has_txt_extension,
-    _is_valid_url,
     _sanitise_video_title_for_filename,
 )
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
@@ -39,48 +38,12 @@ def assert_error_has_prefix_and_suffix(output: str) -> None:
 # =============================================================================
 # Unit Tests: Core Validation Functions
 # =============================================================================
-
-
-def test_is_valid_url_accepts_proper_urls() -> None:
-    """URLs with scheme and domain (http/https) including YouTube variants."""
-    valid_urls = [
-        "https://www.youtube.com/watch?v=abc123",
-        "https://youtu.be/xyz789",
-        "https://www.google.com",
-        "http://example.com",
-    ]
-    for url in valid_urls:
-        assert _is_valid_url(url) is True
-
-
-def test_is_valid_url_rejects_non_urls() -> None:
-    """File paths, extensions, random text, and empty strings rejected."""
-    non_url_inputs = [
-        "transcript.txt",
-        "/path/to/file.txt",
-        "data.md",
-        "config.xml",
-        "random_text",
-        "",
-        "not-a-file-or-url",
-    ]
-    for input_str in non_url_inputs:
-        assert _is_valid_url(input_str) is False
-
-
-def test_is_valid_url_rejects_urls_without_tld() -> None:
-    """URLs without TLD should be rejected to avoid DNS resolution errors."""
-    urls_without_tld = [
-        "https://ailearnlog",
-        "http://localhost",
-        "https://intranet",
-    ]
-    for url in urls_without_tld:
-        assert _is_valid_url(url) is False
+# NOTE: URL validation logic tested in test_url_parser.py::TestValidateBasicUrlStructure
+# CLI only tests routing behavior (_is_valid_url delegates to url_parser)
 
 
 def test_has_txt_extension_accepts_txt_files() -> None:
-    """Accepts .txt files with absolute, relative, and local paths."""
+    """Test .txt extension detection with various path formats."""
     txt_files = [
         "transcript.txt",
         "/path/to/file.txt",
@@ -91,7 +54,7 @@ def test_has_txt_extension_accepts_txt_files() -> None:
 
 
 def test_has_txt_extension_rejects_non_txt() -> None:
-    """Rejects .md/.xml files, extensionless files, and empty strings."""
+    """Test rejection of non-.txt extensions and extensionless inputs."""
     non_txt_files = [
         "data.md",
         "file.xml",
@@ -103,7 +66,7 @@ def test_has_txt_extension_rejects_non_txt() -> None:
 
 
 def test_sanitise_video_title_for_filename_comprehensive() -> None:
-    """Test dash/space/special chars/emoji normalization to single dashes."""
+    """Test normalization: special chars removed, lowercased, spaces to dashes."""
     title = "A - B --  C  (Multi   Spaces) & 😁 Special!@# Chars: Test"
     result = _sanitise_video_title_for_filename(title)
     expected = "a-b-c-multi-spaces-special-chars-test.xml"
@@ -116,18 +79,16 @@ def test_sanitise_video_title_for_filename_comprehensive() -> None:
 
 
 def test_cli_shows_argparse_error_for_no_arguments(tmp_path: Path) -> None:
-    """No arguments triggers argparse error with custom help hint."""
-    # Run with no arguments
+    """Test argparse error when no arguments provided."""
     exit_code, output = run_cli([], tmp_path)
     assert exit_code == 1
-    # Generic assertions - argparse shows usage and error, we add help hint
     assert "usage: youtube-to-xml" in output
     assert "error: the following arguments are required" in output
     assert "Try: youtube-to-xml --help" in output
 
 
 def test_cli_shows_error_for_non_url_non_txt_input(tmp_path: Path) -> None:
-    """Ambiguous input that's neither valid URL nor .txt file path."""
+    """Test rejection of input that's neither valid URL nor .txt file."""
     exit_code, output = run_cli("some_text", tmp_path)
 
     assert exit_code == 1
@@ -141,7 +102,7 @@ def test_cli_shows_error_for_non_url_non_txt_input(tmp_path: Path) -> None:
 
 
 def test_cli_shows_error_for_nonexistent_non_txt_extension(tmp_path: Path) -> None:
-    """Non-existent files with non-.txt extensions are rejected."""
+    """Test rejection of non-.txt file extensions."""
     exit_code, output = run_cli("nonexistent.md", tmp_path)
 
     assert exit_code == 1
@@ -150,7 +111,7 @@ def test_cli_shows_error_for_nonexistent_non_txt_extension(tmp_path: Path) -> No
 
 
 def test_cli_shows_error_for_existing_non_txt_extension(tmp_path: Path) -> None:
-    """Existing files with non-.txt extensions are rejected."""
+    """Test rejection of non-.txt extensions even when file exists."""
     test_file = tmp_path / "existing.md"
     test_file.write_text("content", encoding="utf-8")
 
@@ -167,7 +128,7 @@ def test_cli_shows_error_for_existing_non_txt_extension(tmp_path: Path) -> None:
 
 
 def test_cli_shows_error_for_nonexistent_txt_file(tmp_path: Path) -> None:
-    """Nonexistent file shows 'couldn't find your file' error."""
+    """Test error message when .txt file doesn't exist."""
     exit_code, output = run_cli("nonexistent.txt", tmp_path)
 
     assert exit_code == 1
@@ -176,7 +137,7 @@ def test_cli_shows_error_for_nonexistent_txt_file(tmp_path: Path) -> None:
 
 
 def test_cli_shows_error_for_empty_txt_file(tmp_path: Path) -> None:
-    """Zero-byte file shows appropriate error."""
+    """Test error message for empty .txt file."""
     test_file = tmp_path / "empty.txt"
     test_file.write_text("", encoding="utf-8")
 
@@ -188,7 +149,7 @@ def test_cli_shows_error_for_empty_txt_file(tmp_path: Path) -> None:
 
 
 def test_cli_shows_error_for_invalid_txt_format(tmp_path: Path) -> None:
-    """Content not matching required YouTube transcript format."""
+    """Test error message for .txt file with invalid transcript format."""
     test_file = tmp_path / "invalid.txt"
     test_file.write_text("not youtube transcript", encoding="utf-8")
 

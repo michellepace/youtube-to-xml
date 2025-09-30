@@ -5,7 +5,6 @@ import re
 import sys
 import uuid
 from pathlib import Path
-from urllib.parse import urlparse
 
 from youtube_to_xml.exceptions import (
     BaseTranscriptError,
@@ -13,22 +12,24 @@ from youtube_to_xml.exceptions import (
     FileNotExistsError,
     FilePermissionError,
     InvalidInputError,
+    URLIsInvalidError,
 )
 from youtube_to_xml.file_parser import parse_transcript_file
 from youtube_to_xml.logging_config import get_logger, setup_logging
-from youtube_to_xml.url_parser import parse_youtube_url
+from youtube_to_xml.url_parser import _validate_basic_url_structure, parse_youtube_url
 from youtube_to_xml.xml_builder import transcript_to_xml
 
 ARGPARSE_ERROR_CODE = 2  # argparse uses exit code 2 for argument errors
 
 
 def _is_valid_url(input_string: str) -> bool:
-    """Check if input is a proper URL with scheme, netloc, and TLD."""
+    """Check if input is a proper URL (delegates to url_parser validation)."""
     try:
-        parsed = urlparse(input_string)
-        return bool(parsed.scheme and parsed.netloc and "." in parsed.netloc)
-    except ValueError:
+        _validate_basic_url_structure(input_string)
+    except URLIsInvalidError:
         return False
+    else:
+        return True
 
 
 def _has_txt_extension(input_string: str) -> bool:
@@ -60,7 +61,6 @@ def _process_url_input(url: str, execution_id: str) -> tuple[str, str]:
 
     print(f"🎬 Processing: {url}")
 
-    # Let all URL processing errors bubble up to main()
     document = parse_youtube_url(url)
     xml_content = transcript_to_xml(document)
     output_filename = _sanitise_video_title_for_filename(document.metadata.video_title)
@@ -89,7 +89,6 @@ def _process_file_input(file_path_str: str, execution_id: str) -> tuple[str, str
 
     transcript_file_path = Path(file_path_str)
 
-    # Read file content
     try:
         raw_transcript_text = transcript_file_path.read_text(encoding="utf-8")
     except FileNotFoundError:  # in-built
@@ -99,7 +98,7 @@ def _process_file_input(file_path_str: str, execution_id: str) -> tuple[str, str
     except UnicodeDecodeError:  # in-built
         raise FileEncodingError from None
 
-    # Parse transcript and generate XML - let parsing errors bubble
+    # Parsing errors (FileEmptyError, FileInvalidFormatError) bubble up from parser
     document = parse_transcript_file(raw_transcript_text)
 
     xml_content = transcript_to_xml(document)
@@ -122,10 +121,8 @@ def _save_xml_output(xml_content: str, output_filename: str, execution_id: str) 
     logger = get_logger(__name__)
     output_file_path = Path(output_filename)
 
-    # Let write errors bubble up to main()
     output_file_path.write_text(xml_content, encoding="utf-8")
 
-    # Success message
     print(f"✅ Created: {output_file_path}")
     logger.info("[%s] Successfully created: %s", execution_id, output_file_path)
 
