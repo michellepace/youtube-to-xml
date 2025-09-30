@@ -359,9 +359,28 @@ class TestValidateBasicUrlStructure:
 class TestValidateUrlIsYoutubeVideo:
     """Test URL validation for YouTube videos vs playlists/non-YouTube."""
 
+    def test_rejects_non_youtube_urls(self) -> None:
+        """Non-YouTube URLs raise URLNotYouTubeError (Tier 2)."""
+        non_youtube_url = "https://www.google.com/"
+
+        with pytest.raises(URLNotYouTubeError):
+            _validate_url_is_youtube_video(non_youtube_url)
+
+    def test_rejects_fake_youtube_domains(self) -> None:
+        """Fake YouTube-like domains raise URLNotYouTubeError (Tier 2)."""
+        fake_youtube_urls = [
+            "https://notyoutube.com/watch?v=123",
+            "https://fakeyoutube.com/watch?v=123",
+            "https://youtube.com.evil.com/watch?v=123",
+        ]
+
+        for fake_url in fake_youtube_urls:
+            with pytest.raises(URLNotYouTubeError):
+                _validate_url_is_youtube_video(fake_url)
+
     @pytest.mark.slow
     def test_rejects_youtube_playlist_urls(self) -> None:
-        """Playlist URLs raise URLPlaylistNotSupportedError."""
+        """Playlist URLs raise URLPlaylistNotSupportedError (Tier 3)."""
         playlist_url = (
             "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
         )
@@ -370,16 +389,8 @@ class TestValidateUrlIsYoutubeVideo:
             _validate_url_is_youtube_video(playlist_url)
 
     @pytest.mark.slow
-    def test_rejects_non_youtube_urls(self) -> None:
-        """Non-YouTube URLs raise URLNotYouTubeError."""
-        non_youtube_url = "https://www.google.com/"
-
-        with pytest.raises(URLNotYouTubeError):
-            _validate_url_is_youtube_video(non_youtube_url)
-
-    @pytest.mark.slow
     def test_accepts_youtube_video_urls(self) -> None:
-        """Valid YouTube video URLs pass validation without errors."""
+        """Valid YouTube video URLs pass validation without errors (Tier 3)."""
         video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
         # Should complete without raising exception

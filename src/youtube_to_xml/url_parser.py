@@ -143,7 +143,7 @@ def _validate_url_is_youtube_video(url: str) -> None:
     parsed = urlparse(url)
     domain = parsed.netloc.lower()
     valid_domains = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
-    if not any(yt_domain in domain for yt_domain in valid_domains):
+    if domain not in valid_domains:
         raise URLNotYouTubeError
 
     # Tier 3: yt-dlp validation (~1.5s with process=False)
