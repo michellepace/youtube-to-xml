@@ -241,10 +241,10 @@ Run: `uv run youtube-to-xml "https://youtube.com/shorts/gqsB-lzXaCE?feature=shar
 Actual Output:
 
 ```bash
+🎬 Processing: https://youtube.com/shorts/gqsB-lzXaCE?feature=share
 ❌ This video doesn't have a transcript available
 
 Try: youtube-to-xml --help
-🎬 Processing: https://youtube.com/shorts/gqsB-lzXaCE?feature=share
 ```
 
 🟢 Status: CLEAN! yt-dlp noise fully suppressed with quiet=True (was 10 lines, now 3 lines)
