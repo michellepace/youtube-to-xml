@@ -8,7 +8,14 @@ import inspect
 from pathlib import Path
 from typing import get_args
 
+import pytest
+
 import youtube_to_xml.url_parser as url_parser_module
+from youtube_to_xml.exceptions import (
+    URLIsInvalidError,
+    URLNotYouTubeError,
+    URLPlaylistNotSupportedError,
+)
 from youtube_to_xml.models import (
     Chapter,
     TranscriptDocument,
@@ -23,6 +30,8 @@ from youtube_to_xml.url_parser import (
     _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
+    _validate_basic_url_structure,
+    _validate_url_is_youtube_video,
     parse_youtube_url,
 )
 
@@ -31,7 +40,7 @@ class TestSharedModelImports:
     """Test that URL parser module uses shared models."""
 
     def test_url_parser_uses_video_metadata_from_shared_models(self) -> None:
-        """Test that url_parser module uses VideoMetadata from youtube_to_xml.models."""
+        """Verify url_parser uses VideoMetadata from shared models."""
         # Check that fetch_video_metadata_and_transcript returns VideoMetadata
         sig = inspect.signature(_fetch_video_metadata_and_transcript)
         return_annotation = sig.return_annotation
@@ -45,7 +54,7 @@ class TestSharedModelImports:
             )
 
     def test_url_parser_uses_transcript_line_from_shared_models(self) -> None:
-        """Test that url_parser module uses TranscriptLine from youtube_to_xml.models."""
+        """Verify url_parser uses TranscriptLine from shared models."""
         # Check that extract_transcript_lines_from_json3 returns list[TranscriptLine]
         sig = inspect.signature(_extract_transcript_lines_from_json3)
         return_annotation = sig.return_annotation
@@ -59,7 +68,7 @@ class TestSharedModelImports:
             )
 
     def test_url_parser_uses_chapter_from_shared_models(self) -> None:
-        """Test that url_parser module uses Chapter from youtube_to_xml.models."""
+        """Verify url_parser uses Chapter from shared models."""
         # Check that assign_transcript_lines_to_chapters returns list[Chapter]
         sig = inspect.signature(_assign_transcript_lines_to_chapters)
         return_annotation = sig.return_annotation
@@ -77,7 +86,7 @@ class TestVideoMetadataDurationFormat:
     """Test that VideoMetadata.video_duration uses int (raw seconds) format."""
 
     def test_video_metadata_duration_is_int_type(self) -> None:
-        """Test that video_duration field expects int type (raw seconds)."""
+        """Verify video_duration stores int type (raw seconds)."""
         # Create instance with int duration (raw seconds)
         metadata = VideoMetadata(
             video_title="Test Video",
@@ -99,7 +108,7 @@ class TestXMLBuilderCompatibility:
     """Test that URL parser module integrates with xml_builder correctly."""
 
     def test_url_parser_module_has_no_duplicate_xml_functions(self) -> None:
-        """Test that url_parser module doesn't contain duplicate XML functions."""
+        """Verify url_parser has no duplicate XML functions."""
         # Should not have local create_xml_document function
         create_xml_func = getattr(url_parser_module, "create_xml_document", None)
         assert create_xml_func is None, (
@@ -113,7 +122,7 @@ class TestXMLBuilderCompatibility:
         )
 
     def test_parse_youtube_url_returns_transcript_document_for_xml_builder(self) -> None:
-        """Test parse_youtube_url returns TranscriptDocument for xml_builder."""
+        """Verify parse_youtube_url returns TranscriptDocument for xml_builder."""
         # Verify return type is TranscriptDocument (xml_builder.transcript_to_xml accepts)
         sig = inspect.signature(parse_youtube_url)
         return_annotation = sig.return_annotation
@@ -125,37 +134,63 @@ class TestXMLBuilderCompatibility:
 
 
 class TestParseYoutubeUrlFunction:
-    """Test that parse_youtube_url function exists with correct interface (PR 7)."""
+    """Test parse_youtube_url function interface and signature."""
 
     def test_parse_youtube_url_function_exists(self) -> None:
-        """Test that parse_youtube_url function exists in url_parser module."""
+        """Verify parse_youtube_url function exists and is callable."""
         # Function should exist and be importable
         assert callable(parse_youtube_url)
 
     def test_parse_youtube_url_accepts_one_parameter(self) -> None:
-        """Test that parse_youtube_url accepts exactly one parameter."""
+        """Verify parse_youtube_url accepts exactly one parameter."""
         sig = inspect.signature(parse_youtube_url)
         params = list(sig.parameters.values())
         assert len(params) == 1
 
     def test_parse_youtube_url_parameter_named_url(self) -> None:
-        """Test that parse_youtube_url parameter is named 'url'."""
+        """Verify parse_youtube_url parameter is named 'url'."""
         sig = inspect.signature(parse_youtube_url)
         params = list(sig.parameters.values())
         assert params[0].name == "url"
 
     def test_parse_youtube_url_returns_transcript_document(self) -> None:
-        """Test that parse_youtube_url has TranscriptDocument return type annotation."""
+        """Verify parse_youtube_url return type is TranscriptDocument."""
         sig = inspect.signature(parse_youtube_url)
         if sig.return_annotation != inspect.Signature.empty:
             assert sig.return_annotation == TranscriptDocument
+
+    @pytest.mark.slow
+    def test_parse_youtube_url_suppresses_yt_dlp_noise(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
+        """Verify yt-dlp technical output is suppressed for clean output."""
+        # Use a real YouTube video that will succeed
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+        # Execute function
+        parse_youtube_url(url)
+
+        # Capture all output
+        captured = capsys.readouterr()
+        combined_output = captured.out + captured.err
+
+        # Should NOT contain yt-dlp technical noise
+        assert "[youtube]" not in combined_output, (
+            "yt-dlp noise '[youtube]' should be suppressed with quiet=True"
+        )
+        assert "[info]" not in combined_output, (
+            "yt-dlp noise '[info]' should be suppressed with quiet=True"
+        )
+        assert "[download]" not in combined_output, (
+            "yt-dlp noise '[download]' should be suppressed with quiet=True"
+        )
 
 
 class TestTranscriptFilePriority:
     """Test transcript file priority selection logic."""
 
     def test_transcript_file_priority_ordering(self) -> None:
-        """Test files sort by priority: manual English > auto English > others."""
+        """Verify priority ordering: manual English > auto English > others."""
         files = [
             Path("video.es.json3"),  # Other language
             Path("video.en-orig.json3"),  # Auto-generated English
@@ -174,11 +209,11 @@ class TestExtractTranscriptLinesBehavior:
     """Test JSON3 transcript parsing behavior."""
 
     def test_handles_empty_events_list(self) -> None:
-        """Empty events should return empty list."""
+        """Empty events return empty list."""
         assert _extract_transcript_lines_from_json3([]) == []
 
     def test_skips_events_without_segs(self) -> None:
-        """Events without 'segs' key should be skipped."""
+        """Events without 'segs' key are skipped."""
         # Create properly typed test events
         events: list[_Json3Event] = [
             {"tStartMs": 1000},  # No segs
@@ -189,7 +224,7 @@ class TestExtractTranscriptLinesBehavior:
         assert result[0].text == "text"
 
     def test_combines_multi_segment_text(self) -> None:
-        """Multiple segments should be combined."""
+        """Multiple segments are combined into single text."""
         events: list[_Json3Event] = [
             {
                 "tStartMs": 5000,
@@ -200,13 +235,13 @@ class TestExtractTranscriptLinesBehavior:
         assert result[0].text == "Hello world"
 
     def test_removes_newlines_from_text(self) -> None:
-        """Newlines should be replaced with spaces."""
+        """Newlines are replaced with spaces."""
         events: list[_Json3Event] = [{"tStartMs": 0, "segs": [{"utf8": "Line\nbreak"}]}]
         result = _extract_transcript_lines_from_json3(events)
         assert result[0].text == "Line break"
 
     def test_converts_milliseconds_to_seconds(self) -> None:
-        """Timestamps should be converted from ms to seconds."""
+        """Timestamps are converted from milliseconds to seconds."""
         events: list[_Json3Event] = [{"tStartMs": 5500, "segs": [{"utf8": "text"}]}]
         result = _extract_transcript_lines_from_json3(events)
         assert result[0].timestamp == 5.5
@@ -216,7 +251,7 @@ class TestAssignChaptersBehavior:
     """Test chapter assignment behavior."""
 
     def test_no_chapters_creates_single_chapter(self) -> None:
-        """No chapters should create one chapter with all lines."""
+        """Videos without chapters create single chapter with all lines."""
         metadata = VideoMetadata("Title", "20240101", 100, "url")
         lines = [TranscriptLine(10, "text")]
         result = _assign_transcript_lines_to_chapters(metadata, lines, [])
@@ -225,7 +260,7 @@ class TestAssignChaptersBehavior:
         assert result[0].transcript_lines == lines
 
     def test_assigns_lines_to_correct_chapters(self) -> None:
-        """Lines should be assigned based on timestamps."""
+        """Lines are assigned to chapters based on timestamps."""
         metadata = VideoMetadata("Title", "20240101", 100, "url")
         lines = [
             TranscriptLine(5, "intro"),
@@ -247,10 +282,10 @@ class TestAssignChaptersBehavior:
 
 
 class TestDecomposedFunctions:
-    """Test the decomposed helper functions from fetch_video_metadata_and_transcript."""
+    """Test decomposed helper functions for metadata and transcript processing."""
 
     def test_create_video_metadata_from_raw_data(self) -> None:
-        """Test _create_video_metadata builds correct VideoMetadata object."""
+        """Verify VideoMetadata construction from raw yt-dlp data."""
         raw_metadata = {
             "title": "Test Video Title",
             "upload_date": "20240315",
@@ -268,7 +303,7 @@ class TestDecomposedFunctions:
         assert result.video_url == "https://youtube.com/watch?v=test123"
 
     def test_create_video_metadata_with_missing_fields(self) -> None:
-        """Test _create_video_metadata handles missing fields with defaults."""
+        """Verify default values used when metadata fields are missing."""
         raw_metadata = {}  # Empty metadata
         url = "https://youtube.com/watch?v=fallback"
 
@@ -278,3 +313,85 @@ class TestDecomposedFunctions:
         assert result.video_published == ""
         assert result.video_duration == 0
         assert result.video_url == "https://youtube.com/watch?v=fallback"
+
+
+class TestValidateBasicUrlStructure:
+    """Test basic URL structure validation (Tier 1 - instant validation)."""
+
+    def test_rejects_invalid_url_structures(self) -> None:
+        """Invalid URL structures raise URLIsInvalidError."""
+        invalid_urls = [
+            "youtube.com",  # No scheme
+            "http://",  # No netloc
+            "http://localhost",  # No TLD
+            "https://intranet",  # No TLD (internal network)
+            "not a url at all",  # Completely malformed
+            "random_text",  # Plain text
+            "",  # Empty string
+            # File paths (common user mistakes at CLI)
+            "transcript.txt",
+            "/path/to/file.txt",
+            "data.md",
+            "config.xml",
+        ]
+
+        for invalid_url in invalid_urls:
+            with pytest.raises(URLIsInvalidError):
+                _validate_basic_url_structure(invalid_url)
+
+    def test_accepts_valid_url_structures(self) -> None:
+        """Valid URL structures pass validation without errors."""
+        valid_urls = [
+            # YouTube variants (primary use case)
+            "https://www.youtube.com/watch?v=abc123",
+            "https://youtube.com/watch",
+            "https://youtu.be/xyz789",
+            # Other valid URLs (for completeness)
+            "https://www.google.com",
+            "http://example.com/path",
+        ]
+
+        for valid_url in valid_urls:
+            # Should not raise exception
+            _validate_basic_url_structure(valid_url)
+
+
+class TestValidateUrlIsYoutubeVideo:
+    """Test URL validation for YouTube videos vs playlists/non-YouTube."""
+
+    def test_rejects_non_youtube_urls(self) -> None:
+        """Non-YouTube URLs raise URLNotYouTubeError (Tier 2)."""
+        non_youtube_url = "https://www.google.com/"
+
+        with pytest.raises(URLNotYouTubeError):
+            _validate_url_is_youtube_video(non_youtube_url)
+
+    def test_rejects_fake_youtube_domains(self) -> None:
+        """Fake YouTube-like domains raise URLNotYouTubeError (Tier 2)."""
+        fake_youtube_urls = [
+            "https://notyoutube.com/watch?v=123",
+            "https://fakeyoutube.com/watch?v=123",
+            "https://youtube.com.evil.com/watch?v=123",
+        ]
+
+        for fake_url in fake_youtube_urls:
+            with pytest.raises(URLNotYouTubeError):
+                _validate_url_is_youtube_video(fake_url)
+
+    @pytest.mark.slow
+    def test_rejects_youtube_playlist_urls(self) -> None:
+        """Playlist URLs raise URLPlaylistNotSupportedError (Tier 3)."""
+        playlist_url = (
+            "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
+        )
+
+        with pytest.raises(URLPlaylistNotSupportedError):
+            _validate_url_is_youtube_video(playlist_url)
+
+    @pytest.mark.slow
+    def test_accepts_youtube_video_urls(self) -> None:
+        """Valid YouTube video URLs pass validation without errors (Tier 3)."""
+        video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+        # Should complete without raising exception
+        _validate_url_is_youtube_video(video_url)

@@ -1,17 +1,9 @@
 """YouTube URL parser module for extracting transcripts and metadata.
 
-This module provides the main interface for parsing YouTube URLs into
-TranscriptDocument objects, extracted from scripts/url_to_transcript.py.
+Provides the main interface for parsing YouTube URLs into TranscriptDocument objects.
 
-Public functions:
-- parse_youtube_url(): Main interface that takes a URL and returns TranscriptDocument
-
-Private functions:
-- _fetch_video_metadata_and_transcript(): Downloads metadata and transcript from YouTube
-- _extract_transcript_lines_from_files(): Processes downloaded transcript files into lines
-- _extract_transcript_lines_from_json3(): Converts YouTube JSON3 to TranscriptLine objects
-- _assign_transcript_lines_to_chapters(): Groups transcript lines by chapters
-- _get_youtube_transcript_file_priority(): Determines transcript file selection priority
+Public API:
+    parse_youtube_url(url: str) -> TranscriptDocument
 """
 
 import json
@@ -19,12 +11,17 @@ import math
 import tempfile
 from pathlib import Path
 from typing import TypedDict
+from urllib.parse import urlparse
 
 import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
 
 from youtube_to_xml.exceptions import (
+    URLIsInvalidError,
+    URLNotYouTubeError,
+    URLPlaylistNotSupportedError,
     URLTranscriptNotFoundError,
+    URLUnmappedError,
     map_yt_dlp_exception,
 )
 from youtube_to_xml.logging_config import get_logger
@@ -85,6 +82,26 @@ def _get_youtube_transcript_file_priority(transcript_file_path: Path) -> int:
     return len(_TRANSCRIPT_LANGUAGE_PREFERENCES)
 
 
+def _validate_basic_url_structure(url: str) -> None:
+    """Validate basic URL structure before expensive operations.
+
+    Tier 1 validation (~0.0002s): Checks scheme, netloc, and TLD presence.
+    Rejects obviously invalid URLs instantly to save processing time.
+
+    Args:
+        url: URL string to validate
+
+    Raises:
+        URLIsInvalidError: If URL lacks scheme, netloc, or TLD
+    """
+    try:
+        parsed = urlparse(url)
+        if not (parsed.scheme and parsed.netloc and "." in parsed.netloc):
+            raise URLIsInvalidError
+    except ValueError:
+        raise URLIsInvalidError from None
+
+
 def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
     """Build VideoMetadata object from raw yt-dlp metadata.
 
@@ -103,6 +120,56 @@ def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
     )
 
 
+def _validate_url_is_youtube_video(url: str) -> None:
+    """Validate URL is a YouTube video using three-tier validation.
+
+    Three-tier fast-fail validation strategy for optimal UX:
+    - Tier 1 (~0.0002s): Basic URL structure (scheme, netloc, TLD)
+    - Tier 2 (~0.0002s): YouTube domain check (youtube.com, youtu.be, etc.)
+    - Tier 3 (~1.5s): yt-dlp validation with process=False (playlist check, etc.)
+
+    Args:
+        url: URL to validate
+
+    Raises:
+        URLIsInvalidError: If URL structure is invalid (Tier 1)
+        URLNotYouTubeError: If URL is not from YouTube (Tier 2/3)
+        URLPlaylistNotSupportedError: If URL is a YouTube playlist (Tier 3)
+        Other URL*Error: Mapped from yt-dlp errors (invalid, unavailable, etc.)
+    """
+    # Tier 1: Basic URL structure validation (~0.0002s)
+    _validate_basic_url_structure(url)
+
+    # Tier 2: YouTube domain check (~0.0002s)
+    parsed = urlparse(url)
+    domain = parsed.netloc.lower()
+    valid_domains = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
+    if domain not in valid_domains:
+        raise URLNotYouTubeError
+
+    # Tier 3: yt-dlp validation (~1.5s with process=False)
+    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True}) as ydl:
+        try:
+            info = ydl.extract_info(url, download=False, process=False)
+
+            # Validate info was returned
+            if info is None:
+                raise URLIsInvalidError
+
+            # Double-check extractor (yt-dlp may redirect)
+            extractor = info.get("extractor", "").lower()
+            if "youtube" not in extractor:
+                raise URLNotYouTubeError
+
+            # Check for playlist type
+            if info.get("_type") == "playlist":
+                raise URLPlaylistNotSupportedError
+
+        except (DownloadError, ExtractorError, UnsupportedError) as e:
+            mapped_exception = map_yt_dlp_exception(e)
+            raise mapped_exception from e
+
+
 def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
     """Handle yt-dlp configuration and download of transcript.
 
@@ -113,6 +180,9 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
     Returns:
         Raw metadata dictionary from yt-dlp
     """
+    # Validate URL is YouTube video before expensive operations
+    _validate_url_is_youtube_video(url)
+
     yt_dlp_options = {
         # Core purpose: Download transcripts
         "writesubtitles": True,
@@ -125,6 +195,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
         # Output formatting: Where to save files
         "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
         # UI/UX: Quiet operation for CLI user experience
+        "quiet": True,
         "no_warnings": True,
         "noprogress": True,
     }
@@ -139,7 +210,9 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
             mapped_exception = map_yt_dlp_exception(e)
             raise mapped_exception from e
 
-    assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
+    if raw_metadata is None:
+        msg = "Something weird happened, we couldn't get this video's information."
+        raise URLUnmappedError(msg)
     return raw_metadata
 
 

@@ -34,24 +34,24 @@ def run_cli(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
 # === URL Domain Validation ===
 @pytest.mark.slow
 def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
-    """Non-YouTube URLs should be rejected."""
+    """Test rejection of non-YouTube domains (e.g., google.com)."""
     exit_code, output = run_cli("https://www.google.com/", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_not_youtube_error"] in output
 
 
 @pytest.mark.slow
-def test_invalid_domain_raises_unmapped_error(tmp_path: Path) -> None:
-    """Unreachable domains should fail gracefully."""
+def test_invalid_domain_raises_not_youtube_error(tmp_path: Path) -> None:
+    """Test rejection of non-YouTube domains before yt-dlp call."""
     exit_code, output = run_cli("https://nonexistent-domain-12345.com", tmp_path)
     assert exit_code == 1
-    assert "unable to download webpage" in output.lower()
+    assert EXCEPTION_MESSAGES["url_not_youtube_error"] in output
 
 
 # === YouTube URL Format ===
 @pytest.mark.slow
 def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
-    """Truncated video IDs should be detected."""
+    """Test error message for truncated YouTube video IDs."""
     exit_code, output = run_cli("https://www.youtube.com/watch?v=Q4g", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_incomplete_error"] in output
@@ -59,16 +59,27 @@ def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
 
 @pytest.mark.slow
 def test_invalid_youtube_id_format_raises_invalid_error(tmp_path: Path) -> None:
-    """Invalid character patterns in video IDs should be caught."""
+    """Test error message for invalid YouTube video ID format."""
     exit_code, output = run_cli("https://www.youtube.com/watch?v=invalid-url", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_is_invalid_error"] in output
 
 
+@pytest.mark.slow
+def test_playlist_url_raises_playlist_not_supported_error(tmp_path: Path) -> None:
+    """Test rejection of YouTube playlist URLs."""
+    exit_code, output = run_cli(
+        "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e",
+        tmp_path,
+    )
+    assert exit_code == 1
+    assert EXCEPTION_MESSAGES["url_playlist_not_supported_error"] in output
+
+
 # === Video Availability ===
 @pytest.mark.slow
 def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
-    """Handles videos removed from YouTube."""
+    """Test error message for removed/unavailable YouTube videos."""
     exit_code, output = run_cli("https://youtu.be/ai_HGCf2w_w", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_video_unavailable_error"] in output
@@ -76,7 +87,7 @@ def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
 
 @pytest.mark.slow
 def test_private_video_raises_private_error(tmp_path: Path) -> None:
-    """Handles private/restricted videos."""
+    """Test error message for private/restricted YouTube videos."""
     exit_code, output = run_cli("https://youtu.be/15vClfaR35w", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_video_is_private_error"] in output
@@ -87,7 +98,7 @@ def test_private_video_raises_private_error(tmp_path: Path) -> None:
 def test_video_without_transcript_raises_transcript_not_found_error(
     tmp_path: Path,
 ) -> None:
-    """Handles videos that exist but lack transcripts."""
+    """Test error message for videos without available transcripts."""
     exit_code, output = run_cli("https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_transcript_not_found_error"] in output
@@ -96,17 +107,14 @@ def test_video_without_transcript_raises_transcript_not_found_error(
 # === Network/Access ===
 @pytest.mark.slow
 def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
-    """Intermittent bot protection should either succeed or fail cleanly."""
-    # This is intermittent - could succeed (0) or fail (1) due to bot protection
+    """Test graceful handling of YouTube bot protection (may succeed or fail)."""
     exit_code, output = run_cli("https://www.youtube.com/watch?v=Q4gsvJvRjCU", tmp_path)
-    assert exit_code in [0, 1]  # Either works or fails gracefully
+    assert exit_code in [0, 1]
     if exit_code == 1:
-        # If it fails, should be due to bot protection
         assert any(
             phrase in output.lower() for phrase in ["verification", "bot", "sign in"]
         )
     else:
-        # If it succeeds, should create an XML file in tmp directory
         xml_files = list(tmp_path.glob("*.xml"))
         assert len(xml_files) == 1
 
@@ -116,11 +124,9 @@ def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
 def test_valid_video_with_transcript_creates_xml_successfully(
     tmp_path: Path,
 ) -> None:
-    """End-to-end success with stable public video."""
-    # Using Rick Astley - Never Gonna Give You Up (stable, public video)
+    """Test successful XML generation from valid YouTube video with transcript."""
     exit_code, output = run_cli("https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path)
     assert exit_code == 0
     assert "✅ Created" in output
-    # Verify XML file was created in tmp directory
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1

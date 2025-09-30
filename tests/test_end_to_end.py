@@ -200,9 +200,6 @@ def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Should create exactly one XML file for single video"
 
-    # Output should indicate noplaylist option was applied
-    assert "because of --no-playlist" in output.lower()
-
 
 @pytest.mark.slow
 def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
