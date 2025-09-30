@@ -21,6 +21,7 @@ from youtube_to_xml.exceptions import (
     URLNotYouTubeError,
     URLPlaylistNotSupportedError,
     URLTranscriptNotFoundError,
+    URLUnmappedError,
     map_yt_dlp_exception,
 )
 from youtube_to_xml.logging_config import get_logger
@@ -209,7 +210,9 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
             mapped_exception = map_yt_dlp_exception(e)
             raise mapped_exception from e
 
-    assert raw_metadata is not None  # Satisfy Pyright type checker  # noqa: S101
+    if raw_metadata is None:
+        msg = "Something weird happened, we couldn't get this video's information."
+        raise URLUnmappedError(msg)
     return raw_metadata
 
 
