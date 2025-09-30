@@ -15,14 +15,16 @@ logger.debug(
 ```
 
 ## URLS
-Does `test_url_parser.py`? The URL detection function should be tested in test_cli.py since it's CLI functionality, but the URL parsing itself is already well-tested in test_url_parser.py.
 
-**Do these work / tested?**
-https://www.youtube.com/watch?v=Q4gsvJvRjCU
-https://www.youtube.com/live/d6dp_dwgpYQ?si=F1UAT6ks5QqRCO-g
-https://youtube.com/shorts/7PaO4eBei44?si=1BUbuyiMCwiXtJOu
-https://youtu.be/TTX4Q7vnV9E?si=gLCfdR_YdFE5ZGn6
-https://youtu.be/Q4gsvJvRjCU?si=HXoO3rP77S6b5HG2
+**Include Basic URL checking in `url_parser.py` or YAGNI?**
+- Should `cli.py` have `_is_valid_url` (for routing?)
+- `url_parser.py` currently has `_validate_url_is_youtube_video` (slow), should it also have a simple non "yt-dlp" check first with "you" pattern in url?
+- What happens when this is an API service, b/c `cli.py` only has basic url test 
+- These URLs work, any other unique patters in code base?
+   - https://www.youtube.com/watch?v=Q4gsvJvRjCU
+   - https://youtube.com/shorts/7PaO4eBei44?si=1BUbuyiMCwiXtJOu
+   - https://youtu.be/TTX4Q7vnV9E?si=gLCfdR_YdFE5ZGn6
+   - ie. do they all have "you" in?
   
 
 **Duplication**
