@@ -162,6 +162,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
         # Output formatting: Where to save files
         "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
         # UI/UX: Quiet operation for CLI user experience
+        "quiet": True,
         "no_warnings": True,
         "noprogress": True,
     }

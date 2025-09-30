@@ -157,6 +157,32 @@ class TestParseYoutubeUrlFunction:
         if sig.return_annotation != inspect.Signature.empty:
             assert sig.return_annotation == TranscriptDocument
 
+    @pytest.mark.slow
+    def test_parse_youtube_url_suppresses_yt_dlp_noise(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
+        """Test that yt-dlp technical output is suppressed for clean UX."""
+        # Use a real YouTube video that will succeed
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+        # Execute function
+        parse_youtube_url(url)
+
+        # Capture all output
+        captured = capsys.readouterr()
+        combined_output = captured.out + captured.err
+
+        # Should NOT contain yt-dlp technical noise
+        assert "[youtube]" not in combined_output, (
+            "yt-dlp noise '[youtube]' should be suppressed with quiet=True"
+        )
+        assert "[info]" not in combined_output, (
+            "yt-dlp noise '[info]' should be suppressed with quiet=True"
+        )
+        assert "[download]" not in combined_output, (
+            "yt-dlp noise '[download]' should be suppressed with quiet=True"
+        )
+
 
 class TestTranscriptFilePriority:
     """Test transcript file priority selection logic."""
