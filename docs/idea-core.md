@@ -1,0 +1,1 @@
+Does anyone else make a lot of YouTube playlists and then you forget what you’ve put where, and if any are related on topic area? And then you keep dropping the URLs into Google LM but you don’t pay for it so and you loose the conversation anyway? And neither can you "cross-chat" across multiple transcripts.
