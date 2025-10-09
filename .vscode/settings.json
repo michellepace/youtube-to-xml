@@ -25,4 +25,11 @@
             "source.organizeImports": "explicit"
         }
     },
+
+    // 📝 Markdownlint: Markdown linting (matches CodeRabbit's checks)
+    "[markdown]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": "explicit"
+        }
+    },
 }

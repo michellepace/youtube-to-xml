@@ -1,0 +1,8 @@
+# Configuration for VSCode/Cursor markdownlint extension (matches CodeRabbit AI linter)
+# Extension: davidanson.vscode-markdownlint
+
+# Disable only the rules that interfere with practical markdown writing
+MD013: false  # Line length (inappropriate for markdown)
+MD033: false  # Allow inline HTML (<details>, <tags>, etc.)
+MD036: false  # Allow emphasis (bold/italic) without treating it as heading
+MD041: false  # First line doesn't need to be h1

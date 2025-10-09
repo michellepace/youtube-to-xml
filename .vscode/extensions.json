@@ -7,6 +7,7 @@
         "charliermarsh.ruff",         // Python linter & formatter (Astral ecosystem like UV)
         "anysphere.cursorpyright",    // Python language server (autocomplete, hover info, go-to-definition)
         "tamasfe.even-better-toml",   // TOML language support (syntax highlighting, validation)
+        "davidanson.vscode-markdownlint",  // Markdown linter (same tool CodeRabbit uses)
 
         // For VSCode users in place of anysphere.cursorpyright
         "ms-python.vscode-pylance",
