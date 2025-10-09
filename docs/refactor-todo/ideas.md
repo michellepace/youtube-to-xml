@@ -14,11 +14,12 @@ logger.debug(
 )
 ```
 
-
 ## REFACTOR TO NAMED TUPLES
+
 "For any new function returning multiple values, use NamedTuple with descriptive field names instead of plain tuples to make the return type self-documenting and enable IDE autocomplete."
 
 **Example:**
+
 ```python
 # Instead of: -> tuple[str, int]
 # Use: -> ProcessResult, where ProcessResult = NamedTuple('ProcessResult', [('content', str), ('count', int)])

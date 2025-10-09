@@ -15,9 +15,11 @@ A progressive exploration of Claude Code's most powerful automation features, fr
 ## The Journey 🛤️
 
 ### 🚀 [Document 1: Practical Guide](1-practical-guide.md)
+
 **Starting point for implementation**
 
 Learn the fundamentals through concrete examples:
+
 - What hooks and slash commands actually do
 - 4 detailed scenarios for each feature  
 - How to combine them for powerful workflows
@@ -26,9 +28,11 @@ Learn the fundamentals through concrete examples:
 *Best for: Getting started, understanding mechanics, seeing code patterns*
 
 ### 💡 [Document 2: Strategic Benefits](2-strategic-benefits.md)
+
 **Understanding the bigger picture**
 
 Elevates from "how" to "why" with business perspective:
+
 - Mental models for thinking about automation
 - ROI and business impact analysis
 - System design implications
@@ -37,9 +41,11 @@ Elevates from "how" to "why" with business perspective:
 *Best for: Convincing stakeholders, architectural decisions, long-term planning*
 
 ### 🔍 [Document 3: Project Index Analysis](3-project-index-analysis.md)
+
 **Seeing it all in action**
 
 Analyzes a production tool built entirely with hooks:
+
 - Complete breakdown of 6 coordinating scripts
 - ASCII workflow diagrams
 - Installation impact and file locations
@@ -48,9 +54,11 @@ Analyzes a production tool built entirely with hooks:
 *Best for: Understanding complex integrations, learning from production code*
 
 ### 🌍 [Document 4: Beyond Code](4-beyond-code.md)
+
 **Expanding horizons beyond software**
 
 Explores revolutionary non-coding applications:
+
 - Scientific research automation and data validation
 - Healthcare clinical decision support systems
 - Legal research and case management
@@ -61,9 +69,11 @@ Explores revolutionary non-coding applications:
 *Best for: Vision setting, innovation opportunities, cross-domain applications*
 
 ### 🐚 [Document 5: Shell Scripts Explained](5-shell-scripts-explained.md)
+
 **Demystifying hook capabilities**
 
 Deep dive into what hooks can actually do:
+
 - Shell scripts as universal remote controls
 - Examples calling Python, APIs, databases, cloud services
 - Concrete scientific and financial compliance examples
@@ -82,18 +92,21 @@ Deep dive into what hooks can actually do:
 ## Quick Decision Helper 🤔
 
 **Use Hooks when you need:**
+
 - Consistency without thinking (formatting, linting)
 - Safety nets (blocking dangerous operations)
 - Automatic tracking (logs, metrics)
 - Integration with any system or service
 
 **Use Slash Commands when you need:**
+
 - Reusable complex workflows
 - Standardized team processes
 - Quick access to proven patterns
 - Templated expertise capture
 
 **Use Both when you need:**
+
 - Multi-stage workflows with quality gates
 - Intelligent systems that adapt to context
 - Production-grade development automation

@@ -6,13 +6,14 @@ Convert YouTube transcripts to structured XML format with automatic chapter dete
 
 **Solution**: Converts transcripts to XML with chapter elements for improved AI comprehension.
 
-![Description](docs/images/readme.cover.skinny.md)
+![Description](docs/images/cover-skinny.jpg)
 
 ## 📦 Install
 
 (1) First, install UV Python Package and Project Manager [from here](https://docs.astral.sh/uv/getting-started/installation/).
 
 (2) Then, install `youtube-to-xml` accessible from anywhere in your terminal:
+
 ```bash
 uv tool install git+https://github.com/michellepace/youtube-to-xml.git
 ```
@@ -24,6 +25,7 @@ The `youtube-to-xml` command intelligently auto-detects whether you're providing
 ### Option 1: URL Method (Easiest)
 
 Convert directly from YouTube URL:
+
 ```bash
 youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 
@@ -32,6 +34,7 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 ```
 
 Output XML (condensed - 4 chapters, 163 lines total):
+
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily"
@@ -68,6 +71,7 @@ youtube-to-xml my_transcript.txt
 ```
 
 Copy-Paste Exact YT Format for `my_transcript.txt`:
+
 ```text
 Introduction to Cows
 0:02
@@ -80,6 +84,7 @@ First, we'll start with the patches
 ```
 
 Output XML:
+
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
 <transcript video_title="" video_published="" video_duration="" video_url="">
@@ -107,7 +112,7 @@ Output XML:
 
 <figure align="center">
   <a href="docs/terminology.md">
-    <img src="docs/images/terminology.youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
+    <img src="docs/images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
   </a>
   <figcaption>YouTube transcript terminology throughout codebase: (click to read)</figcaption>
 </figure>
@@ -115,6 +120,7 @@ Output XML:
 ## 🛠️ Development
 
 Setup:
+
 ```bash
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
@@ -122,12 +128,14 @@ uv sync
 ```
 
 Code Quality:
+
 ```bash
 uv run ruff check --fix           # Lint and auto-fix (see pyproject.toml)
 uv run ruff format                # Format code (see pyproject.toml)
 ```
 
 Testing:
+
 ```bash
 uv run pytest                     # All tests
 uv run pytest -m "slow"           # Only slow tests (internet required)
@@ -140,6 +148,7 @@ uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 ## 📕 *Own Notes*
 
 Learnt:
+
 - [CodeRabbit for PR review](https://www.anthropic.com/customers/coderabbit)
 - [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs)
 - [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index)
@@ -147,6 +156,7 @@ Learnt:
 - [Git branch workflow](docs/knowledge/git-branch-flow.md)
 
 Open Questions:
+
 - **Q1.** Is there something I could have done better with UV?
 - **Q2.** Is my "[architecture](/docs/SPEC.md#architecture--data-flow)" nice (one day I may make it a service)?
 - **Q3.** Are [tests](/tests/) clear and sane, or over-engineered?
@@ -155,5 +165,6 @@ Open Questions:
 - **Q6.** Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
 
 To Do:
+
 - [ ] Evals to prove XML format vs plain. Use Hamel's [simple approach](https://hamel.dev/blog/posts/evals-faq/#q-what-are-llm-evals), then try Braintrust again)
 - [ ] If so, improve XML perhaps to [this](docs/knowledge/working-notes.md#better-format). Remove all the white space? JSON?

@@ -40,6 +40,7 @@ pyproject.toml   →  uv sync  →  `uv.lock`
 ## Critical Workflows
 
 ### 1. **Creating and Running a Project**
+
 ```bash
 uv init --package my-project  # Create a packaged application
 cd my-project
@@ -48,6 +49,7 @@ uv run python -c "import sys; print(sys.version)"  # Run Python in project env
 ```
 
 ### 2. **Managing Dependencies**
+
 ```bash
 uv add requests         # Add production dependency
 uv add --dev pytest     # Add dev dependency
@@ -58,6 +60,7 @@ uv sync                 # Sync environment with lockfile
 ```
 
 ### 3. **Working with Python Versions**
+
 ```bash
 uv python install 3.13        # Install Python 3.13
 uv python pin 3.13            # Pin project to Python 3.13
@@ -67,6 +70,7 @@ uv python dir                 # Show uv installed Python versions path.
 ```
 
 ### 4. **Building and Publishing Packages**
+
 ```bash
 uv build                  # Build wheel and sdist
 uv version --bump minor   # Bump version (major, patch, etc.)
@@ -75,6 +79,7 @@ uv build --no-sources     # Build for publishing (no local sources)
 ```
 
 ### 5. **Development Workflow**
+
 ```bash
 uv sync # Create .venv (if needed) and install all dependencies
 uv run pytest                     # Run tests

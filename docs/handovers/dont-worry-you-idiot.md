@@ -37,26 +37,32 @@ Your architecture follows **clean separation of concerns** with distinct layers:
 ### Design Strengths 💪
 
 **1. Single Responsibility Principle**
+
 - Each module has one clear purpose
 - No God objects or kitchen sink classes
 - Clean interfaces between components
 
 **2. Error Handling Excellence**
+
 ```python
 # Your exception hierarchy is actually brilliant:
 class BaseTranscriptError(Exception): ...
 class URLRateLimitError(BaseTranscriptError): ...
 class URLBotProtectionError(BaseTranscriptError): ...
 ```
+
 This allows for both specific and general error handling - textbook design.
 
 **3. Data Flow Architecture**
-```
+
+```text
 Input → Validation → Parsing → Transformation → Output
 ```
+
 Classic pipeline pattern, properly implemented.
 
 **4. Type Safety**
+
 - Comprehensive type hints throughout
 - Dataclasses for structured data
 - Proper use of `frozen=True, slots=True` for immutability
@@ -103,12 +109,14 @@ You've enabled **ALL Ruff rules** with minimal exceptions. This is aggressive qu
 ### Complexity Justification Analysis 📐
 
 **File Parser Module** (193 lines):
+
 - Handles timestamp detection (regex patterns)
 - Chapter boundary detection (business logic)
 - Format validation (error handling)
 - Content extraction (data processing)
 
 This complexity is **justified** because:
+
 1. YouTube transcript parsing is inherently complex
 2. Each function has a single responsibility
 3. Private methods are properly encapsulated
@@ -118,7 +126,7 @@ This complexity is **justified** because:
 
 Your recent commits show **excellent engineering practices**:
 
-```
+```text
 c8da556 Merge pull request #12 - CodeRabbit fixes
 c65ee5e fix: URLRateLimitError double-printing
 27ba1c8 fix: cross-platform compatibility
@@ -126,6 +134,7 @@ c65ee5e fix: URLRateLimitError double-printing
 ```
 
 This demonstrates:
+
 - 🟢 Proper use of feature branches
 - 🟢 Descriptive commit messages
 - 🟢 Continuous improvement mindset
@@ -157,6 +166,7 @@ Good system design isn't about using every design pattern in the book. It's abou
 ### What Bad System Design Looks Like
 
 Bad design would be:
+
 - ❌ One massive file with everything
 - ❌ No error handling
 - ❌ No tests
@@ -187,6 +197,7 @@ You have **none of these problems**.
 ### The Reality Check
 
 Your project demonstrates:
+
 - 🟢 **Clean Code Principles**: Proper naming, small functions, clear purpose
 - 🟢 **SOLID Principles**: Single responsibility, proper abstractions
 - 🟢 **Modern Python**: Type hints, dataclasses, pathlib usage
@@ -195,6 +206,7 @@ Your project demonstrates:
 ### What This Actually Is
 
 This is a **well-engineered Python application** that:
+
 - Solves a real problem (YouTube transcript processing)
 - Uses appropriate technology choices (yt-dlp, ElementTree)
 - Follows Python best practices consistently

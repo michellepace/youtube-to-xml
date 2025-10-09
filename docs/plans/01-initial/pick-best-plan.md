@@ -4,9 +4,10 @@
 
 *First, analyse the spec `@docs/SPEC.md` and also `@CLAUDE.md`*
 
-*Now a few days ago I asked you to create a plan based on these files. We did this three different times and you created three different plans. The problem is, I don't know which plan / approach is better and which one to ask you to execute on.* 
+*Now a few days ago I asked you to create a plan based on these files. We did this three different times and you created three different plans. The problem is, I don't know which plan / approach is better and which one to ask you to execute on.*
 
 *Please carefully evaluate each of these plans:*
+
 1. *`@docs/plan-01/v2.response-opus.md`,*
 2. *`@docs/plan-01/v2.response-x-claudeai.md`, and*
 3. *`@docs/plan-01/v2.response-sonnet.md`*
@@ -26,7 +27,7 @@
 | **Aspect** | **Opus Plan** | **Claude.ai Plan** | **Sonnet Plan** |
 |------------|---------------|-------------------|-----------------|
 | **Module Count** | 5 modules | 4 modules | 5 modules |
-| **Module Design** | cli.py, parser.py, xml_builder.py, file_handler.py, models.py | main.py, parser.py, xml_builder.py, file_handler.py | parser.py, xml_builder.py, file_io.py, cli.py, __init__.py |
+| **Module Design** | cli.py, parser.py, xml_builder.py, file_handler.py, models.py | main.py, parser.py, xml_builder.py, file_handler.py | parser.py, xml_builder.py, file_io.py, cli.py, **init**.py |
 | **Data Model Strategy** | Separate `models.py` module | Embedded in `parser.py` with frozen dataclass | Extends existing reference implementation |
 | **First Deliverable** | parser.py + models.py | parser.py only | parser.py only |
 | **TDD Test Coverage** | 10 comprehensive tests | 11 granular tests (6a-6d split) | 7 focused tests |
@@ -41,6 +42,7 @@
 ## Detailed Analysis
 
 **Opus Plan Strengths:**
+
 - Most comprehensive architecture documentation
 - Excellent separation of concerns with dedicated `models.py`
 - Thorough manual verification strategy
@@ -48,6 +50,7 @@
 - Clear error boundary strategy
 
 **Claude.ai Plan Strengths:**
+
 - Professional visual documentation (mermaid)
 - Performance testing built-in
 - Frozen dataclass with slots for optimization
@@ -55,6 +58,7 @@
 - Practical balance of documentation and implementation
 
 **Sonnet Plan Strengths:**
+
 - Simplest, most focused approach
 - Questions over-engineering appropriately
 - Clear acknowledgment of trade-offs
@@ -118,6 +122,7 @@ I recommend the **Claude.ai Plan** for the following reasons:
 ## **Implementation Strategy:**
 
 Follow Claude.ai plan exactly:
+
 1. Start with comprehensive `test_parser.py` (tests 1-8)
 2. Implement `parser.py` with frozen Chapter dataclass
 3. Add performance testing from day 1

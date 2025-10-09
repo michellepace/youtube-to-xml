@@ -9,6 +9,7 @@
 Hooks are **automatic shell commands** that execute at specific points in Claude's lifecycle—think of them as event listeners for your development workflow. They run **deterministically** without Claude having to "remember" to do something.
 
 **Key Characteristics:**
+
 - 🔄 **Automatic execution** - No manual trigger needed
 - 🎯 **Event-driven** - Responds to specific Claude actions
 - 🚫 **Can block operations** - Prevent unwanted actions
@@ -19,6 +20,7 @@ Hooks are **automatic shell commands** that execute at specific points in Claude
 Slash Commands are **reusable prompt templates** stored as markdown files. They're like having a library of carefully crafted prompts you can invoke instantly with parameters.
 
 **Key Characteristics:**
+
 - 🏃‍♂️ **Manual execution** - You trigger them with `/command-name`
 - 📝 **Template-based** - Markdown files with argument placeholders
 - 🔧 **Parameterizable** - Support `$ARGUMENTS`, `$1`, `$2`, etc.
@@ -319,6 +321,7 @@ Deploy version $2 to $1 environment with full validation.
 ```
 
 **Combined with Hook:**
+
 ```json
 {
   "hooks": {
@@ -349,6 +352,7 @@ Deploy version $2 to $1 environment with full validation.
 ```
 
 **How this combo works**:
+
 1. **User runs** `/deploy production v2.1.0`
 2. **Slash command** gathers context and prepares deployment
 3. **PreToolUse hook** validates deployment safety before any kubectl commands
@@ -364,9 +368,11 @@ This creates a **fail-safe deployment pipeline** where the slash command provide
 Looking at your YouTube-to-XML converter project, here are specific opportunities beyond the existing `/commit` command:
 
 ### 1. 📺 YouTube Content Analysis Command
+
 ```bash
 # .claude/commands/analyze-video.md
 ```
+
 ```markdown
 ---
 description: Analyze YouTube video for content patterns and extraction quality
@@ -389,6 +395,7 @@ Analyze this YouTube video for $2 focusing on:
 ```
 
 ### 2. 🧪 Testing & Quality Hooks
+
 ```json
 {
   "hooks": {
@@ -408,6 +415,7 @@ Analyze this YouTube video for $2 focusing on:
 ```
 
 **Create** `.claude/hooks/auto-test.sh`:
+
 ```bash
 #!/bin/bash
 # Auto-test modified files
@@ -419,6 +427,7 @@ fi
 ```
 
 ### 3. 📊 Performance Monitoring Command
+
 ```markdown
 ---
 description: Profile video processing performance and identify bottlenecks
@@ -437,6 +446,7 @@ Run comprehensive performance analysis focusing on $2 bottlenecks.
 ```
 
 ### 4. 🔍 XML Validation Hook
+
 ```json
 {
   "hooks": {
@@ -456,6 +466,7 @@ Run comprehensive performance analysis focusing on $2 bottlenecks.
 ```
 
 ### 5. 🚀 Integration Testing Command
+
 ```markdown
 ---  
 description: Run full integration tests with real YouTube URLs

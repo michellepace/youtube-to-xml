@@ -3,7 +3,9 @@
 ## The Pattern: Context-Free Exceptions with Presentation Layers
 
 ### Core Principle
+
 Each layer of your application has a specific responsibility:
+
 - **Parser**: Detects and raises specific exception types with technical messages
 - **Exceptions**: Define error types and carry context-free problem descriptions  
 - **CLI**: Catches exceptions and formats them for command-line users
@@ -19,7 +21,8 @@ Each layer of your application has a specific responsibility:
 5. **Future-Proof**: When you build your Next.js service, the same parser and exceptions work perfectly
 
 ### Architecture Diagram
-```
+
+```text
 Parser Module          Exceptions Module        Presentation Layers
 ─────────────         ─────────────────        ──────────────────
                                                
@@ -87,6 +90,7 @@ class MissingTimestampError(ValueError):
 ### Step 2: Update `src/youtube_to_xml/parser.py`
 
 Add import at the top:
+
 ```python
 from youtube_to_xml.exceptions import (
     EmptyFileError,
@@ -98,6 +102,7 @@ from youtube_to_xml.exceptions import (
 Update the `validate_transcript_format` function to raise custom exceptions:
 
 **Change from:**
+
 ```python
 if not raw_transcript.strip():
     msg = "Your file is empty"
@@ -105,12 +110,14 @@ if not raw_transcript.strip():
 ```
 
 **To:**
+
 ```python
 if not raw_transcript.strip():
     raise EmptyFileError()
 ```
 
 **Change from:**
+
 ```python
 if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
     msg = "Wrong format - transcript must start with a chapter title, not a timestamp"
@@ -118,12 +125,14 @@ if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
 ```
 
 **To:**
+
 ```python
 if transcript_lines and TIMESTAMP_PATTERN.match(transcript_lines[0].strip()):
     raise InvalidTranscriptFormatError()
 ```
 
 **Change from:**
+
 ```python
 if not timestamp_indices:
     msg = "Wrong format - transcript must contain at least one timestamp"
@@ -131,6 +140,7 @@ if not timestamp_indices:
 ```
 
 **To:**
+
 ```python
 if not timestamp_indices:
     raise MissingTimestampError()
@@ -139,6 +149,7 @@ if not timestamp_indices:
 ### Step 3: Update `tests/test_parser.py`
 
 Add import at the top:
+
 ```python
 from youtube_to_xml.exceptions import (
     EmptyFileError,
@@ -164,6 +175,7 @@ def test_rejects_transcript_starting_with_timestamp() -> None:
 ```
 
 For any test currently checking `ValueError`, determine which specific exception it should expect:
+
 - Empty file tests → `EmptyFileError`
 - Format validation tests → `InvalidTranscriptFormatError`  
 - Missing timestamp tests → `MissingTimestampError`
@@ -287,11 +299,13 @@ youtube-to-xml = "youtube_to_xml.cli:main"
 After making these changes:
 
 1. **Run existing tests** to ensure they pass with new exception types:
+
    ```bash
    uv run pytest
    ```
 
 2. **Test the CLI manually**:
+
    ```bash
    # Valid transcript
    uv run youtube-to-xml sample.txt
@@ -310,11 +324,13 @@ After making these changes:
    ```
 
 3. **Verify help message**:
+
    ```bash
    uv run youtube-to-xml --help
    ```
 
 4. **Create `tests/test_cli.py`** to test CLI functionality:
+
    ```python
    """Tests for CLI functionality."""
    
@@ -359,7 +375,7 @@ After making these changes:
        assert result.returncode == 1
        assert "couldn't find your file" in result.stdout
    ```
-   
+
    **Note**: Using `cwd=tmp_path` ensures all file operations happen in the temporary directory, preventing test pollution of your project directory. This follows the same isolation principle as `test_xml_builder.py` but adapted for subprocess testing.
 
 ## Benefits for Your Future Service

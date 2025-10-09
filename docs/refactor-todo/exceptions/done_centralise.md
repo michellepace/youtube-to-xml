@@ -6,15 +6,15 @@
 
 **Goal**: Centralise exception messages in `exceptions.py` using an `EXCEPTION_MESSAGES` constant, enabling single-source-of-truth message management while maintaining existing functionality and test coverage.
 
-
 ## 📊 **Current Exception Testing Landscape**
 
 **Current Message Hardcoding Problem**:
+
 - 📍 **Exception classes**: Default messages in `__init__` methods (14 classes)
 - 📍 **CLI formatting**: `"❌ {e}"` and `"Try: youtube-to-xml --help"` in cli.py
 - 📍 **Hardcoded default exception messages (excluding `exceptions.py`)**:
-   - Across 1 file in `src/`
-   - Across 5 files in `tests/`
+  - Across 1 file in `src/`
+  - Across 5 files in `tests/`
 
 **All Occurrences of Hardcoded Exception Messages**
 
@@ -43,21 +43,24 @@ Summary Table:
 | tests/test_file_parser.py | FileInvalidFormatError | Wrong format in transcript file | N/A | ✅ **REFACTORED** *(tests exception types only - matches simplified implementation)* |
 
 **CLI Formatting Patterns (in cli.py)**:
+
 - `"❌ {e}"` formatting patterns
 - `"Try: youtube-to-xml --help"` help hints
-
 
 ## 🚀 **High-Level Steps**
 
 ### **Step 1: Centralise Exception Messages** - ✅ **DONE**
+
 Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containing all exception messages. Update all exception classes to reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded defaults.
 
 **Key design decisions**:
+
 - **Message keys**: Use snake_case matching exception class names (e.g., `URLIsInvalidError` → `"url_is_invalid_error"`)
 - **Pure messages only**: No CLI formatting (❌, help hints) in exception messages - keep exceptions framework-agnostic for potential API usage
 - **Scope**: Replace hardcoded exception messages with constants
 
 **CRITICAL: What NOT to Centralize**:
+
 - ❌ **DO NOT** add CLI formatting constants (❌, ✅, help hints) to `exceptions.py`
 - ❌ **DO NOT** centralize presentation layer concerns like success messages or error prefixes
 - ❌ **DO NOT** mix CLI surface patterns with business logic exception messages
@@ -65,11 +68,13 @@ Add `EXCEPTION_MESSAGES` constant to `src/youtube_to_xml/exceptions.py` containi
 - **WHERE CLI formatting belongs**: Keep hardcoded in CLI layer only (`cli.py` and CLI tests)
 
 ### **Step 2: Update Tests to Use Message Constants** - ✅ **DONE**
+
 Update test assertions across 9 test files to import and reference `EXCEPTION_MESSAGES["key"]` instead of hardcoded strings. Focus on exception message assertions only - leave XML/timestamp validation strings unchanged.
 
 **IMPORTANT**: Only replace hardcoded exception message strings. DO NOT touch CLI formatting patterns (❌, ✅, "Try: youtube-to-xml --help") - these remain hardcoded as presentation layer concerns.
 
 ### **Benefits**
+
 - **Single source of truth**: Change exception messages in one place
 - **Framework-agnostic**: Pure exception messages support future API service without CLI dependencies
 - **Maintainable**: Update business logic messages without breaking tests
@@ -80,17 +85,19 @@ Update test assertions across 9 test files to import and reference `EXCEPTION_ME
 
 ---
 
-## 🔬 **Future Investigation: 
+## 🔬 **Future Investigation
 
 ### **Exception Granularity**
 
 **Problem**: Some exceptions may be handling multiple distinct scenarios, potentially creating confusing user experiences where different underlying issues show the same error message.
 
 **Examples of potential concerns**:
+
 - `URLIsInvalidError` used for both malformed URLs and non-existent videos
 - `URLUnmappedError` combining network failures, private videos, and unknown errors
 
 **What to investigate**:
+
 - Review exception pattern matching logic for overlapping or incorrect mappings
 - Assess whether current exception types provide sufficient granularity for different error scenarios
 - Evaluate if new exception types are needed for better user experience differentiation

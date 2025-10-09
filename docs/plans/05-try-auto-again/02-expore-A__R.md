@@ -14,7 +14,7 @@ This design unifies the file-based and YouTube URL-based transcript processing i
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────┐
 │     CLI     │  Entry point with --file or --url flags
 └──────┬──────┘
@@ -44,7 +44,7 @@ This design unifies the file-based and YouTube URL-based transcript processing i
 
 ## Module Structure
 
-```
+```text
 src/youtube_to_xml/
 ├── cli.py              # CLI entry point with --file/--url flags
 ├── sources/            # Source adapters
@@ -87,6 +87,7 @@ class Chapter:
 ### Key Design Decision: Unified Chapter Structure
 
 Both sources will convert their data to produce `Chapter` objects with `content_lines` as `list[str]`:
+
 - **File source**: Already in this format (timestamps and text lines)
 - **YouTube source**: Converts `IndividualSubtitle` objects to alternating timestamp/text lines
 
@@ -170,11 +171,13 @@ class YouTubeSource:
 ## Parser Modules
 
 ### File Parser (parsers/file_parser.py)
+
 - Renamed from current `parser.py`
 - No changes to logic - uses 2-line gap rule for chapter detection
 - Returns `list[Chapter]` with content already as `list[str]`
 
 ### YouTube Parser (parsers/youtube_parser.py)
+
 - New module extracting parsing logic from experimental script
 - Handles subtitle download and chapter assignment
 - Converts `IndividualSubtitle` objects to `list[str]` format:
@@ -268,37 +271,42 @@ def chapters_to_xml(chapters: list[Chapter], metadata: Metadata) -> str:
 ## Migration Plan
 
 ### Phase 1: Refactor Existing Code
+
 1. Create `sources/` and `parsers/` directories
 2. Move and rename `parser.py` → `parsers/file_parser.py`
 3. Create `sources/base.py` with shared types
 4. Update imports across the codebase
 
 ### Phase 2: Implement YouTube Support
+
 1. Create `parsers/youtube_parser.py` extracting logic from experimental script
 2. Create `sources/youtube_source.py` as adapter
 3. Add `yt-dlp` to main dependencies in `pyproject.toml`
 4. Update `xml_builder.py` to accept metadata parameter
 
 ### Phase 3: Update CLI
+
 1. Implement `--file` and `--url` flags
 2. Add source selection logic
 3. Update error handling for both source types
 4. Update help text and documentation
 
 ### Phase 4: Testing
+
 1. Update existing tests for renamed modules
 2. Add tests for YouTube parser
 3. Add tests for source adapters
 4. Add integration tests for YouTube URLs
 
 ### Phase 5: Cleanup
+
 1. Delete `scripts/transcript_auto_fetcher.py`
 2. Update README with new usage examples
 3. Update CLAUDE.md with new architecture
 
 ## Testing Strategy
 
-```
+```text
 tests/
 ├── test_cli.py                    # CLI with both sources
 ├── test_sources/
@@ -336,6 +344,7 @@ uv run youtube-to-xml --url https://www.youtube.com/watch?v=Q4gsvJvRjCU
 ## Future Considerations
 
 ### API Service Adaptation
+
 The source adapters can be directly reused in API endpoints:
 
 ```python
@@ -351,7 +360,9 @@ async def convert_transcript(source_type: str, source_data: str):
 ```
 
 ### Additional Sources
+
 New sources (e.g., Vimeo) can be added by:
+
 1. Creating a new source adapter in `sources/`
 2. Creating a new parser in `parsers/` if needed
 3. Adding CLI flag support

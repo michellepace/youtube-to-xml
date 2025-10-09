@@ -1,6 +1,7 @@
 # Working Notes / Rough
 
 ## Transcripts with no chapters
+
 Currently I reject it, deal with it nicely.
 
 ```text
@@ -43,7 +44,7 @@ New format, maybe?:
     </chapter>
   </chapters>
 </transcript>
-``` 
+```
 
 Does it perform better than this (and does this perform better than raw transcript):
 

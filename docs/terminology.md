@@ -51,6 +51,7 @@ To create your first hook, use the hooks
 ```
 
 This contains:
+
 - **Transcript**: The complete text (excerpt shown here)
 - **Chapter Titles**: Section headers like "Intro" and "Hooks"
 - **Transcript Lines**: Words spoken at a given point in time (each consists of a timestamp + text pair)
@@ -82,6 +83,7 @@ Both sources provide the same data - timestamped text - just in different format
 ## Summary
 
 While `yt-dlp` uses "subtitle" in its commands, what you're actually processing is **transcript data** - the textual representation of speech. Whether it comes from:
+
 - A subtitle file (technical format from `yt-dlp`)
 - The transcript panel (user-facing display on YouTube)
 

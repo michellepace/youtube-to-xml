@@ -15,6 +15,7 @@
 The goal is to accurately reflect the current status. Delete the existing content and re-write.
 
 4. **Verify Success Criteria**:
+
 - [ ] Task 1 completed
 - [ ] Task 2 completed - "Actual Output" and "Status" updated for all cases
 - [ ] Task 3 completed - All reporting documentation updated coherently
@@ -35,6 +36,7 @@ All 9 file-based CLI test cases pass perfectly. Exception handling is stable and
 Run: `cd /tmp && uv run --directory /home/mp/projects/python/youtube-to-xml youtube-to-xml 2>&1`
 
 **Actual Output:**
+
 ```bash
 usage: youtube-to-xml [-h] YOUTUBE_URL or yt_transcript.txt
 youtube-to-xml: error: the following arguments are required: YOUTUBE_URL or yt_transcript.txt
@@ -49,6 +51,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml just_plain_text`
 
 **Actual Output:**
+
 ```bash
 ❌ Input must be a YouTube URL or .txt file
 
@@ -62,6 +65,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml "text with spaces"`
 
 **Actual Output:**
+
 ```bash
 ❌ Input must be a YouTube URL or .txt file
 
@@ -75,6 +79,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml text with spaces`
 
 **Actual Output:**
+
 ```bash
 usage: youtube-to-xml [-h] YOUTUBE_URL or yt_transcript.txt
 youtube-to-xml: error: unrecognized arguments: with spaces
@@ -89,6 +94,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml CLAUDE.md`
 
 **Actual Output:**
+
 ```bash
 ❌ Input must be a YouTube URL or .txt file
 
@@ -102,6 +108,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml does-not-exist.txt`
 
 **Actual Output:**
+
 ```bash
 ❌ We couldn't find your file
 
@@ -115,6 +122,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml /tmp/empty-test.txt`
 
 **Actual Output:**
+
 ```bash
 ❌ Your file is empty
 
@@ -128,6 +136,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml example_transcripts/x0-chapters-invalid-format.txt`
 
 **Actual Output:**
+
 ```bash
 ❌ Wrong format in transcript file
 
@@ -141,6 +150,7 @@ Try: youtube-to-xml --help
 Run: `uv run youtube-to-xml example_transcripts/introduction-to-cows.txt`
 
 **Actual Output:**
+
 ```bash
 ✅ Created: introduction-to-cows.xml
 ```

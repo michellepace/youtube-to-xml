@@ -15,6 +15,7 @@
 The goal is to accurately reflect the current status. Delete the existing content and re-write.
 
 4. **Verify Success Criteria**:
+
 - [x] Task 1 completed - All 15 test cases run with forensic accuracy
 - [x] Task 2 completed - "Actual Output" and "Status" updated for all cases with exact terminal output
 - [x] Task 3 completed - All reporting documentation updated coherently (Executive Summary, Tables, Issues, Recommendations)
@@ -219,7 +220,6 @@ Try: youtube-to-xml --help
 
 🟢 Status: PERFECT! BUG FIXED + yt-dlp noise fully suppressed (was 40+ lines, now 3 lines)
 
-
 ### 12. Rate limiting scenario (URLRateLimitError - Intermittent/Unpredictable)
 
 Run: `uv run youtube-to-xml <any-youtube-url>`
@@ -280,17 +280,20 @@ Actual Output:
 ## 📄 Important Test Case Notes (Revised: 2025-09-30, WITH quiet=True)
 
 **CLI-Level Validation (Cases 1, 2, 4)**
+
 - These tests never reach URL parser - caught by `_is_valid_url()` in CLI layer
 - Show consistent 3-line output with no yt-dlp involvement
 - Validates architectural decision to do basic input validation before expensive operations
 
 **Output Consistency Achievement**
+
 - **Error cases**: 3-4 lines (was 8-11 lines with yt-dlp noise)
 - **Success cases**: 2 lines (was 12 lines with yt-dlp noise)
 - **Reduction**: 67-83% fewer output lines across all URL operations
 - **Result**: URL processing now matches the clean UX of file-based processing
 
 **Bot Protection Behavior (Case 10)**
+
 - Bot protection is intermittent and network-dependent
 - When triggered, now shows clean `URLBotProtectionError` message
 - This test run succeeded without triggering protection - video processed normally
@@ -338,17 +341,20 @@ Actual Output:
 ## 📄 Strategic Recommendations (Revised: 2025-09-30, WITH quiet=True)
 
 **🟡 Reduce Duplicate Network Calls** - Current architecture makes 2 yt-dlp calls per URL:
+
 - Validation call: `extract_info(process=False)` (~1.5-4s)
 - Download call: `extract_info(process=True)` (~8-9s)
 - **Impact**: ~13-17% test suite overhead, doubles API latency for future API service
 - **Solution**: Consolidate to single-pass validation (see `time.md` benchmark)
 
 **🟢 Ready for Production**
+
 - **Exception Hierarchy** - Comprehensive coverage of all YouTube/yt-dlp error scenarios
 - **CLI Layer Validation** - Proper separation of concerns (basic validation before expensive operations)
 - **Test Coverage** - All 15 manual test cases pass with clean output, automated pytest suite comprehensive
 
 **🔵 Future Considerations (API Service)**
+
 - **Async Support** - Current sync architecture adequate for CLI, will need async wrapper for API
 - **Caching Strategy** - Consider video ID → transcript cache to reduce YouTube API load
 - **Timeout Controls** - Add configurable timeout parameter for API request management

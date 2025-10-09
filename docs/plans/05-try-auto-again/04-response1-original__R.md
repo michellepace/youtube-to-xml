@@ -3,6 +3,7 @@
 ## Current State Assessment
 
 Your analysis in `next.md` is **spot-on** about the architectural inconsistencies:
+
 - Two incompatible Chapter classes with different content representation
 - No shared VideoMetadata in the main app
 - Duplicate XML generation logic
@@ -10,20 +11,25 @@ Your analysis in `next.md` is **spot-on** about the architectural inconsistencie
 ## Issues with Your Proposed Steps
 
 ### Step 1 is redundant and risky
+
 Adding VideoMetadata to `file_parser.py` first, then moving it to `models.py` creates unnecessary code churn and potential for errors. Go straight to `models.py`.
 
 ### Step 2 has a critical gap
+
 You need to update `xml_builder.py` to accept VideoMetadata **before** refactoring `file_parser.py`, otherwise all existing tests will break when Chapter moves to models but xml_builder still imports from file_parser.
 
 ### Step 3 is too large for one commit
+
 Refactoring the experimental script involves complex conversions (IndividualSubtitle → content_lines). This should be isolated.
 
 ### Missing test-first approach
+
 Your steps don't follow TDD - you should write failing tests that drive the creation of `models.py`.
 
 ## Verified Next Steps for Value Delivery
 
 ### Your architectural vision is sound
+
 Your plan to create shared models eliminates duplication and enables metadata throughout the system. However, the execution order needs adjustment for lower risk and proper TDD.
 
 ## Pragmatic TDD Approach
@@ -50,6 +56,7 @@ def test_chapter_duration_calculation():
 # 4. Update xml_builder signature: chapters_to_xml(chapters, metadata=VideoMetadata.empty())
 # 5. All existing tests should still pass
 ```
+
 **Commit**: "refactor: extract shared models with backward compatibility"
 
 ### Value Delivery 2: Add metadata parameter to xml_builder
@@ -69,6 +76,7 @@ def test_xml_includes_metadata():
 # 3. Update xml_builder to use metadata and format functions
 # 4. Update CLI to pass VideoMetadata.empty()
 ```
+
 **Commit**: "feat: add metadata support to xml_builder"
 
 ### Value Delivery 3: Refactor experimental script (separate PR)
@@ -82,6 +90,7 @@ def test_url_and_file_produce_identical_xml_structure():
 # 2. Update url_to_transcript.py to use shared models
 # 3. Convert IndividualSubtitle list to content_lines during Chapter creation
 ```
+
 **Commit**: "refactor: align url script with shared models"
 
 ## Why This Approach Works Better
@@ -112,6 +121,7 @@ Your step 1 proposes standardizing VideoMetadata in `file_parser.py` **before** 
 ## Summary
 
 **Your vision is correct**, but the execution order needs adjustment:
+
 - ❌ Don't add VideoMetadata to file_parser first
 - ✅ Create models.py with tests first (TDD)  
 - ✅ Update xml_builder WITH metadata support in same commit as model extraction

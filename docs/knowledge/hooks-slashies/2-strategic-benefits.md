@@ -1,7 +1,6 @@
 # 🎣 Claude Code Hooks & Slash Commands: Your Development Superpowers Explained
 
-💡 *Synthesised ([previous](1-practical-guide.md), this): Claude Code beyond code ideas with hooks and slashies: https://claude.ai/share/9352ab98-7d2c-4e36-87fd-e7802bdebd3e*
-
+💡 *Synthesised ([previous](1-practical-guide.md), this): Claude Code beyond code ideas with hooks and slashies: <https://claude.ai/share/9352ab98-7d2c-4e36-87fd-e7802bdebd3e>*
 
 ## 🤔 What Are These Things Really?
 
@@ -30,6 +29,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 **The Solution:** Hooks automate your discipline. They turn your good intentions into automatic behaviors.
 
 **Real Benefits:**
+
 - **Consistency Without Effort** - Your code style is always perfect because formatting happens automatically
 - **Safety Without Paranoia** - You never accidentally expose secrets because hooks block dangerous operations
 - **Quality Without Overhead** - Tests run automatically, issues are caught immediately
@@ -42,6 +42,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 **The Solution:** Slash commands capture and systematize your expertise. They turn your best practices into instantly accessible templates.
 
 **Real Benefits:**
+
 - **Expertise Amplification** - Your best prompts become reusable across projects
 - **Context Preservation** - Complex workflows include all necessary context automatically  
 - **Knowledge Sharing** - Team members can access your proven approaches
@@ -72,6 +73,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 The magic happens when hooks and slash commands work together, creating **intelligent workflows** that are both guided and protected:
 
 **Example: The Intelligent Code Review**
+
 - You run `/review-pr 456` (slash command provides structured review template)
 - Hook automatically validates the PR meets quality standards before review starts
 - Hook gathers relevant metrics and context during the review process  
@@ -79,6 +81,7 @@ The magic happens when hooks and slash commands work together, creating **intell
 - Result: A thorough, consistent review process that's both efficient and comprehensive
 
 **The Power Pattern:**
+
 1. **Slash Command** = The workflow template (what to do)
 2. **Hooks** = The safety rails and automation (how to do it safely and consistently)
 3. **Together** = Self-improving, self-protecting development processes
@@ -88,11 +91,13 @@ The magic happens when hooks and slash commands work together, creating **intell
 ### 🧠 AI-Powered Development Environments
 
 **Learning Hooks:** Hooks that adapt based on your patterns
+
 - Detect when you consistently make certain fixes and automate them
 - Learn from your code review comments to pre-emptively flag similar issues
 - Adjust their behavior based on project context and team preferences
 
 **Intelligent Slash Commands:** Commands that evolve with your expertise  
+
 - Auto-update templates based on successful outcomes
 - Suggest new command templates based on repeated manual patterns
 - Cross-pollinate successful patterns between projects
@@ -100,11 +105,13 @@ The magic happens when hooks and slash commands work together, creating **intell
 ### 🌐 Team Intelligence Amplification
 
 **Collective Knowledge Systems:**
+
 - Hooks that learn from entire team's patterns and share insights
 - Slash command libraries that automatically propagate best practices
 - Collaborative improvement where one person's optimization benefits everyone
 
 **Cross-Project Pattern Recognition:**
+
 - Hooks that identify successful patterns across multiple projects
 - Slash commands that adapt templates based on project characteristics  
 - Automatic knowledge transfer between similar projects
@@ -112,11 +119,13 @@ The magic happens when hooks and slash commands work together, creating **intell
 ### 🔮 Ecosystem Integration Dreams
 
 **Universal Development Orchestration:**
+
 - Hooks that coordinate between multiple tools (Claude, GitHub, Slack, Jira)
 - Slash commands that trigger complex multi-system workflows
 - Development processes that span from idea to deployment automatically
 
 **Predictive Development Assistant:**
+
 - Hooks that predict likely issues before they occur
 - Slash commands that suggest next steps based on current context
 - AI that proactively recommends optimizations and improvements
@@ -124,6 +133,7 @@ The magic happens when hooks and slash commands work together, creating **intell
 ## 💡 Simple Code Examples
 
 ### 🎣 Hook Example: The Silent Quality Guardian
+
 ```python
 # This hook runs after every file edit and ensures quality
 #!/usr/bin/env python3
@@ -136,9 +146,11 @@ if file_path.endswith('.py'):
     # If issues found, provide feedback to Claude
     print("✅ Code quality checked and maintained", file=sys.stderr)
 ```
+
 *This transforms "remembering to check code quality" into "code quality is always maintained."*
 
 ### ⚡ Slash Command Example: The Workflow Template
+
 ```markdown
 ---
 description: Analyze system performance with full context
@@ -154,17 +166,20 @@ description: Analyze system performance with full context
 Analyze performance for: $ARGUMENTS
 Focus on bottlenecks, resource utilization, and optimization opportunities.
 ```
+
 *This transforms "how do I analyze performance again?" into "instantly get comprehensive performance analysis."*
 
 ## 🎯 For Your YouTube-to-XML Project
 
 **Potential Slash Commands:**
+
 - `/analyze-url [youtube-url]` - Instant video analysis with metadata extraction
 - `/test-format [xml-template]` - Validate XML output against different template styles
 - `/perf-check [video-type]` - Performance analysis for different content types
 - `/release-prep [version]` - Complete pre-release validation workflow
 
 **Potential Hooks:**  
+
 - Auto-test any code changes against sample videos
 - Validate XML output structure after generation
 - Monitor processing times and flag performance regressions
@@ -182,6 +197,6 @@ Hooks and Slash Commands aren't just features—they're **development philosophy
 - **Slash Commands** = Turn your expertise into reusable assets  
 - **Together** = Create a development environment that gets smarter over time
 
-They transform Claude Code from "an AI that helps with coding" into "a personalized development environment that embodies your team's collective intelligence." 
+They transform Claude Code from "an AI that helps with coding" into "a personalized development environment that embodies your team's collective intelligence."
 
 The question isn't whether you should use them—it's how quickly you can start building your development superpowers! 🚀

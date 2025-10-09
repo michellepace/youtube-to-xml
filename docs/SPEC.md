@@ -1,6 +1,7 @@
 # ⚠️ OUTDATED DOCUMENTATION (🎯 SPEC — YouTube Transcript to XML Converter)
 
 > This document is superseded. See:
+>
 > - README.md (current usage and examples)
 > - docs/terminology.md (standardised terms)
 
@@ -12,7 +13,8 @@
 
 **Solution**: Convert transcripts to XML with chapter elements for improved AI comprehension.
 
-**Primary Users**: 
+**Primary Users**:
+
 - Students following 5 hours+ YouTube tutorials
 - Researchers analysing video content
 
@@ -21,6 +23,7 @@
 **UV Project Type**: UV Packaged Application (created with `uv init --package youtube-to-xml`)
 
 **Key Features of Packaged Structure**:
+
 - Professional Structure: `src/` layout with proper module organisation
 - Build System: `[build-system]` for distribution in `pyproject.toml`
 - Entry Point: `[project.scripts]` configuration in `pyproject.toml`
@@ -84,11 +87,13 @@ flowchart TD
 ## Design Principles
 
 **TDD-Driven Design**: Write tests first - this naturally creates:
+
 - Pure, testable functions (no side effects in business logic)
 - Clear module boundaries (easier to mock dependencies)
 - Single responsibility (complex functions are hard to test)
 
 **Key Guidelines**:
+
 - Separate layers: CLI → business logic → I/O
 - Pure functions preferred: Core logic functions should be easy to test without setup
 - Handle errors at boundaries: Catch exceptions in CLI layer, not business logic
@@ -97,6 +102,7 @@ flowchart TD
 - Descriptive naming: Functions/variables should clearly indicate purpose
 
 **TDD Guidelines `pytest`**
+
 - Use pytest's `tmp_path` fixture to avoid creating test files
 - Avoid mocks as they introduce unnecessary complexity
 - Test incrementally: One test should drive one behavior
@@ -109,6 +115,7 @@ flowchart TD
 **Approach:** Test-Driven Development (TDD)
 
 **Required Libraries:**
+
 - `argparse` (command-line arguments and `--help`)
 - `pathlib` (file operations)
 - `re` (regex pattern matching)
@@ -141,6 +148,7 @@ Final thoughts on implementation
 </transcript_raw>
 
 <transcript_processed>
+
 ```xml
 <transcript video_title="" upload_date="" duration="" video_url="">
   <chapters>
@@ -167,6 +175,7 @@ Final thoughts on implementation
   </chapters>
 </transcript>
 ```
+
 </transcript_processed>
 
 ## Detection Rules
@@ -174,7 +183,6 @@ Final thoughts on implementation
 - **Timestamp Pattern**: Lines containing only timestamp formats (M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS)
 - **First Chapter**: First line of text file
 - **Subsequent Chapters**: When exactly 2 lines exist between consecutive timestamps, the second line (non-timestamp) is a chapter title
-
 
 ## XML Generation Rules and Required Template
 
@@ -184,6 +192,7 @@ Final thoughts on implementation
 - **Template Compliance**: Must exactly follow XML template shown between `<xml_template>` tags
 
 <xml_template>
+
 ```xml
 <transcript video_title="" upload_date="" duration="" video_url="">
   <chapters>
@@ -198,6 +207,7 @@ Final thoughts on implementation
   </chapters>
 </transcript>
 ```
+
 </xml_template>
 
 ## File I/O Requirements
@@ -237,22 +247,26 @@ options:
 
 💡 Check that your transcript follows this basic pattern
 ```
+
 </argparse_help>
 
 ## Error Handling & Validation
 
 **Exception Architecture**: Custom exception types in `exceptions.py` module, all inheriting from `BaseTranscriptError`:
+
 - `FileEmptyError`: "Cannot parse an empty transcript file"
 - `FileInvalidFormatError`: "Transcript file must start with a chapter title, not a timestamp"
 
 **CLI Error Messages**: Parser raises specific exceptions, CLI catches and formats user-friendly messages:
+
 - File not found: `f"❌ We couldn't find your file: {filename}"`
 - Permission denied: `f"❌ We don't have permission to access: {filename}"`
 - Empty file: `f"❌ Your file is empty: {filename}"`
 - Invalid format: `f"❌ Wrong format in '{filename}' - run 'youtube-to-xml --help'"`
 - Write permission: `f"❌ Cannot write to: {output_path}"`
 
-**Input Validation Requirements**: 
+**Input Validation Requirements**:
+
 - Refer to REQUIREMENTS section in `<argparse_help>` for format specification
 - File must not be empty
 - Must have at least 3 non-empty lines: chapter title, timestamp, and content
@@ -277,10 +291,12 @@ options:
 ## Key References
 
 **Python Documentation**
-- ElementTree XML API: https://docs.python.org/3/library/xml.etree.elementtree.html
-- Pytest `tmp_path` fixture: https://docs.pytest.org/en/stable/how-to/tmp_path.html
+
+- ElementTree XML API: <https://docs.python.org/3/library/xml.etree.elementtree.html>
+- Pytest `tmp_path` fixture: <https://docs.pytest.org/en/stable/how-to/tmp_path.html>
 
 **UV Package Manager**
+
 - UV Workflows and Rules: `.cursor.rules/uv-workflows.mdc`
-- Project Layout: https://docs.astral.sh/uv/concepts/projects/layout/
-- Packaged Applications: https://docs.astral.sh/uv/concepts/projects/packaging/
+- Project Layout: <https://docs.astral.sh/uv/concepts/projects/layout/>
+- Packaged Applications: <https://docs.astral.sh/uv/concepts/projects/packaging/>

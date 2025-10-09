@@ -1,6 +1,6 @@
 # FAQ `yt_dlp`
 
-*Official Repo: https://github.com/yt-dlp/yt-dlp*
+*Official Repo: <https://github.com/yt-dlp/yt-dlp>*
 
 ## Known issues
 
@@ -72,7 +72,7 @@ Use the `-P "path/to/folder"` to specify a path and an `-o` to specify an [outpu
 
 Either prepend `https://www.youtube.com/watch?v=` or separate the ID from the options with `--`:
 
-```
+```bash
 yt-dlp -- -wNyEUrxzFU
 yt-dlp "https://www.youtube.com/watch?v=-wNyEUrxzFU"
 ```
@@ -95,7 +95,7 @@ Note that the cookies file must be in Mozilla/Netscape format and the first line
 
 You will first need to tell yt-dlp to stream media to stdout with `-o -`, and also tell your media player to read from stdin (it must be capable of this for streaming) and then pipe former to latter. For example, streaming to [VLC](https://www.videolan.org/) can be achieved with:
 
-```
+```bash
 yt-dlp -o - "https://www.youtube.com/watch?v=BaW_jenozKcj" | vlc -
 ```
 
@@ -107,13 +107,13 @@ Use download-archive feature. With this feature you should initially download th
 
 For example, at first,
 
-```
+```bash
 yt-dlp --download-archive archive.txt "https://www.youtube.com/playlist?list=PLwiyx1dc3P2JR9N8gQaQN_BCvlSlap7re"
 ```
 
 will download the complete `PLwiyx1dc3P2JR9N8gQaQN_BCvlSlap7re` playlist and create a file `archive.txt`. Each subsequent run will only download new videos if any:
 
-```
+```bash
 yt-dlp --download-archive archive.txt "https://www.youtube.com/playlist?list=PLwiyx1dc3P2JR9N8gQaQN_BCvlSlap7re"
 ```
 
@@ -121,7 +121,7 @@ yt-dlp --download-archive archive.txt "https://www.youtube.com/playlist?list=PLw
 
 For one, have a look at the [list of supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). Note that it can sometimes happen that the site changes its URL scheme (say, from [https://example.com/video/1234567](https://example.com/video/1234567) to [https://example.com/v/1234567](https://example.com/v/1234567)) and yt-dlp reports an URL of a service in that list as unsupported. In that case, simply report a site-bug.
 
-It is _not_ possible to detect whether a URL is supported or not. That's because yt-dlp contains a generic extractor which matches **all** URLs. You may be tempted to disable the generic extractor, but the generic extractor not only allows users to extract videos from lots of websites that embed a video from another service, but may also be used to extract video from a service that it's hosting itself. Therefore, we don't recommend disabling it. However, if you still wish to, you can disable it using `--ies default,-generic`.
+It is *not* possible to detect whether a URL is supported or not. That's because yt-dlp contains a generic extractor which matches **all** URLs. You may be tempted to disable the generic extractor, but the generic extractor not only allows users to extract videos from lots of websites that embed a video from another service, but may also be used to extract video from a service that it's hosting itself. Therefore, we don't recommend disabling it. However, if you still wish to, you can disable it using `--ies default,-generic`.
 
 If you want to find out whether a given URL is supported, simply call yt-dlp with it. If you get no videos back, chances are the URL is either not referring to a video or unsupported. You can find out which by examining the output (if you run yt-dlp on the console) or catching an `UnsupportedError` exception if you run it from a Python program.
 
@@ -147,15 +147,15 @@ You are always welcome to take matters into your own hands and submit a pull req
 
 The error message may also include:
 
--   `Could not write header for output file #0`
--   `Error number -22 occurred`
--   `Invalid argument`
+- `Could not write header for output file #0`
+- `Error number -22 occurred`
+- `Invalid argument`
 
 Older versions of ffmpeg only have experimental support for Opus audio in an mp4 or webm container, and will throw this error if `-strict -2` is not passed as an argument.
 
 The best solution to this problem is to [update ffmpeg](https://github.com/yt-dlp/FFmpeg-Builds). If you cannot or do not want to update, you can add this to your yt-dlp command:
 
-```
+```bash
 --postprocessor-args "ffmpeg:-strict -2"
 ```
 
@@ -165,18 +165,18 @@ The 403 errors are coming from Cloudflare; their anti-bot fingerprinting is dete
 
 There is a workaround for this. It requires cookies from a browser with the same IP address that you will be using with yt-dlp. Follow these steps:
 
-1.  Refresh your cookies in browser by navigating to the site you are trying to download from. If you have not done this within the past 30 minutes, you will need to do it again
-    
-2.  Find your browser's User-Agent string; you need the _entire_ string (starting with `Mozilla/5.0`) and it needs to be up-to-date (i.e. if your browser updates, you'll need to get its new UA string with the current version)
-    
-    -   the simplest way is to type "my user-agent" into duckduckgo, google, etc.
-    -   for Firefox browsers, you can find the user-agent by navigating to `about:support`
-    -   for Chromium-based browsers, you can find it in `chrome://version` (or your vendor prefix like `brave://version`, etc)
-3.  Pass your browser's user-agent to yt-dlp with `--user-agent "USERAGENT"` along with `--cookies-from-browser firefox`
-    
-    -   replace `USERAGENT` with your actual full user-agent string you got from step 2
-    -   replace `firefox` with the browser that you are using to browse the site
-    -   Or, if you'd rather use a cookies file instead of having yt-dlp extract cookies from your browser, you can use the `--cookies` option, e.g. `--cookies cookies.txt`. Note that the cookies need to be exported from a fresh browser session (see step 1) _within the past 30 minutes_. [More info on exporting cookies](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp)
+1. Refresh your cookies in browser by navigating to the site you are trying to download from. If you have not done this within the past 30 minutes, you will need to do it again
+
+2. Find your browser's User-Agent string; you need the *entire* string (starting with `Mozilla/5.0`) and it needs to be up-to-date (i.e. if your browser updates, you'll need to get its new UA string with the current version)
+
+    - the simplest way is to type "my user-agent" into duckduckgo, google, etc.
+    - for Firefox browsers, you can find the user-agent by navigating to `about:support`
+    - for Chromium-based browsers, you can find it in `chrome://version` (or your vendor prefix like `brave://version`, etc)
+3. Pass your browser's user-agent to yt-dlp with `--user-agent "USERAGENT"` along with `--cookies-from-browser firefox`
+
+    - replace `USERAGENT` with your actual full user-agent string you got from step 2
+    - replace `firefox` with the browser that you are using to browse the site
+    - Or, if you'd rather use a cookies file instead of having yt-dlp extract cookies from your browser, you can use the `--cookies` option, e.g. `--cookies cookies.txt`. Note that the cookies need to be exported from a fresh browser session (see step 1) *within the past 30 minutes*. [More info on exporting cookies](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp)
 
 NOTE: This method reportedly works best with Firefox, and some users have reported problems getting it to work with Edge.
 
@@ -188,8 +188,8 @@ The short answer is that supporting piracy sites would in all likelihood result 
 
 There is no clear-cut definition here, as any site that hosts user-generated content can be used for piracy. However, common grounds for exclusion from yt-dlp are:
 
--   It is difficult to find a single non-pirated video on the site
--   The site is being discussed as a safe haven for pirated content in online forums
--   The site's operators are completely anonymous or unknown
+- It is difficult to find a single non-pirated video on the site
+- The site is being discussed as a safe haven for pirated content in online forums
+- The site's operators are completely anonymous or unknown
 
 Any of these reasons are enough for a site to be excluded from yt-dlp. This list is not exhaustive. It is up to the discretion of the maintainers as to whether or not a site will be included in yt-dlp.

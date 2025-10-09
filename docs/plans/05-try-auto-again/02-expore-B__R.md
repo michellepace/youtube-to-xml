@@ -6,7 +6,7 @@ This design integrates YouTube URL transcript functionality into the main applic
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │                     CLI Entry                       │
 │                   (cli.py)                          │
@@ -58,18 +58,21 @@ This design integrates YouTube URL transcript functionality into the main applic
 ## Core Design Principles
 
 ### 1. Separation of Concerns
+
 - **Acquisition**: Each source handles its own data retrieval (file reading vs YouTube API)
 - **Transformation**: Separate parsers for each source type maintain independence
 - **Generation**: Unified XML builder consumes standardized data structures
 - **Orchestration**: CLI coordinates without implementing business logic
 
 ### 2. Elegant Simplicity
+
 - No abstract base classes or complex inheritance
 - Simple function-based adapter pattern
 - Clear, predictable data flow
 - Minimal coupling between components
 
 ### 3. API-Ready Architecture
+
 - Stateless operations throughout
 - Clean input/output contracts
 - Source adapters return `tuple[list[Chapter], Metadata]`
@@ -77,7 +80,7 @@ This design integrates YouTube URL transcript functionality into the main applic
 
 ## Module Structure
 
-```
+```text
 src/youtube_to_xml/
 ├── __init__.py
 ├── cli.py                 # Enhanced with --file/--url flags
@@ -258,11 +261,13 @@ class YouTubeSource:
 ### 5. Parser Separation
 
 #### `file_parser.py` (renamed from `parser.py`)
+
 - Unchanged logic, just renamed for clarity
 - Handles manual transcript format with chapter detection rules
 - Returns `list[Chapter]` with content_lines
 
 #### `youtube_parser.py` (new)
+
 ```python
 from youtube_to_xml.parser import Chapter  # Reuse Chapter dataclass
 
@@ -331,7 +336,8 @@ def chapters_to_xml(
 ## Data Flow Examples
 
 ### File Input Flow
-```
+
+```text
 $ youtube-to-xml --file transcript.txt
 
 1. CLI parses --file flag
@@ -345,7 +351,8 @@ $ youtube-to-xml --file transcript.txt
 ```
 
 ### YouTube URL Flow
-```
+
+```text
 $ youtube-to-xml --url https://youtube.com/watch?v=...
 
 1. CLI parses --url flag
@@ -376,6 +383,7 @@ $ youtube-to-xml --url https://youtube.com/watch?v=...
 ## Testing Strategy
 
 ### Unit Tests
+
 - `test_file_source.py`: Test file adapter in isolation
 - `test_youtube_source.py`: Test YouTube adapter with mocked yt-dlp
 - `test_file_parser.py`: Existing tests (renamed)
@@ -383,6 +391,7 @@ $ youtube-to-xml --url https://youtube.com/watch?v=...
 - `test_xml_builder.py`: Test with both empty and populated metadata
 
 ### Integration Tests
+
 - `test_integration.py`: End-to-end flows for both sources
 - Mark YouTube tests with `@pytest.mark.integration`
 - Use real YouTube URLs for confidence
@@ -390,23 +399,27 @@ $ youtube-to-xml --url https://youtube.com/watch?v=...
 ## Migration Plan
 
 ### Phase 1: Refactoring (Non-Breaking)
+
 1. Rename `parser.py` → `file_parser.py`
 2. Update all imports
 3. Create `metadata.py` with dataclass
 4. Ensure all tests pass
 
 ### Phase 2: YouTube Integration
+
 1. Add `youtube_parser.py`
 2. Add `youtube_source.py` and `file_source.py`
 3. Update `xml_builder.py` to accept metadata
 4. Add yt-dlp to dependencies
 
 ### Phase 3: CLI Enhancement
+
 1. Update `cli.py` with --file/--url flags
 2. Maintain backward compatibility temporarily
 3. Route to appropriate source adapter
 
 ### Phase 4: Cleanup
+
 1. Remove experimental script
 2. Update documentation
 3. Update README with new usage
@@ -431,18 +444,21 @@ async def convert_youtube(url: str):
 ## Design Decisions
 
 ### Why Not Abstract Base Classes?
+
 - **Simplicity wins**: Two sources don't justify the complexity
 - **Duck typing**: Python's natural approach
 - **Clear contracts**: Return type `tuple[list[Chapter], Metadata]` is sufficient
 - **Easy to understand**: No inheritance hierarchy to navigate
 
 ### Why Separate Parsers?
+
 - **Different complexity**: File parsing uses regex patterns; YouTube uses JSON transformation
 - **Independent evolution**: Each can be optimized without affecting the other
 - **Clear responsibilities**: No conditional logic based on source type
 - **Better testability**: Mock only what's needed for each parser
 
 ### Why Reuse Chapter Dataclass?
+
 - **Proven design**: Already frozen and immutable
 - **Consistent interface**: XML builder expects this structure
 - **No duplication**: Avoid maintaining two similar classes
@@ -451,6 +467,7 @@ async def convert_youtube(url: str):
 ## Conclusion
 
 This architecture achieves the **elegant simplicity** goal by:
+
 - Keeping components focused and independent
 - Using simple adapter pattern without over-engineering
 - Maintaining clear data flow and contracts

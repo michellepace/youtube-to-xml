@@ -4,13 +4,13 @@ I need your help on how to design the existing main application so that it has t
 
 **Please analyse the experimental script:** `scripts/transcript_auto_fetcher.py`
 
-It is important that the main application abides to good system design as you explained in your `report.md`. I am open to significant refactoring as clarity and simplicity is important to me. 
+It is important that the main application abides to good system design as you explained in your `report.md`. I am open to significant refactoring as clarity and simplicity is important to me.
 
-The commonality I see is that it's simply 2 different sources, from file and now from URL. However, how those sources are structured into their “data classes” is significantly different (and the code quite large for each), I feel these should be separate modules. 
+The commonality I see is that it's simply 2 different sources, from file and now from URL. However, how those sources are structured into their “data classes” is significantly different (and the code quite large for each), I feel these should be separate modules.
 
-I am unsure how we can standardise into one “data class” or “structure” and if we should attempt to avoid duplication. Or if it is fine for duplication for each source as a balance of simplicity. 
+I am unsure how we can standardise into one “data class” or “structure” and if we should attempt to avoid duplication. Or if it is fine for duplication for each source as a balance of simplicity.
 
-But once this has been done, I see that the rest of the application can work in the same manner independent of source. And that's one aspect of how we can achieve simplicity 
+But once this has been done, I see that the rest of the application can work in the same manner independent of source. And that's one aspect of how we can achieve simplicity
 
 So I need you to think very deeply of how to do this as I want to delete the script And has a functionality in the main application It's an experimental script, and I don't intend to copy and paste the code into the main application. It's just the proven ability that I want in the new application.
 
@@ -46,7 +46,7 @@ The main application will support two transcript sources (file and YouTube URL) 
 
 8. **Output behavior**: Both sources save to current directory with sanitized filename
 
-9. **Parallel parsers with separated concerns**: 
+9. **Parallel parsers with separated concerns**:
    - **Acquisition**: Each source handles its own data acquisition (file reading vs YouTube downloading)
    - **Processing**: `parser.py` (unchanged) handles file transcripts; new `youtube_parser.py` handles YouTube transcripts
    - Both independently transform acquired data into Chapter objects
@@ -56,8 +56,8 @@ The main application will support two transcript sources (file and YouTube URL) 
 
 </architectual_points>
 
-Again, I want to keep a really good system design that is clean and as elegant and simple as practical. I am open to a significant refactoring if needed. 
+Again, I want to keep a really good system design that is clean and as elegant and simple as practical. I am open to a significant refactoring if needed.
 
-Can you please help me how to do this? 
+Can you please help me how to do this?
 
 Save your design into `design.md` **HOWEVER Ask me questions if needed before you begin to confirm and clarify understanding (please number so it’s easy for me to answer).**

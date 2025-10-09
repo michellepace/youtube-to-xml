@@ -45,6 +45,7 @@ Each of these is a simple shell command, but they can trigger incredibly sophist
 ### 🌟 Concrete Examples: What Hooks Can Actually Do
 
 #### 🔬 Scientific Data Validation Hook
+
 ```bash
 #!/bin/bash
 # This hook validates experimental data before Claude processes it
@@ -69,6 +70,7 @@ fi
 ```
 
 #### 📊 Financial Compliance Hook
+
 ```bash
 #!/bin/bash
 # This hook ensures financial analysis meets regulatory requirements
@@ -89,6 +91,7 @@ fi
 ```
 
 #### 🏥 Healthcare Protocol Hook
+
 ```bash
 #!/bin/bash
 # This hook validates medical protocols and patient safety
@@ -128,6 +131,7 @@ Because shell commands can execute **any installed program**, hooks can integrat
 ### 🚀 Advanced Hook Patterns
 
 #### 🧠 Multi-Language Intelligence Pipeline
+
 ```bash
 #!/bin/bash
 # A hook that combines multiple languages for complex analysis
@@ -149,6 +153,7 @@ python3 /analysis/generate_report.py /tmp/stats.json /tmp/predictions.json
 ```
 
 #### 🌍 Cross-System Workflow Hook
+
 ```bash
 #!/bin/bash
 # A hook that orchestrates multiple systems

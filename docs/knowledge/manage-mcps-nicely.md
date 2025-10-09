@@ -1,10 +1,11 @@
 # Managing MCPs Nicely — Scope, Example, Commands
 
 **VERIFIED** against official Anthropic documentation (Sep 4, 2025):
-- https://docs.anthropic.com/en/docs/claude-code/mcp
-- https://docs.anthropic.com/en/docs/claude-code/settings
 
-There are three MCP installation scopes to choose from. I use "Project Scope" for my solo projects as I like the MCP config in source control. Some MCPs, like https://ref.tools/mcp, need an API Key. This guide shows one simple way to "keep your API keys in one place" (and never in source control).
+- <https://docs.anthropic.com/en/docs/claude-code/mcp>
+- <https://docs.anthropic.com/en/docs/claude-code/settings>
+
+There are three MCP installation scopes to choose from. I use "Project Scope" for my solo projects as I like the MCP config in source control. Some MCPs, like <https://ref.tools/mcp>, need an API Key. This guide shows one simple way to "keep your API keys in one place" (and never in source control).
 
 ---
 
@@ -12,16 +13,17 @@ There are three MCP installation scopes to choose from. I use "Project Scope" fo
 
 | Scope | Command (with flag) | Where's the config? | Use Case |
 |:------|:----------|:--------|:---------|
-| 🛖 **Local Scope**<br/>_Private to you in a **specific project**_ | `claude mcp add --scope local` | Outside project<br/>*`~/.claude.json` (not in source control)* | MCPs for a specific project, you don't care about keeping config in source control. Default scope. |
-| ♥️ **Project Scope**<br/>*Shared with team via source control* | `claude mcp add --scope project` | Inside project directory<br/> *`.mcp.json` (checked into source control)* | Team-shared MCPs that everyone can access OR its your project and you want config source control. |
-| 🔛 **User Scope**<br/>_Private to you across **all projects**_ | `claude mcp add --scope user` | Outside project<br/>*`~/.claude.json` (not in source control)* | MCPs available to all projects, you don't care about keeping config in source control. |
+| 🛖 **Local Scope**<br/>_Private to you in a **specific project**_ | `claude mcp add --scope local` | Outside project<br/>_`~/.claude.json` (not in source control)_ | MCPs for a specific project, you don't care about keeping config in source control. Default scope. |
+| ♥️ **Project Scope**<br/>_Shared with team via source control_ | `claude mcp add --scope project` | Inside project directory<br/> _`.mcp.json` (checked into source control)_ | Team-shared MCPs that everyone can access OR its your project and you want config source control. |
+| 🔛 **User Scope**<br/>_Private to you across **all projects**_ | `claude mcp add --scope user` | Outside project<br/>_`~/.claude.json` (not in source control)_ | MCPs available to all projects, you don't care about keeping config in source control. |
 
 _**Key Notes**_
+
 - _**All Scopes Active**: MCPs from all three scopes (local + project + user) are available simultaneously in your project._
 - _**Precedence: Local (strongest) ➜ Project ➜ User**: When the same MCP is added, local overrides project, project overrides user._
 - _**Security**: Project-scoped servers from `.mcp.json` require approval before use for security_
 - _**Source control**: Only `.mcp.json` (project scope) should be checked into source control_
-- _**Project scope tip**: Run a new `claude` once you've added at project scope to approve_ 
+- _**Project scope tip**: Run a new `claude` once you've added at project scope to approve_
 - _**Reset**: Use `claude mcp reset-project-choices` to reset project-scoped server approval choices_
 
 🛖♥️🔛
@@ -37,11 +39,13 @@ To install [https://ref.tools/mcp](https://ref.tools/mcp) if you followed the in
 1. Check your shell type: `echo $SHELL` (to determine if to use .zshrc or .bashrc)
 2. Open shell settings (e.g., `cursor ~/.zshrc` or `cursor ~/.bashrc` for bash).
 3. Append this to the file that opens:
+
    ```text
    # ⭐ MCP API keys "One Place"
    export API_KEY_MCP_REF="ref-4b23455555gat343434c"
    export API_KEY_MCP_ANOTHER="another-key"
    ```
+
 4. Refresh your shell `source ~/.zshrc`
 5. Verify the variable is set `echo $API_KEY_MCP_REF`.
 

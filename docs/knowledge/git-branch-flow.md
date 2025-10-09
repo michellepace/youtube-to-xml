@@ -6,13 +6,13 @@ Working with branches, pull requests and which merge option to choose.
 
 When you commit code into Git, it's always to a "branch". The default branch is "main", so if you don't know about branches, you've always been committing to main. Run `git status` and you'll see it.
 
-Think of a branch as a "group of commits for a specific feature or task", you get to pick how to group things. Let's say you have a "zoo" project, and now you're building an elephant. You could do the "add the tail" and "add the legs" commits to main, OR, you could make an "elephant branch". Do all your commits in there, and when done "send the elephant branch to GitHub" by creating a "pull request". 
+Think of a branch as a "group of commits for a specific feature or task", you get to pick how to group things. Let's say you have a "zoo" project, and now you're building an elephant. You could do the "add the tail" and "add the legs" commits to main, OR, you could make an "elephant branch". Do all your commits in there, and when done "send the elephant branch to GitHub" by creating a "pull request".
 
-A pull request is just "I built this elephant branch and I've sent it to GitHub, I'm REQUESTING you to PULL it into the main branch (the proper zoo)." 
+A pull request is just "I built this elephant branch and I've sent it to GitHub, I'm REQUESTING you to PULL it into the main branch (the proper zoo)."
 
-I code solo, so once I've sent a pull request to GitHub, I go to GitHub and approve it. In the real world, someone else would review the code and approve it. It's generally not the same person. 
+I code solo, so once I've sent a pull request to GitHub, I go to GitHub and approve it. In the real world, someone else would review the code and approve it. It's generally not the same person.
 
-By the time I've created my pull request on GitHub, I'm really quite sick of code. So I don't want to review it. I use the free CodeRabbit to review my PR in GitHub. It picks up a surprising amount of things. I'm lazy to fix these things, I used to paste the suggestions back into my IDE but now I just get Claude Code to run `gh api repos/michellepace/youtube-to-xml/pulls/1/reviews` (my username, my repo, my pull number 1 - obviously the URL changes). Claude then sees all the issues CodeRabbit found and fixes them for me. Then I push the fixes to the branch (which updates the existing PR), and approve the PR from GitHub, which means it's now in the main branch. 
+By the time I've created my pull request on GitHub, I'm really quite sick of code. So I don't want to review it. I use the free CodeRabbit to review my PR in GitHub. It picks up a surprising amount of things. I'm lazy to fix these things, I used to paste the suggestions back into my IDE but now I just get Claude Code to run `gh api repos/michellepace/youtube-to-xml/pulls/1/reviews` (my username, my repo, my pull number 1 - obviously the URL changes). Claude then sees all the issues CodeRabbit found and fixes them for me. Then I push the fixes to the branch (which updates the existing PR), and approve the PR from GitHub, which means it's now in the main branch.
 
 The great thing about branches is you might make a royal mess of the elephant. It's much easier to remove the elephant from the zoo later, because the commits are all collected together.
 
@@ -24,8 +24,8 @@ This is about working with branches where you will need to create a pull request
 
 > [!TIP]
 > ***Why "pull request"?*** *You're requesting that repo maintainers "pull" your changes from your branch into main. GitLab calls them "merge requests" which is more accurate.*
-> 
-> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and catch missed issues automatically, sign up at https://coderabbit.ai and connect your repo. Free for public repos, with a lovely PR diagram—and even a poem.*
+>
+> ***Use CodeRabbit*** 🐰 *To make PR reviews more fun and catch missed issues automatically, sign up at <https://coderabbit.ai> and connect your repo. Free for public repos, with a lovely PR diagram—and even a poem.*
 
 ## As Commands
 
@@ -133,18 +133,21 @@ gitGraph
 ## GitHub UI for project
 
 **Creating a Pull Request**
+
 - After `git push origin my-branch`, GitHub often shows a green "Compare & pull request" banner at the top of your repo - click it
 - Or go to "Pull requests" tab → "New pull request" button
-- Select: base branch (`main`) ← compare branch (`my-branch`) 
+- Select: base branch (`main`) ← compare branch (`my-branch`)
 - Add title, description, then "Create pull request"
 
 **Finding Your PRs**
+
 - **"Pull requests" tab** shows all PRs for the project
 - **Filter by your PRs**: Click "Author" dropdown → select your username
 - **PR Status indicators**: 🟢 Open (awaiting review/merge). 🟣 Merged (completed). 🔴 Closed (rejected/cancelled)
 - Click any PR to see its details, commits, and discussion
 
 **Viewing Git History**
+
 - The "**Commits**" tab shows the history as depicted in your diagrams
 - The "**Pull requests**" tab lets you revisit PRs to see grouped commits, especially useful for merge commits
 - The "**Insights**" → "Network" graph visualises branch merges (most relevant for merge commit)
@@ -153,12 +156,13 @@ gitGraph
 
 Claude Code is fantastic at working with Git. I get it to handle all things Git for me—generating commit messages, undoing a commit, creating PRs, etc.
 
-Go to the Anthropic docs and ask the chat there: 
+Go to the Anthropic docs and ask the chat there:
+
 - Can Claude Code help me with git if I install `gh`?
 - Can Claude Code create a PR for me, what does this mean?
 - What can I do with `@claude` in GitHub, is this something else?
 
-Code Rabbit uses Anthropic https://www.anthropic.com/customers/coderabbit 🙂
+Code Rabbit uses Anthropic <https://www.anthropic.com/customers/coderabbit> 🙂
 
 ---
 

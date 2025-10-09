@@ -1,45 +1,44 @@
 # README `yt_dlp`
 
-*Official Repo: https://github.com/yt-dlp/yt-dlp*
+*Official Repo: <https://github.com/yt-dlp/yt-dlp>*
 
 * [INSTALLATION](#installation)
-    * [Detailed instructions](https://github.com/yt-dlp/yt-dlp/wiki/Installation)
-    * [Release Files](#release-files)
-    * [Update](#update)
-    * [Dependencies](#dependencies)
-    * [Compile](#compile)
+  * [Detailed instructions](https://github.com/yt-dlp/yt-dlp/wiki/Installation)
+  * [Release Files](#release-files)
+  * [Update](#update)
+  * [Dependencies](#dependencies)
+  * [Compile](#compile)
 * [USAGE AND OPTIONS](#usage-and-options)
-    * [General Options](#general-options)
-    * [Network Options](#network-options)
-    * [Geo-restriction](#geo-restriction)
-    * [Video Selection](#video-selection)
-    * [Download Options](#download-options)
-    * [Filesystem Options](#filesystem-options)
-    * [Thumbnail Options](#thumbnail-options)
-    * [Internet Shortcut Options](#internet-shortcut-options)
-    * [Verbosity and Simulation Options](#verbosity-and-simulation-options)
-    * [Workarounds](#workarounds)
-    * [Video Format Options](#video-format-options)
-    * [Subtitle Options](#subtitle-options)
-    * [Authentication Options](#authentication-options)
-    * [Post-processing Options](#post-processing-options)
-    * [SponsorBlock Options](#sponsorblock-options)
-    * [Extractor Options](#extractor-options)
-    * [Preset Aliases](#preset-aliases)
+  * [General Options](#general-options)
+  * [Network Options](#network-options)
+  * [Geo-restriction](#geo-restriction)
+  * [Video Selection](#video-selection)
+  * [Download Options](#download-options)
+  * [Filesystem Options](#filesystem-options)
+  * [Thumbnail Options](#thumbnail-options)
+  * [Internet Shortcut Options](#internet-shortcut-options)
+  * [Verbosity and Simulation Options](#verbosity-and-simulation-options)
+  * [Workarounds](#workarounds)
+  * [Video Format Options](#video-format-options)
+  * [Subtitle Options](#subtitle-options)
+  * [Authentication Options](#authentication-options)
+  * [Post-processing Options](#post-processing-options)
+  * [SponsorBlock Options](#sponsorblock-options)
+  * [Extractor Options](#extractor-options)
+  * [Preset Aliases](#preset-aliases)
 * [CONFIGURATION](#configuration)
-    * [Configuration file encoding](#configuration-file-encoding)
-    * [Authentication with netrc](#authentication-with-netrc)
-    * [Notes about environment variables](#notes-about-environment-variables)
+  * [Configuration file encoding](#configuration-file-encoding)
+  * [Authentication with netrc](#authentication-with-netrc)
+  * [Notes about environment variables](#notes-about-environment-variables)
 * [OUTPUT TEMPLATE](#output-template)
-    * [Output template examples](#output-template-examples)
+  * [Output template examples](#output-template-examples)
 * [FORMAT SELECTION](#format-selection)
-    * [Filtering Formats](#filtering-formats)
-    * [Sorting Formats](#sorting-formats)
-    * [Format Selection examples](#format-selection-examples)
+  * [Filtering Formats](#filtering-formats)
+  * [Sorting Formats](#sorting-formats)
+  * [Format Selection examples](#format-selection-examples)
 * [MODIFYING METADATA](#modifying-metadata)
-    * [Modifying metadata examples](#modifying-metadata-examples)
+  * [Modifying metadata examples](#modifying-metadata-examples)
 * [EXTRACTOR ARGUMENTS](#extractor-arguments)
-
 
 # INSTALLATION
 
@@ -54,7 +53,6 @@
 <!-- MANPAGE: END EXCLUDED SECTION -->
 
 You can install yt-dlp using [the binaries](#release-files), [pip](https://pypi.org/project/yt-dlp) or one using a third-party package manager. See [the wiki](https://github.com/yt-dlp/yt-dlp/wiki/Installation) for detailed instructions
-
 
 <!-- MANPAGE: BEGIN EXCLUDED SECTION -->
 ## RELEASE FILES
@@ -99,7 +97,8 @@ File|Description
 
 The public key that can be used to verify the GPG signatures is [available here](https://github.com/yt-dlp/yt-dlp/blob/master/public.key)
 Example usage:
-```
+
+```bash
 curl -L https://github.com/yt-dlp/yt-dlp/raw/master/public.key | gpg --import
 gpg --verify SHA2-256SUMS.sig SHA2-256SUMS
 gpg --verify SHA2-512SUMS.sig SHA2-512SUMS
@@ -119,8 +118,8 @@ The zipimport binary (`yt-dlp`), the source tarball (`yt-dlp.tar.gz`), and the P
 
 **Note**: The manpages, shell completion (autocomplete) files etc. are available inside the [source tarball](https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.tar.gz)
 
-
 ## UPDATE
+
 You can use `yt-dlp -U` to update if you are using the [release binaries](#release-files)
 
 If you [installed with pip](https://github.com/yt-dlp/yt-dlp/wiki/Installation#with-pip), simply re-run the same command that was used to install the program
@@ -148,7 +147,8 @@ Example usage:
 * `yt-dlp --update-to example/yt-dlp@2023.09.24` upgrade/downgrade to the release from the `example/yt-dlp` repository, tag `2023.09.24`
 
 **Important**: Any user experiencing an issue with the `stable` release should install or update to the `nightly` release before submitting a bug report:
-```
+
+```bash
 # To update to nightly from stable executable/binary:
 yt-dlp --update-to nightly
 
@@ -160,6 +160,7 @@ When running a yt-dlp version that is older than 90 days, you will see a warning
 You can suppress this warning by adding `--no-update` to your command or configuration file.
 
 ## DEPENDENCIES
+
 Python versions 3.9+ (CPython) and 3.11+ (PyPy) are supported. Other versions and implementations may or may not work correctly.
 
 <!-- Python 3.5+ uses VC++14 and it is already embedded in the binary created
@@ -178,6 +179,7 @@ While all the other dependencies are optional, `ffmpeg` and `ffprobe` are highly
     **Important**: What you need is ffmpeg *binary*, **NOT** [the Python package of the same name](https://pypi.org/project/ffmpeg)
 
 ### Networking
+
 * [**certifi**](https://github.com/certifi/python-certifi)\* - Provides Mozilla's root certificate bundle. Licensed under [MPLv2](https://github.com/certifi/python-certifi/blob/master/LICENSE)
 * [**brotli**](https://github.com/google/brotli)\* or [**brotlicffi**](https://github.com/python-hyper/brotlicffi) - [Brotli](https://en.wikipedia.org/wiki/Brotli) content encoding support. Both licensed under MIT <sup>[1](https://github.com/google/brotli/blob/master/LICENSE) [2](https://github.com/python-hyper/brotlicffi/blob/master/LICENSE) </sup>
 * [**websockets**](https://github.com/aaugustin/websockets)\* - For downloading over websocket. Licensed under [BSD-3-Clause](https://github.com/aaugustin/websockets/blob/main/LICENSE)
@@ -191,14 +193,13 @@ The following provide support for impersonating browser requests. This may be re
   * Can be installed with the `curl-cffi` group, e.g. `pip install "yt-dlp[default,curl-cffi]"`
   * Currently included in most builds *except* `yt-dlp` (Unix zipimport binary), `yt-dlp_x86` (Windows 32-bit) and `yt-dlp_musllinux_aarch64`
 
-
 ### Metadata
 
 * [**mutagen**](https://github.com/quodlibet/mutagen)\* - For `--embed-thumbnail` in certain formats. Licensed under [GPLv2+](https://github.com/quodlibet/mutagen/blob/master/COPYING)
 * [**AtomicParsley**](https://github.com/wez/atomicparsley) - For `--embed-thumbnail` in `mp4`/`m4a` files when `mutagen`/`ffmpeg` cannot. Licensed under [GPLv2+](https://github.com/wez/atomicparsley/blob/master/COPYING)
 * [**xattr**](https://github.com/xattr/xattr), [**pyxattr**](https://github.com/iustin/pyxattr) or [**setfattr**](http://savannah.nongnu.org/projects/attr) - For writing xattr metadata (`--xattrs`) on **Mac** and **BSD**. Licensed under [MIT](https://github.com/xattr/xattr/blob/master/LICENSE.txt), [LGPL2.1](https://github.com/iustin/pyxattr/blob/master/COPYING) and [GPLv2+](http://git.savannah.nongnu.org/cgit/attr.git/tree/doc/COPYING) respectively
 
-### Misc
+### Miscellaneous
 
 * [**pycryptodomex**](https://github.com/Legrandin/pycryptodome)\* - For decrypting AES-128 HLS streams and various other data. Licensed under [BSD-2-Clause](https://github.com/Legrandin/pycryptodome/blob/master/LICENSE.rst)
 * [**phantomjs**](https://github.com/ariya/phantomjs) - Used in extractors where javascript needs to be run. Licensed under [BSD-3-Clause](https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD)
@@ -218,15 +219,15 @@ The standalone release binaries are built with the Python interpreter and the pa
 
 If you do not have the necessary dependencies for a task you are attempting, yt-dlp will warn you. All the currently available dependencies are visible at the top of the `--verbose` output
 
-
 ## COMPILE
 
 ### Standalone PyInstaller Builds
+
 To build the standalone executable, you must have Python and `pyinstaller` (plus any of yt-dlp's [optional dependencies](#dependencies) if needed). The executable will be built for the same CPU architecture as the Python used.
 
 You can run the following commands:
 
-```
+```bash
 python3 devscripts/install_deps.py --include pyinstaller
 python3 devscripts/make_lazy_extractors.py
 python3 -m bundle.pyinstaller
@@ -241,6 +242,7 @@ On some systems, you may need to use `py` or `python` instead of `python3`.
 **Important**: Running `pyinstaller` directly **instead of** using `python -m bundle.pyinstaller` is **not** officially supported. This may or may not work correctly.
 
 ### Platform-independent Binary (UNIX)
+
 You will need the build tools `python` (3.9+), `zip`, `make` (GNU), `pandoc`\* and `pytest`\*.
 
 After installing these, simply run `make`.
@@ -258,6 +260,7 @@ You can also run `make yt-dlp` instead to compile only the binary without updati
 Note: See their `--help` for more info.
 
 ### Forking the project
+
 If you fork the project on GitHub, you can run your fork's [build workflow](.github/workflows/build.yml) to automatically build the selected version(s) as artifacts. Alternatively, you can run the [release workflow](.github/workflows/release.yml) or enable the [nightly workflow](.github/workflows/release-nightly.yml) to create full (pre-)releases.
 
 # USAGE AND OPTIONS
@@ -269,7 +272,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
 <!-- MANPAGE: END EXCLUDED SECTION -->
 
 <!-- Auto generated -->
-## General Options:
+## General Options
+
     -h, --help                      Print this help text and exit
     --version                       Print program version and exit
     -U, --update                    Update this program to the latest version
@@ -382,7 +386,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     for more info. This option can be used
                                     multiple times
 
-## Network Options:
+## Network Options
+
     --proxy URL                     Use the specified HTTP/HTTPS/SOCKS proxy. To
                                     enable SOCKS proxy, specify a proper scheme,
                                     e.g. socks5://user:pass@127.0.0.1:1080/.
@@ -402,7 +407,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --enable-file-urls              Enable file:// URLs. This is disabled by
                                     default for security reasons.
 
-## Geo-restriction:
+## Geo-restriction
+
     --geo-verification-proxy URL    Use this proxy to verify the IP address for
                                     some geo-restricted sites. The default proxy
                                     specified by --proxy (or none, if the option
@@ -414,7 +420,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     "never", an IP block in CIDR notation, or a
                                     two-letter ISO 3166-2 country code
 
-## Video Selection:
+## Video Selection
+
     -I, --playlist-items ITEM_SPEC  Comma separated playlist_index of the items
                                     to download. You can specify a range using
                                     "[START]:[STOP][:STEP]". For backward
@@ -488,7 +495,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --skip-playlist-after-errors N  Number of allowed failures until the rest of
                                     the playlist is skipped
 
-## Download Options:
+## Download Options
+
     -N, --concurrent-fragments N    Number of fragments of a dash/hlsnative
                                     video that should be downloaded concurrently
                                     (default is 1)
@@ -582,7 +590,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     arguments to different downloaders (Alias:
                                     --external-downloader-args)
 
-## Filesystem Options:
+## Filesystem Options
+
     -a, --batch-file FILE           File containing URLs to download ("-" for
                                     stdin), one URL per line. Lines starting
                                     with "#", ";" or "]" are considered as
@@ -679,14 +688,16 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --no-cache-dir                  Disable filesystem caching
     --rm-cache-dir                  Delete all filesystem cache files
 
-## Thumbnail Options:
+## Thumbnail Options
+
     --write-thumbnail               Write thumbnail image to disk
     --no-write-thumbnail            Do not write thumbnail image to disk (default)
     --write-all-thumbnails          Write all thumbnail image formats to disk
     --list-thumbnails               List available thumbnails of each video.
                                     Simulate unless --no-simulate is used
 
-## Internet Shortcut Options:
+## Internet Shortcut Options
+
     --write-link                    Write an internet shortcut file, depending
                                     on the current platform (.url, .webloc or
                                     .desktop). The URL may be cached by the OS
@@ -695,7 +706,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --write-webloc-link             Write a .webloc macOS internet shortcut
     --write-desktop-link            Write a .desktop Linux internet shortcut
 
-## Verbosity and Simulation Options:
+## Verbosity and Simulation Options
+
     -q, --quiet                     Activate quiet mode. If used with --verbose,
                                     print the log to stderr
     --no-quiet                      Deactivate quiet mode. (Default)
@@ -761,7 +773,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     in the current directory to debug problems
     --print-traffic                 Display sent and read HTTP traffic
 
-## Workarounds:
+## Workarounds
+
     --encoding ENCODING             Force the specified encoding (experimental)
     --legacy-server-connect         Explicitly allow HTTPS connection to servers
                                     that do not support RFC 5746 secure
@@ -787,7 +800,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --sleep-subtitles SECONDS       Number of seconds to sleep before each
                                     subtitle download
 
-## Video Format Options:
+## Video Format Options
+
     -f, --format FORMAT             Video format code, see "FORMAT SELECTION"
                                     for more details
     -S, --format-sort SORTORDER     Sort the formats by the fields given, see
@@ -824,7 +838,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     Ignored if no merge is required. (currently
                                     supported: avi, flv, mkv, mov, mp4, webm)
 
-## Subtitle Options:
+## Subtitle Options
+
     --write-subs                    Write subtitle file
     --no-write-subs                 Do not write subtitle file (default)
     --write-auto-subs               Write automatically generated subtitle file
@@ -845,7 +860,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     langs all,-live_chat. Use --list-subs for a
                                     list of available language tags
 
-## Authentication Options:
+## Authentication Options
+
     -u, --username USERNAME         Login with this account ID
     -p, --password PASSWORD         Account password. If this option is left
                                     out, yt-dlp will ask interactively
@@ -875,7 +891,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     if encrypted. If not provided, and the key
                                     is encrypted, yt-dlp will ask interactively
 
-## Post-Processing Options:
+## Post-Processing Options
+
     -x, --extract-audio             Convert video files to audio-only files
                                     (requires ffmpeg and ffprobe)
     --audio-format FORMAT           Format to convert the audio to when -x is
@@ -1041,7 +1058,8 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
                                     can be used multiple times to add different
                                     postprocessors
 
-## SponsorBlock Options:
+## SponsorBlock Options
+
 Make chapter entries for, or remove various segments (sponsor,
     introductions, etc.) from downloaded YouTube videos using the
     [SponsorBlock API](https://sponsor.ajay.app)
@@ -1076,7 +1094,8 @@ Make chapter entries for, or remove various segments (sponsor,
     --sponsorblock-api URL          SponsorBlock API location, defaults to
                                     https://sponsor.ajay.app
 
-## Extractor Options:
+## Extractor Options
+
     --extractor-retries RETRIES     Number of retries for known extractor errors
                                     (default is 3), or "infinite"
     --allow-dynamic-mpd             Process dynamic DASH manifests (default)
@@ -1093,7 +1112,8 @@ Make chapter entries for, or remove various segments (sponsor,
                                     can use this option multiple times to give
                                     arguments for different extractors
 
-## Preset Aliases:
+## Preset Aliases
+
 Predefined aliases for convenience and ease of use. Note that future
     versions of yt-dlp may add or adjust presets, but the existing preset
     names will not be changed or removed
@@ -1145,7 +1165,8 @@ You can configure yt-dlp by placing any supported command line option in a confi
     * `/etc/yt-dlp/config.txt`
 
 E.g. with the following configuration file, yt-dlp will always extract the audio, copy the mtime, use a proxy and save all videos under `YouTube` directory in your home directory:
-```
+
+```text
 # Lines starting with # are comments
 
 # Always extract audio
@@ -1174,19 +1195,25 @@ If you want your file to be decoded differently, add `# coding: ENCODING` to the
 ### Authentication with netrc
 
 You may also want to configure automatic credentials storage for extractors that support authentication (by providing login and password with `--username` and `--password`) in order not to pass credentials as command line arguments on every yt-dlp execution and prevent tracking plain text passwords in the shell command history. You can achieve this using a [`.netrc` file](https://stackoverflow.com/tags/.netrc/info) on a per-extractor basis. For that, you will need to create a `.netrc` file in `--netrc-location` and restrict permissions to read/write by only you:
-```
+
+```bash
 touch ${HOME}/.netrc
 chmod a-rwx,u+rw ${HOME}/.netrc
 ```
+
 After that, you can add credentials for an extractor in the following format, where *extractor* is the name of the extractor in lowercase:
-```
+
+```text
 machine <extractor> login <username> password <password>
 ```
+
 E.g.
-```
+
+```text
 machine youtube login myaccount@gmail.com password my_youtube_password
 machine twitch login my_twitch_account_name password my_twitch_password
 ```
+
 To activate authentication with the `.netrc` file you should pass `--netrc` to yt-dlp or place it in the [configuration file](#configuration).
 
 The default location of the .netrc file is `~` (see below).
@@ -1194,12 +1221,13 @@ The default location of the .netrc file is `~` (see below).
 As an alternative to using the `.netrc` file, which has the disadvantage of keeping your passwords in a plain text file, you can configure a custom shell command to provide the credentials for an extractor. This is done by providing the `--netrc-cmd` parameter, it shall output the credentials in the netrc format and return `0` on success, other values will be treated as an error. `{}` in the command will be replaced by the name of the extractor to make it possible to select the credentials for the right extractor.
 
 E.g. To use an encrypted `.netrc` file stored as `.authinfo.gpg`
-```
+
+```bash
 yt-dlp --netrc-cmd 'gpg --decrypt ~/.authinfo.gpg' 'https://www.youtube.com/watch?v=BaW_jenozKc'
 ```
 
-
 ### Notes about environment variables
+
 * Environment variables are normally specified as `${VARIABLE}`/`$VARIABLE` on UNIX and `%VARIABLE%` on Windows; but is always shown as `${VARIABLE}` in this documentation
 * yt-dlp also allows using UNIX-style variables on Windows for path-like options; e.g. `--output`, `--config-location`
 * If unset, `${XDG_CONFIG_HOME}` defaults to `~/.config` and `${XDG_CACHE_HOME}` to `~/.cache`
@@ -1214,7 +1242,7 @@ The `-o` option is used to indicate a template for the output file names while `
 **tl;dr:** [navigate me to examples](#output-template-examples).
 <!-- MANPAGE: END EXCLUDED SECTION -->
 
-The simplest usage of `-o` is not to set any template arguments when downloading a single file, like in `yt-dlp -o funny_video.flv "https://some/video"` (hard-coding file extension like this is _not_ recommended and could break some post-processing).
+The simplest usage of `-o` is not to set any template arguments when downloading a single file, like in `yt-dlp -o funny_video.flv "https://some/video"` (hard-coding file extension like this is *not* recommended and could break some post-processing).
 
 It may however also contain special sequences that will be replaced when downloading each video. The special sequences may be formatted according to [Python string formatting operations](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting), e.g. `%(NAME)s` or `%(NAME)05d`. To clarify, that is a percent symbol followed by a name in parentheses, followed by formatting operations.
 
@@ -1237,7 +1265,8 @@ The field names themselves (the part inside the parenthesis) can also have some 
 1. **Unicode normalization**: The format type `U` can be used for NFC [Unicode normalization](https://docs.python.org/3/library/unicodedata.html#unicodedata.normalize). The alternate form flag (`#`) changes the normalization to NFD and the conversion flag `+` can be used for NFKC/NFKD compatibility equivalence normalization. E.g. `%(title)+.100U` is NFKC
 
 To summarize, the general syntax for a field is:
-```
+
+```text
 %(name[.keys][addition][>strf][,alternate][&replacement][|default])[flags][width][.precision][length]type
 ```
 
@@ -1249,140 +1278,140 @@ Additionally, you can set different output templates for the various metadata fi
 
 The available fields are:
 
- - `id` (string): Video identifier
- - `title` (string): Video title
- - `fulltitle` (string): Video title ignoring live timestamp and generic title
- - `ext` (string): Video filename extension
- - `alt_title` (string): A secondary title of the video
- - `description` (string): The description of the video
- - `display_id` (string): An alternative identifier for the video
- - `uploader` (string): Full name of the video uploader
- - `uploader_id` (string): Nickname or id of the video uploader
- - `uploader_url` (string): URL to the video uploader's profile
- - `license` (string): License name the video is licensed under
- - `creators` (list): The creators of the video
- - `creator` (string): The creators of the video; comma-separated
- - `timestamp` (numeric): UNIX timestamp of the moment the video became available
- - `upload_date` (string): Video upload date in UTC (YYYYMMDD)
- - `release_timestamp` (numeric): UNIX timestamp of the moment the video was released
- - `release_date` (string): The date (YYYYMMDD) when the video was released in UTC
- - `release_year` (numeric): Year (YYYY) when the video or album was released
- - `modified_timestamp` (numeric): UNIX timestamp of the moment the video was last modified
- - `modified_date` (string): The date (YYYYMMDD) when the video was last modified in UTC
- - `channel` (string): Full name of the channel the video is uploaded on
- - `channel_id` (string): Id of the channel
- - `channel_url` (string): URL of the channel
- - `channel_follower_count` (numeric): Number of followers of the channel
- - `channel_is_verified` (boolean): Whether the channel is verified on the platform
- - `location` (string): Physical location where the video was filmed
- - `duration` (numeric): Length of the video in seconds
- - `duration_string` (string): Length of the video (HH:mm:ss)
- - `view_count` (numeric): How many users have watched the video on the platform
- - `concurrent_view_count` (numeric): How many users are currently watching the video on the platform.
- - `like_count` (numeric): Number of positive ratings of the video
- - `dislike_count` (numeric): Number of negative ratings of the video
- - `repost_count` (numeric): Number of reposts of the video
- - `average_rating` (numeric): Average rating given by users, the scale used depends on the webpage
- - `comment_count` (numeric): Number of comments on the video (For some extractors, comments are only downloaded at the end, and so this field cannot be used)
- - `age_limit` (numeric): Age restriction for the video (years)
- - `live_status` (string): One of "not_live", "is_live", "is_upcoming", "was_live", "post_live" (was live, but VOD is not yet processed)
- - `is_live` (boolean): Whether this video is a live stream or a fixed-length video
- - `was_live` (boolean): Whether this video was originally a live stream
- - `playable_in_embed` (string): Whether this video is allowed to play in embedded players on other sites
- - `availability` (string): Whether the video is "private", "premium_only", "subscriber_only", "needs_auth", "unlisted" or "public"
- - `media_type` (string): The type of media as classified by the site, e.g. "episode", "clip", "trailer"
- - `start_time` (numeric): Time in seconds where the reproduction should start, as specified in the URL
- - `end_time` (numeric): Time in seconds where the reproduction should end, as specified in the URL
- - `extractor` (string): Name of the extractor
- - `extractor_key` (string): Key name of the extractor
- - `epoch` (numeric): Unix epoch of when the information extraction was completed
- - `autonumber` (numeric): Number that will be increased with each download, starting at `--autonumber-start`, padded with leading zeros to 5 digits
- - `video_autonumber` (numeric): Number that will be increased with each video
- - `n_entries` (numeric): Total number of extracted items in the playlist
- - `playlist_id` (string): Identifier of the playlist that contains the video
- - `playlist_title` (string): Name of the playlist that contains the video
- - `playlist` (string): `playlist_title` if available or else `playlist_id`
- - `playlist_count` (numeric): Total number of items in the playlist. May not be known if entire playlist is not extracted
- - `playlist_index` (numeric): Index of the video in the playlist padded with leading zeros according the final index
- - `playlist_autonumber` (numeric): Position of the video in the playlist download queue padded with leading zeros according to the total length of the playlist
- - `playlist_uploader` (string): Full name of the playlist uploader
- - `playlist_uploader_id` (string): Nickname or id of the playlist uploader
- - `playlist_channel` (string): Display name of the channel that uploaded the playlist
- - `playlist_channel_id` (string): Identifier of the channel that uploaded the playlist
- - `playlist_webpage_url` (string): URL of the playlist webpage
- - `webpage_url` (string): A URL to the video webpage which, if given to yt-dlp, should yield the same result again
- - `webpage_url_basename` (string): The basename of the webpage URL
- - `webpage_url_domain` (string): The domain of the webpage URL
- - `original_url` (string): The URL given by the user (or the same as `webpage_url` for playlist entries)
- - `categories` (list): List of categories the video belongs to
- - `tags` (list): List of tags assigned to the video
- - `cast` (list): List of cast members
+* `id` (string): Video identifier
+* `title` (string): Video title
+* `fulltitle` (string): Video title ignoring live timestamp and generic title
+* `ext` (string): Video filename extension
+* `alt_title` (string): A secondary title of the video
+* `description` (string): The description of the video
+* `display_id` (string): An alternative identifier for the video
+* `uploader` (string): Full name of the video uploader
+* `uploader_id` (string): Nickname or id of the video uploader
+* `uploader_url` (string): URL to the video uploader's profile
+* `license` (string): License name the video is licensed under
+* `creators` (list): The creators of the video
+* `creator` (string): The creators of the video; comma-separated
+* `timestamp` (numeric): UNIX timestamp of the moment the video became available
+* `upload_date` (string): Video upload date in UTC (YYYYMMDD)
+* `release_timestamp` (numeric): UNIX timestamp of the moment the video was released
+* `release_date` (string): The date (YYYYMMDD) when the video was released in UTC
+* `release_year` (numeric): Year (YYYY) when the video or album was released
+* `modified_timestamp` (numeric): UNIX timestamp of the moment the video was last modified
+* `modified_date` (string): The date (YYYYMMDD) when the video was last modified in UTC
+* `channel` (string): Full name of the channel the video is uploaded on
+* `channel_id` (string): Id of the channel
+* `channel_url` (string): URL of the channel
+* `channel_follower_count` (numeric): Number of followers of the channel
+* `channel_is_verified` (boolean): Whether the channel is verified on the platform
+* `location` (string): Physical location where the video was filmed
+* `duration` (numeric): Length of the video in seconds
+* `duration_string` (string): Length of the video (HH:mm:ss)
+* `view_count` (numeric): How many users have watched the video on the platform
+* `concurrent_view_count` (numeric): How many users are currently watching the video on the platform.
+* `like_count` (numeric): Number of positive ratings of the video
+* `dislike_count` (numeric): Number of negative ratings of the video
+* `repost_count` (numeric): Number of reposts of the video
+* `average_rating` (numeric): Average rating given by users, the scale used depends on the webpage
+* `comment_count` (numeric): Number of comments on the video (For some extractors, comments are only downloaded at the end, and so this field cannot be used)
+* `age_limit` (numeric): Age restriction for the video (years)
+* `live_status` (string): One of "not_live", "is_live", "is_upcoming", "was_live", "post_live" (was live, but VOD is not yet processed)
+* `is_live` (boolean): Whether this video is a live stream or a fixed-length video
+* `was_live` (boolean): Whether this video was originally a live stream
+* `playable_in_embed` (string): Whether this video is allowed to play in embedded players on other sites
+* `availability` (string): Whether the video is "private", "premium_only", "subscriber_only", "needs_auth", "unlisted" or "public"
+* `media_type` (string): The type of media as classified by the site, e.g. "episode", "clip", "trailer"
+* `start_time` (numeric): Time in seconds where the reproduction should start, as specified in the URL
+* `end_time` (numeric): Time in seconds where the reproduction should end, as specified in the URL
+* `extractor` (string): Name of the extractor
+* `extractor_key` (string): Key name of the extractor
+* `epoch` (numeric): Unix epoch of when the information extraction was completed
+* `autonumber` (numeric): Number that will be increased with each download, starting at `--autonumber-start`, padded with leading zeros to 5 digits
+* `video_autonumber` (numeric): Number that will be increased with each video
+* `n_entries` (numeric): Total number of extracted items in the playlist
+* `playlist_id` (string): Identifier of the playlist that contains the video
+* `playlist_title` (string): Name of the playlist that contains the video
+* `playlist` (string): `playlist_title` if available or else `playlist_id`
+* `playlist_count` (numeric): Total number of items in the playlist. May not be known if entire playlist is not extracted
+* `playlist_index` (numeric): Index of the video in the playlist padded with leading zeros according the final index
+* `playlist_autonumber` (numeric): Position of the video in the playlist download queue padded with leading zeros according to the total length of the playlist
+* `playlist_uploader` (string): Full name of the playlist uploader
+* `playlist_uploader_id` (string): Nickname or id of the playlist uploader
+* `playlist_channel` (string): Display name of the channel that uploaded the playlist
+* `playlist_channel_id` (string): Identifier of the channel that uploaded the playlist
+* `playlist_webpage_url` (string): URL of the playlist webpage
+* `webpage_url` (string): A URL to the video webpage which, if given to yt-dlp, should yield the same result again
+* `webpage_url_basename` (string): The basename of the webpage URL
+* `webpage_url_domain` (string): The domain of the webpage URL
+* `original_url` (string): The URL given by the user (or the same as `webpage_url` for playlist entries)
+* `categories` (list): List of categories the video belongs to
+* `tags` (list): List of tags assigned to the video
+* `cast` (list): List of cast members
 
 All the fields in [Filtering Formats](#filtering-formats) can also be used
 
 Available for the video that belongs to some logical chapter or section:
 
- - `chapter` (string): Name or title of the chapter the video belongs to
- - `chapter_number` (numeric): Number of the chapter the video belongs to
- - `chapter_id` (string): Id of the chapter the video belongs to
+* `chapter` (string): Name or title of the chapter the video belongs to
+* `chapter_number` (numeric): Number of the chapter the video belongs to
+* `chapter_id` (string): Id of the chapter the video belongs to
 
 Available for the video that is an episode of some series or program:
 
- - `series` (string): Title of the series or program the video episode belongs to
- - `series_id` (string): Id of the series or program the video episode belongs to
- - `season` (string): Title of the season the video episode belongs to
- - `season_number` (numeric): Number of the season the video episode belongs to
- - `season_id` (string): Id of the season the video episode belongs to
- - `episode` (string): Title of the video episode
- - `episode_number` (numeric): Number of the video episode within a season
- - `episode_id` (string): Id of the video episode
+* `series` (string): Title of the series or program the video episode belongs to
+* `series_id` (string): Id of the series or program the video episode belongs to
+* `season` (string): Title of the season the video episode belongs to
+* `season_number` (numeric): Number of the season the video episode belongs to
+* `season_id` (string): Id of the season the video episode belongs to
+* `episode` (string): Title of the video episode
+* `episode_number` (numeric): Number of the video episode within a season
+* `episode_id` (string): Id of the video episode
 
 Available for the media that is a track or a part of a music album:
 
- - `track` (string): Title of the track
- - `track_number` (numeric): Number of the track within an album or a disc
- - `track_id` (string): Id of the track
- - `artists` (list): Artist(s) of the track
- - `artist` (string): Artist(s) of the track; comma-separated
- - `genres` (list): Genre(s) of the track
- - `genre` (string): Genre(s) of the track; comma-separated
- - `composers` (list): Composer(s) of the piece
- - `composer` (string): Composer(s) of the piece; comma-separated
- - `album` (string): Title of the album the track belongs to
- - `album_type` (string): Type of the album
- - `album_artists` (list): All artists appeared on the album
- - `album_artist` (string): All artists appeared on the album; comma-separated
- - `disc_number` (numeric): Number of the disc or other physical medium the track belongs to
+* `track` (string): Title of the track
+* `track_number` (numeric): Number of the track within an album or a disc
+* `track_id` (string): Id of the track
+* `artists` (list): Artist(s) of the track
+* `artist` (string): Artist(s) of the track; comma-separated
+* `genres` (list): Genre(s) of the track
+* `genre` (string): Genre(s) of the track; comma-separated
+* `composers` (list): Composer(s) of the piece
+* `composer` (string): Composer(s) of the piece; comma-separated
+* `album` (string): Title of the album the track belongs to
+* `album_type` (string): Type of the album
+* `album_artists` (list): All artists appeared on the album
+* `album_artist` (string): All artists appeared on the album; comma-separated
+* `disc_number` (numeric): Number of the disc or other physical medium the track belongs to
 
 Available only when using `--download-sections` and for `chapter:` prefix when using `--split-chapters` for videos with internal chapters:
 
- - `section_title` (string): Title of the chapter
- - `section_number` (numeric): Number of the chapter within the file
- - `section_start` (numeric): Start time of the chapter in seconds
- - `section_end` (numeric): End time of the chapter in seconds
+* `section_title` (string): Title of the chapter
+* `section_number` (numeric): Number of the chapter within the file
+* `section_start` (numeric): Start time of the chapter in seconds
+* `section_end` (numeric): End time of the chapter in seconds
 
 Available only when used in `--print`:
 
- - `urls` (string): The URLs of all requested formats, one in each line
- - `filename` (string): Name of the video file. Note that the [actual filename may differ](#outtmpl-postprocess-note)
- - `formats_table` (table): The video format table as printed by `--list-formats`
- - `thumbnails_table` (table): The thumbnail format table as printed by `--list-thumbnails`
- - `subtitles_table` (table): The subtitle format table as printed by `--list-subs`
- - `automatic_captions_table` (table): The automatic subtitle format table as printed by `--list-subs`
+* `urls` (string): The URLs of all requested formats, one in each line
+* `filename` (string): Name of the video file. Note that the [actual filename may differ](#outtmpl-postprocess-note)
+* `formats_table` (table): The video format table as printed by `--list-formats`
+* `thumbnails_table` (table): The thumbnail format table as printed by `--list-thumbnails`
+* `subtitles_table` (table): The subtitle format table as printed by `--list-subs`
+* `automatic_captions_table` (table): The automatic subtitle format table as printed by `--list-subs`
 
  Available only after the video is downloaded (`post_process`/`after_move`):
 
- - `filepath`: Actual path of downloaded video file
+* `filepath`: Actual path of downloaded video file
 
 Available only in `--sponsorblock-chapter-title`:
 
- - `start_time` (numeric): Start time of the chapter in seconds
- - `end_time` (numeric): End time of the chapter in seconds
- - `categories` (list): The [SponsorBlock categories](https://wiki.sponsor.ajay.app/w/Types#Category) the chapter belongs to
- - `category` (string): The smallest SponsorBlock category the chapter belongs to
- - `category_names` (list): Friendly names of the categories
- - `name` (string): Friendly name of the smallest category
- - `type` (string): The [SponsorBlock action type](https://wiki.sponsor.ajay.app/w/Types#Action_Type) of the chapter
+* `start_time` (numeric): Start time of the chapter in seconds
+* `end_time` (numeric): End time of the chapter in seconds
+* `categories` (list): The [SponsorBlock categories](https://wiki.sponsor.ajay.app/w/Types#Category) the chapter belongs to
+* `category` (string): The smallest SponsorBlock category the chapter belongs to
+* `category_names` (list): Friendly names of the categories
+* `name` (string): Friendly name of the smallest category
+* `type` (string): The [SponsorBlock action type](https://wiki.sponsor.ajay.app/w/Types#Action_Type) of the chapter
 
 Each aforementioned sequence when referenced in an output template will be replaced by the actual value corresponding to the sequence name. E.g. for `-o %(title)s-%(id)s.%(ext)s` and an mp4 video with title `yt-dlp test video` and id `BaW_jenozKc`, this will result in a `yt-dlp test video-BaW_jenozKc.mp4` file created in the current directory.
 
@@ -1462,20 +1491,20 @@ You can use `-f -` to interactively provide the format selector *for each video*
 
 You can also use special names to select particular edge case formats:
 
- - `all`: Select **all formats** separately
- - `mergeall`: Select and **merge all formats** (Must be used with `--audio-multistreams`, `--video-multistreams` or both)
- - `b*`, `best*`: Select the best quality format that **contains either** a video or an audio or both (i.e.; `vcodec!=none or acodec!=none`)
- - `b`, `best`: Select the best quality format that **contains both** video and audio. Equivalent to `best*[vcodec!=none][acodec!=none]`
- - `bv`, `bestvideo`: Select the best quality **video-only** format. Equivalent to `best*[acodec=none]`
- - `bv*`, `bestvideo*`: Select the best quality format that **contains video**. It may also contain audio. Equivalent to `best*[vcodec!=none]`
- - `ba`, `bestaudio`: Select the best quality **audio-only** format. Equivalent to `best*[vcodec=none]`
- - `ba*`, `bestaudio*`: Select the best quality format that **contains audio**. It may also contain video. Equivalent to `best*[acodec!=none]` ([Do not use!](https://github.com/yt-dlp/yt-dlp/issues/979#issuecomment-919629354))
- - `w*`, `worst*`: Select the worst quality format that contains either a video or an audio
- - `w`, `worst`: Select the worst quality format that contains both video and audio. Equivalent to `worst*[vcodec!=none][acodec!=none]`
- - `wv`, `worstvideo`: Select the worst quality video-only format. Equivalent to `worst*[acodec=none]`
- - `wv*`, `worstvideo*`: Select the worst quality format that contains video. It may also contain audio. Equivalent to `worst*[vcodec!=none]`
- - `wa`, `worstaudio`: Select the worst quality audio-only format. Equivalent to `worst*[vcodec=none]`
- - `wa*`, `worstaudio*`: Select the worst quality format that contains audio. It may also contain video. Equivalent to `worst*[acodec!=none]`
+* `all`: Select **all formats** separately
+* `mergeall`: Select and **merge all formats** (Must be used with `--audio-multistreams`, `--video-multistreams` or both)
+* `b*`, `best*`: Select the best quality format that **contains either** a video or an audio or both (i.e.; `vcodec!=none or acodec!=none`)
+* `b`, `best`: Select the best quality format that **contains both** video and audio. Equivalent to `best*[vcodec!=none][acodec!=none]`
+* `bv`, `bestvideo`: Select the best quality **video-only** format. Equivalent to `best*[acodec=none]`
+* `bv*`, `bestvideo*`: Select the best quality format that **contains video**. It may also contain audio. Equivalent to `best*[vcodec!=none]`
+* `ba`, `bestaudio`: Select the best quality **audio-only** format. Equivalent to `best*[vcodec=none]`
+* `ba*`, `bestaudio*`: Select the best quality format that **contains audio**. It may also contain video. Equivalent to `best*[acodec!=none]` ([Do not use!](https://github.com/yt-dlp/yt-dlp/issues/979#issuecomment-919629354))
+* `w*`, `worst*`: Select the worst quality format that contains either a video or an audio
+* `w`, `worst`: Select the worst quality format that contains both video and audio. Equivalent to `worst*[vcodec!=none][acodec!=none]`
+* `wv`, `worstvideo`: Select the worst quality video-only format. Equivalent to `worst*[acodec=none]`
+* `wv*`, `worstvideo*`: Select the worst quality format that contains video. It may also contain audio. Equivalent to `worst*[vcodec!=none]`
+* `wa`, `worstaudio`: Select the worst quality audio-only format. Equivalent to `worst*[vcodec=none]`
+* `wa*`, `worstaudio*`: Select the worst quality format that contains audio. It may also contain video. Equivalent to `worst*[acodec!=none]`
 
 For example, to download the worst quality video-only format you can use `-f worstvideo`. It is, however, recommended not to use `worst` and related options. When your format selector is `worst`, the format which is worst in all respects is selected. Most of the time, what you actually want is the video with the smallest filesize instead. So it is generally better to use `-S +size` or more rigorously, `-S +size,+br,+res,+fps` instead of `-f worst`. See [Sorting Formats](#sorting-formats) for more details.
 
@@ -1497,33 +1526,33 @@ You can also filter the video formats by putting a condition in brackets, as in 
 
 The following numeric meta fields can be used with comparisons `<`, `<=`, `>`, `>=`, `=` (equals), `!=` (not equals):
 
- - `filesize`: The number of bytes, if known in advance
- - `filesize_approx`: An estimate for the number of bytes
- - `width`: Width of the video, if known
- - `height`: Height of the video, if known
- - `aspect_ratio`: Aspect ratio of the video, if known
- - `tbr`: Average bitrate of audio and video in [kbps](## "1000 bits/sec")
- - `abr`: Average audio bitrate in [kbps](## "1000 bits/sec")
- - `vbr`: Average video bitrate in [kbps](## "1000 bits/sec")
- - `asr`: Audio sampling rate in Hertz
- - `fps`: Frame rate
- - `audio_channels`: The number of audio channels
- - `stretched_ratio`: `width:height` of the video's pixels, if not square
+* `filesize`: The number of bytes, if known in advance
+* `filesize_approx`: An estimate for the number of bytes
+* `width`: Width of the video, if known
+* `height`: Height of the video, if known
+* `aspect_ratio`: Aspect ratio of the video, if known
+* `tbr`: Average bitrate of audio and video in [kbps](## "1000 bits/sec")
+* `abr`: Average audio bitrate in [kbps](## "1000 bits/sec")
+* `vbr`: Average video bitrate in [kbps](## "1000 bits/sec")
+* `asr`: Audio sampling rate in Hertz
+* `fps`: Frame rate
+* `audio_channels`: The number of audio channels
+* `stretched_ratio`: `width:height` of the video's pixels, if not square
 
 Also filtering work for comparisons `=` (equals), `^=` (starts with), `$=` (ends with), `*=` (contains), `~=` (matches regex) and following string meta fields:
 
- - `url`: Video URL
- - `ext`: File extension
- - `acodec`: Name of the audio codec in use
- - `vcodec`: Name of the video codec in use
- - `container`: Name of the container format
- - `protocol`: The protocol that will be used for the actual download, lower-case (`http`, `https`, `rtsp`, `rtmp`, `rtmpe`, `mms`, `f4m`, `ism`, `http_dash_segments`, `m3u8`, or `m3u8_native`)
- - `language`: Language code
- - `dynamic_range`: The dynamic range of the video
- - `format_id`: A short description of the format
- - `format`: A human-readable description of the format
- - `format_note`: Additional info about the format
- - `resolution`: Textual description of width and height
+* `url`: Video URL
+* `ext`: File extension
+* `acodec`: Name of the audio codec in use
+* `vcodec`: Name of the video codec in use
+* `container`: Name of the container format
+* `protocol`: The protocol that will be used for the actual download, lower-case (`http`, `https`, `rtsp`, `rtmp`, `rtmpe`, `mms`, `f4m`, `ism`, `http_dash_segments`, `m3u8`, or `m3u8_native`)
+* `language`: Language code
+* `dynamic_range`: The dynamic range of the video
+* `format_id`: A short description of the format
+* `format`: A human-readable description of the format
+* `format_note`: Additional info about the format
+* `resolution`: Textual description of width and height
 
 Any string comparison may be prefixed with negation `!` in order to produce an opposite comparison, e.g. `!*=` (does not contain). The comparand of a string comparison needs to be quoted with either double or single quotes if it contains spaces or special characters other than `._-`.
 
@@ -1539,33 +1568,33 @@ You can change the criteria for being considered the `best` by using `-S` (`--fo
 
 The available fields are:
 
- - `hasvid`: Gives priority to formats that have a video stream
- - `hasaud`: Gives priority to formats that have an audio stream
- - `ie_pref`: The format preference
- - `lang`: The language preference as determined by the extractor (e.g. original language preferred over audio description)
- - `quality`: The quality of the format
- - `source`: The preference of the source
- - `proto`: Protocol used for download (`https`/`ftps` > `http`/`ftp` > `m3u8_native`/`m3u8` > `http_dash_segments`> `websocket_frag` > `mms`/`rtsp` > `f4f`/`f4m`)
- - `vcodec`: Video Codec (`av01` > `vp9.2` > `vp9` > `h265` > `h264` > `vp8` > `h263` > `theora` > other)
- - `acodec`: Audio Codec (`flac`/`alac` > `wav`/`aiff` > `opus` > `vorbis` > `aac` > `mp4a` > `mp3` > `ac4` > `eac3` > `ac3` > `dts` > other)
- - `codec`: Equivalent to `vcodec,acodec`
- - `vext`: Video Extension (`mp4` > `mov` > `webm` > `flv` > other). If `--prefer-free-formats` is used, `webm` is preferred.
- - `aext`: Audio Extension (`m4a` > `aac` > `mp3` > `ogg` > `opus` > `webm` > other). If `--prefer-free-formats` is used, the order changes to `ogg` > `opus` > `webm` > `mp3` > `m4a` > `aac`
- - `ext`: Equivalent to `vext,aext`
- - `filesize`: Exact filesize, if known in advance
- - `fs_approx`: Approximate filesize
- - `size`: Exact filesize if available, otherwise approximate filesize
- - `height`: Height of video
- - `width`: Width of video
- - `res`: Video resolution, calculated as the smallest dimension.
- - `fps`: Framerate of video
- - `hdr`: The dynamic range of the video (`DV` > `HDR12` > `HDR10+` > `HDR10` > `HLG` > `SDR`)
- - `channels`: The number of audio channels
- - `tbr`: Total average bitrate in [kbps](## "1000 bits/sec")
- - `vbr`: Average video bitrate in [kbps](## "1000 bits/sec")
- - `abr`: Average audio bitrate in [kbps](## "1000 bits/sec")
- - `br`: Average bitrate in [kbps](## "1000 bits/sec"), `tbr`/`vbr`/`abr`
- - `asr`: Audio sample rate in Hz
+* `hasvid`: Gives priority to formats that have a video stream
+* `hasaud`: Gives priority to formats that have an audio stream
+* `ie_pref`: The format preference
+* `lang`: The language preference as determined by the extractor (e.g. original language preferred over audio description)
+* `quality`: The quality of the format
+* `source`: The preference of the source
+* `proto`: Protocol used for download (`https`/`ftps` > `http`/`ftp` > `m3u8_native`/`m3u8` > `http_dash_segments`> `websocket_frag` > `mms`/`rtsp` > `f4f`/`f4m`)
+* `vcodec`: Video Codec (`av01` > `vp9.2` > `vp9` > `h265` > `h264` > `vp8` > `h263` > `theora` > other)
+* `acodec`: Audio Codec (`flac`/`alac` > `wav`/`aiff` > `opus` > `vorbis` > `aac` > `mp4a` > `mp3` > `ac4` > `eac3` > `ac3` > `dts` > other)
+* `codec`: Equivalent to `vcodec,acodec`
+* `vext`: Video Extension (`mp4` > `mov` > `webm` > `flv` > other). If `--prefer-free-formats` is used, `webm` is preferred.
+* `aext`: Audio Extension (`m4a` > `aac` > `mp3` > `ogg` > `opus` > `webm` > other). If `--prefer-free-formats` is used, the order changes to `ogg` > `opus` > `webm` > `mp3` > `m4a` > `aac`
+* `ext`: Equivalent to `vext,aext`
+* `filesize`: Exact filesize, if known in advance
+* `fs_approx`: Approximate filesize
+* `size`: Exact filesize if available, otherwise approximate filesize
+* `height`: Height of video
+* `width`: Width of video
+* `res`: Video resolution, calculated as the smallest dimension.
+* `fps`: Framerate of video
+* `hdr`: The dynamic range of the video (`DV` > `HDR12` > `HDR10+` > `HDR10` > `HLG` > `SDR`)
+* `channels`: The number of audio channels
+* `tbr`: Total average bitrate in [kbps](## "1000 bits/sec")
+* `vbr`: Average video bitrate in [kbps](## "1000 bits/sec")
+* `abr`: Average audio bitrate in [kbps](## "1000 bits/sec")
+* `br`: Average bitrate in [kbps](## "1000 bits/sec"), `tbr`/`vbr`/`abr`
+* `asr`: Audio sample rate in Hz
 
 **Deprecation warning**: Many of these fields have (currently undocumented) aliases, that may be removed in a future version. It is recommended to use only the documented field names.
 
@@ -1743,7 +1772,6 @@ Metadata fields            | From
 
 **Note**: The file format may not support some of these fields
 
-
 ## Modifying metadata examples
 
 ```bash
@@ -1783,6 +1811,7 @@ Note: In CLI, `ARG` can use `-` instead of `_`; e.g. `youtube:player-client"` be
 The following extractors use this feature:
 
 #### youtube
+
 * `lang`: Prefer translated metadata (`title`, `description` etc) of this language code (case-sensitive). By default, the video primary language metadata is preferred, with a fallback to `en` translated. See [youtube/_base.py](https://github.com/yt-dlp/yt-dlp/blob/415b4c9f955b1a0391204bd24a7132590e7b3bdb/yt_dlp/extractor/youtube/_base.py#L402-L409) for the list of supported content language codes
 * `skip`: One or more of `hls`, `dash` or `translated_subs` to skip extraction of the m3u8 manifests, dash manifests and [auto-translated subtitles](https://github.com/yt-dlp/yt-dlp/issues/4090#issuecomment-1158102032) respectively
 * `player_client`: Clients to extract video data from. The currently available clients are `web`, `web_safari`, `web_embedded`, `web_music`, `web_creator`, `mweb`, `ios`, `android`, `android_vr`, `tv`, `tv_simply` and `tv_embedded`. By default, `tv_simply,tv,web` is used, but `tv,web_safari,web` is used when authenticating with cookies and `tv,web_creator,web` is used with premium accounts. The `web_music` client is added for `music.youtube.com` URLs when logged-in cookies are used. The `web_embedded` client is added for age-restricted videos but only works if the video is embeddable. The `tv_embedded` and `web_creator` clients are added for age-restricted videos if account age-verification is required. Some clients, such as `web` and `web_music`, require a `po_token` for their formats to be downloadable. Some clients, such as `web_creator`, will only work with authentication. Not all clients support authentication via cookies. You can use `default` for the default clients, or you can use `all` for all clients (not recommended). You can prefix a client with `-` to exclude it, e.g. `youtube:player_client=default,-ios`
@@ -1792,7 +1821,7 @@ The following extractors use this feature:
 * `player_js_variant`: The player javascript variant to use for signature and nsig deciphering. The known variants are: `main`, `tce`, `tv`, `tv_es6`, `phone`, `tablet`. The default is `main`, and the others are for debugging purposes. You can use `actual` to go with what is prescribed by the site
 * `comment_sort`: `top` or `new` (default) - choose comment sorting mode (on YouTube's side)
 * `max_comments`: Limit the amount of comments to gather. Comma-separated list of integers representing `max-comments,max-parents,max-replies,max-replies-per-thread`. Default is `all,all,all,all`
-    * E.g. `all,all,1000,10` will get a maximum of 1000 replies total, with up to 10 replies per thread. `1000,all,100` will get a maximum of 1000 comments, with a maximum of 100 replies total
+  * E.g. `all,all,1000,10` will get a maximum of 1000 replies total, with up to 10 replies per thread. `1000,all,100` will get a maximum of 1000 comments, with a maximum of 100 replies total
 * `formats`: Change the types of formats to return. `dashy` (convert HTTP to DASH), `duplicate` (identical content but different URLs or protocol; includes `dashy`), `incomplete` (cannot be downloaded completely - live dash and post-live m3u8), `missing_pot` (include formats that require a PO Token but are missing one)
 * `innertube_host`: Innertube API host to use for all API requests; e.g. `studio.youtube.com`, `youtubei.googleapis.com`. Note that cookies exported from one subdomain will not work on others
 * `innertube_key`: Innertube API key to use for all API requests. By default, no API key is used
@@ -1805,13 +1834,16 @@ The following extractors use this feature:
 * `playback_wait`: Duration (in seconds) to wait inbetween the extraction and download stages in order to ensure the formats are available. The default is `6` seconds
 
 #### youtubepot-webpo
+
 * `bind_to_visitor_id`: Whether to use the Visitor ID instead of Visitor Data for caching WebPO tokens. Either `true` (default) or `false`
 
 #### youtubetab (YouTube playlists, channels, feeds, etc.)
+
 * `skip`: One or more of `webpage` (skip initial webpage download), `authcheck` (allow the download of playlists requiring authentication when no initial webpage is downloaded. This may cause unwanted behavior, see [#1122](https://github.com/yt-dlp/yt-dlp/pull/1122) for more details)
 * `approximate_date`: Extract approximate `upload_date` and `timestamp` in flat-playlist. This may cause date-based filters to be slightly off
 
 #### generic
+
 * `fragment_query`: Passthrough any query in mpd/m3u8 manifest URLs to their fragments if no value is provided, or else apply the query string given as `fragment_query=VALUE`. Note that if the stream has an HLS AES-128 key, then the query parameters will be passed to the key URI as well, unless the `key_query` extractor-arg is passed, or unless an external key URI is provided via the `hls_key` extractor-arg. Does not apply to ffmpeg
 * `variant_query`: Passthrough the master m3u8 URL query to its variant playlist URLs if no value is provided, or else apply the query string given as `variant_query=VALUE`
 * `key_query`: Passthrough the master m3u8 URL query to its HLS AES-128 decryption key URI if no value is provided, or else apply the query string given as `key_query=VALUE`. Note that this will have no effect if the key URI is provided via the `hls_key` extractor-arg. Does not apply to ffmpeg
@@ -1820,26 +1852,33 @@ The following extractors use this feature:
 * `impersonate`: Target(s) to try and impersonate with the initial webpage request; e.g. `generic:impersonate=safari,chrome-110`. Use `generic:impersonate` to impersonate any available target, and use `generic:impersonate=false` to disable impersonation (default)
 
 #### vikichannel
+
 * `video_types`: Types of videos to download - one or more of `episodes`, `movies`, `clips`, `trailers`
 
 #### youtubewebarchive
+
 * `check_all`: Try to check more at the cost of more requests. One or more of `thumbnails`, `captures`
 
 #### gamejolt
+
 * `comment_sort`: `hot` (default), `you` (cookies needed), `top`, `new` - choose comment sorting mode (on GameJolt's side)
 
 #### hotstar
+
 * `res`: resolution to ignore - one or more of `sd`, `hd`, `fhd`
 * `vcodec`: vcodec to ignore - one or more of `h264`, `h265`, `dvh265`
 * `dr`: dynamic range to ignore - one or more of `sdr`, `hdr10`, `dv`
 
 #### instagram
+
 * `app_id`: The value of the `X-IG-App-ID` header used for API requests. Default is the web app ID, `936619743392459`
 
 #### niconicochannelplus
+
 * `max_comments`: Maximum number of comments to extract - default is `120`
 
 #### tiktok
+
 * `api_hostname`: Hostname to use for mobile API calls, e.g. `api22-normal-c-alisg.tiktokv.com`
 * `app_name`: Default app name to use with mobile API calls, e.g. `trill`
 * `app_version`: Default app version to use with mobile API calls - should be set along with `manifest_app_version`, e.g. `34.1.2`
@@ -1849,48 +1888,63 @@ The following extractors use this feature:
 * `device_id`: Enable mobile API extraction with a genuine device ID to be used with mobile API calls. Default is a random 19-digit string
 
 #### rokfinchannel
+
 * `tab`: Which tab to download - one of `new`, `top`, `videos`, `podcasts`, `streams`, `stacks`
 
 #### twitter
+
 * `api`: Select one of `graphql` (default), `legacy` or `syndication` as the API for tweet extraction. Has no effect if logged in
 
 #### stacommu, wrestleuniverse
+
 * `device_id`: UUID value assigned by the website and used to enforce device limits for paid livestream content. Can be found in browser local storage
 
 #### twitch
+
 * `client_id`: Client ID value to be sent with GraphQL requests, e.g. `twitch:client_id=kimne78kx3ncx6brgo4mv6wki5h1ko`
 
 #### nhkradirulive (NHK らじる★らじる LIVE)
+
 * `area`: Which regional variation to extract. Valid areas are: `sapporo`, `sendai`, `tokyo`, `nagoya`, `osaka`, `hiroshima`, `matsuyama`, `fukuoka`. Defaults to `tokyo`
 
 #### nflplusreplay
+
 * `type`: Type(s) of game replays to extract. Valid types are: `full_game`, `full_game_spanish`, `condensed_game` and `all_22`. You can use `all` to extract all available replay types, which is the default
 
 #### jiocinema
+
 * `refresh_token`: The `refreshToken` UUID from browser local storage can be passed to extend the life of your login session when logging in with `token` as username and the `accessToken` from browser local storage as password
 
 #### jiosaavn
+
 * `bitrate`: Audio bitrates to request. One or more of `16`, `32`, `64`, `128`, `320`. Default is `128,320`
 
 #### afreecatvlive
+
 * `cdn`: One or more CDN IDs to use with the API call for stream URLs, e.g. `gcp_cdn`, `gs_cdn_pc_app`, `gs_cdn_mobile_web`, `gs_cdn_pc_web`
 
 #### soundcloud
+
 * `formats`: Formats to request from the API. Requested values should be in the format of `{protocol}_{codec}`, e.g. `hls_opus,http_aac`. The `*` character functions as a wildcard, e.g. `*_mp3`, and can be passed by itself to request all formats. Known protocols include `http`, `hls` and `hls-aes`; known codecs include `aac`, `opus` and `mp3`. Original `download` formats are always extracted. Default is `http_aac,hls_aac,http_opus,hls_opus,http_mp3,hls_mp3`
 
 #### orfon (orf:on)
+
 * `prefer_segments_playlist`: Prefer a playlist of program segments instead of a single complete video when available. If individual segments are desired, use `--concat-playlist never --extractor-args "orfon:prefer_segments_playlist"`
 
 #### bilibili
+
 * `prefer_multi_flv`: Prefer extracting flv formats over mp4 for older videos that still provide legacy formats
 
 #### sonylivseries
+
 * `sort_order`: Episode sort order for series extraction - one of `asc` (ascending, oldest first) or `desc` (descending, newest first). Default is `asc`
 
 #### tver
+
 * `backend`: Backend API to use for extraction - one of `streaks` (default) or `brightcove` (deprecated)
 
 #### vimeo
+
 * `client`: Client to extract video data from. The currently available clients are `android`, `ios`, and `web`. Only one client can be used. The `web` client is used by default. The `web` client only works with account cookies or login credentials. The `android` and `ios` clients only work with previously cached OAuth tokens
 * `original_format_policy`: Policy for when to try extracting original formats. One of `always`, `never`, or `auto`. The default `auto` policy tries to avoid exceeding the web client's API rate-limit by only making an extra request when Vimeo publicizes the video's downloadability
 

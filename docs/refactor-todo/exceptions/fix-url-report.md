@@ -23,6 +23,7 @@ except PermissionError:
 ```
 
 **Characteristics:**
+
 - **Simple mapping**: 1:1 built-in exception → custom exception
 - **Always clean**: Uses exception class defaults, never passes raw messages
 - **Consistent UX**: All messages follow same friendly tone and format
@@ -43,6 +44,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 ```
 
 **Problems:**
+
 - **Dual behavior**: Known patterns get clean messages, unknown get technical messages
 - **Unpredictable**: Same error type (`URLUnmappedError`) produces different message styles
 - **Poor UX**: Users see "Private video" instead of "YouTube video unavailable"
@@ -59,6 +61,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 | **Unknown Pattern** | "Unable to download webpage" → URLUnmappedError("Unable to download webpage") | ❌ **Technical**: "Unable to download webpage" |
 
 **File comparison** would show:
+
 - File errors: "We couldn't find your file", "Your file is empty"
 - URL errors: Mix of "YouTube video unavailable" and "Private video"
 
@@ -79,12 +82,14 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 ```
 
 **Benefits:**
+
 - ✅ **Consistent UX**: All error messages follow same friendly style
 - ✅ **Simpler logic**: No special message handling needed
 - ✅ **Matches file method**: Same design pattern throughout app
 - ✅ **Predictable**: Same exception type always produces same message
 
 **Trade-offs:**
+
 - 🔶 **Less specific**: Lose detailed yt-dlp error information in user-facing message
 - 🔶 **Debugging**: Might need to preserve technical details in logs
 
@@ -110,10 +115,12 @@ error_patterns = [
 ```
 
 **Benefits:**
+
 - ✅ **Targeted fix**: Addresses specific known issues
 - ✅ **Preserves current logic**: Minimal architectural change
 
 **Trade-offs:**
+
 - ❌ **High maintenance**: Requires continuous pattern updates
 - ❌ **Still inconsistent**: Unknown patterns will still show raw messages
 - ❌ **Doesn't solve root issue**: Fundamental inconsistency remains
@@ -138,6 +145,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 **Adopt Option A** - Make URL exceptions consistent with file method:
 
 1. **Immediate fix**: Change line 162 in `exceptions.py`:
+
    ```python
    # BEFORE (inconsistent)
    return URLUnmappedError(clean_msg)
@@ -147,6 +155,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
    ```
 
 2. **Optional enhancement**: Add technical details to debug logs:
+
    ```python
    logger.debug("yt-dlp unmapped error: %s", clean_msg)
    return URLUnmappedError()
@@ -197,6 +206,7 @@ URL Method (Broken):
 🎯 Simple Fix Recommended:
 
 Change ONE line in `exceptions.py`:
+
 ```python
 # BEFORE (inconsistent)
 return URLUnmappedError(clean_msg)
@@ -205,7 +215,7 @@ return URLUnmappedError(clean_msg)
 return URLUnmappedError()# Uses clean default: "YouTube processing failed - unmapped error"
 ```
 
-Result: URL exceptions will match your excellent file-based design - 5 minutes of work for unified user 
+Result: URL exceptions will match your excellent file-based design - 5 minutes of work for unified user
 experience.
 
 The file-based approach you built is the gold standard. The URL method just needs to follow the same clean
