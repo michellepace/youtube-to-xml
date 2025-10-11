@@ -14,8 +14,8 @@ Since people interact with YouTube's "Show transcript" button and this applicati
 When you click "Show Transcript" on YouTube, this is what you see:
 
 <figure>
-  <a href="images/terminology.youtube.jpg" target="_blank">
-    <img src="images/terminology.youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
+  <a href="images/terminology-youtube.jpg" target="_blank">
+    <img src="images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
   </a>
   <figcaption>YouTube's transcript display format (click to enlarge)</figcaption>
 </figure>
