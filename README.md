@@ -110,12 +110,12 @@ Output XML:
 - **Test Driven Development**: 124 tests (19 slow, 105 unit, ~102 seconds)
 - **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
-<figure align="center">
+<div align="center">
   <a href="docs/terminology.md">
-    <img src="docs/images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
+    <img src="docs/images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure." width="750">
   </a>
-  <figcaption>YouTube transcript terminology throughout codebase: (click to read)</figcaption>
-</figure>
+  <p><em>YouTube transcript terminology throughout codebase: (click to read)</em></p>
+</div>
 
 ## 🛠️ Development
 
@@ -145,12 +145,12 @@ uv run pytest -m "not slow"       # All tests except slow tests
 uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 ```
 
-<figure align="center">
+<div align="center">
   <a href="docs/images/repo_evolution_commit.webp">
-    <img src="docs/images/repo_evolution_commit.webp" alt="[Alt text needs to be written here]">
+    <img src="docs/images/repo_evolution_commit.webp" alt="Stacked area chart showing repository growth from 500 to 3700 lines across 250 commits, with test code (blue) comprising 60% of codebase, source code (red) 30%, and comments (green) 10%" width="750">
   </a>
-  <figcaption>Counted by my <a href="https://github.com/michellepace/plot-py-repo">plot-py-repo</a> tool</figcaption>
-</figure>
+  <p><em>Counted by my <a href="https://github.com/michellepace/plot-py-repo">plot-py-repo</a> tool</em></p>
+</div>
 
 ## 🏗️ Architecture
 
@@ -212,20 +212,19 @@ Evals To Do (transcript.txt vs transcript.xml):
 
 Learnings To Carry Over:
 
-- [CodeRabbit for PR review](https://www.anthropic.com/customers/coderabbit)
-- [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs)
-- [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index)
-- [Manage MCPs nicely](docs/knowledge/manage-mcps-nicely.md)
-- [Git branch workflow](docs/knowledge/git-branch-flow.md)
-- Always load the [pre-commit hook](.pre-commit-config.yaml) with linting and type checking
-- Always do test-driven development
-- LMM Context: set a [terminology](docs/terminology.md), meaningful naming, accurate docstrings and comments (it counts)
+- [Use CodeRabbit for PR review](https://www.anthropic.com/customers/coderabbit) to improve code
+- [Use Claude Code Docs](https://github.com/ericbuess/claude-code-docs) so Claude Code knows what it can do
+- [Use Claude Code Project Index](https://github.com/ericbuess/claude-code-project-index) so Claude Code sees entire project easily
+- [Manage MCPs nicely](docs/knowledge/manage-mcps-nicely.md) constrain what you use, put API keys in one place
+- [Git branch workflow](docs/knowledge/git-branch-flow.md) try put everything on a purposeful branch
+- Always use strict linting and typing and enforce in [pre-commit hook](.pre-commit-config.yaml)
+- Always do test-driven development and [manual LLM testing](docs/refactor-todo/exceptions/test_url.md) is useful too
+- Manage LLM Context: set [terminology](docs/terminology.md), use clear naming, keep docstrings/comments accurate, at 60% context window `/clear` Claude Code
 
 Open Questions:
 
 - Q1. Is there something I could have done better with UV?
-- Q2. Have a got a good clean system design?
-- Q3. Did I do exceptions in a way that supports a future API service?
-- Q4. Are [tests](/tests/) clear and sane, or over-engineered?
-- Q5. Is the code clean and clear?
-- Q6. Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
+- Q2. Is the system architecture well-designed and elegant?
+- Q3. Is the exception design suitable for a future API service?
+- Q4. Are [tests/](tests/) clear and sane, or over-engineered?
+- Q5. Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
