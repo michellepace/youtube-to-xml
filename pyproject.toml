@@ -19,7 +19,7 @@ readme = "README.md"
 authors = [{ name = "Michelle", email = "your.email@example.com" }]
 requires-python = ">=3.13"
 dependencies = [        # runtime
-    "yt-dlp>=2025.9.23",
+    "yt-dlp>=2025.12.8",
 ]
 
 # CLI entry points
@@ -29,9 +29,9 @@ youtube-to-xml = "youtube_to_xml.cli:main"
 # Development dependencies 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.3.0",
-    "pytest>=8.4.2",
-    "ruff>=0.13.1",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "ruff>=0.14.13",
 ]
 
 # =================================
