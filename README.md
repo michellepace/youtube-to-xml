@@ -101,6 +101,18 @@ Output XML:
 </transcript>
 ```
 
+## 🤖 Demo: Claude Code Analysis
+
+See **[demo-analysing-transcripts-with-claude-code.md](docs/demo-analysing-transcripts-with-claude-code.md)** for a real conversation where Claude Code analyses a 2-hour video transcript.
+
+Interesting findings:
+
+- **63,231 tokens** — too large for Claude Code to read at once, but it adapted by using grep and reading specific line ranges
+- **XML chapters** — made it trivial to target specific sections (e.g., "analyse chapter 10 and 11")
+- **Follow-up questions** — improved answer completeness. In an App this could be handled by prompt engineering.
+
+Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 200,000 token window. So, we still don't have to use RAG (later).
+
 ## 📊 Technical Details
 
 - **Architecture**: Pure functions with clear module separation
