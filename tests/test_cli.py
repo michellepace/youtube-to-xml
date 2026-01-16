@@ -1,13 +1,18 @@
 """Tests for CLI functionality."""
 
+from __future__ import annotations
+
 import subprocess
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from youtube_to_xml.cli import (
     _has_txt_extension,
     _sanitise_video_title_for_filename,
 )
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def run_cli(args: str | list[str], tmp_path: Path) -> tuple[int, str]:

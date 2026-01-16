@@ -10,9 +10,13 @@ Timestamps are stored internally as float seconds for calculations, then
 converted back to "M:SS" or "H:MM:SS" format for XML output.
 """
 
+from __future__ import annotations
+
 import math
-from collections.abc import Sequence
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 from youtube_to_xml.exceptions import (
     FileEmptyError,

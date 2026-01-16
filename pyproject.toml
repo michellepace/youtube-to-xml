@@ -17,7 +17,7 @@ version = "0.1.0"
 description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
 authors = [{ name = "Michelle", email = "your.email@example.com" }]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [        # runtime
     "yt-dlp>=2025.12.8",
 ]
@@ -64,7 +64,7 @@ markers = [
 # Cursor Pyright forks BasedPyright, some lint rules overlap with Ruff, causes dupe errors
 
 typeCheckingMode = "standard" # Cursor Pyright default
-pythonVersion = "3.13"
+pythonVersion = "3.14"
 
 # Disable Basedpyright rules that duplicate Ruff
 reportUnusedImport = false      # Ruff F401 handles it
@@ -79,7 +79,7 @@ reportUnusedParameter = false   # Ruff ARG001 handles it
 [tool.ruff]
 # Strictest ruff settings
 line-length = 90
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 # Enable all available rules

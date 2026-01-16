@@ -28,7 +28,7 @@ Full details with I/O examples: [README.md](README.md)
 
 ## Tech Stack
 
-- **Python**: 3.13+
+- **Python**: 3.14+
 - **Key Patterns**: Use `pathlib` (not `os`), `dataclasses`, `logging`, `pytest` with `tmp_path`
 - **Dependencies**: See [pyproject.toml](pyproject.toml) for complete list
 

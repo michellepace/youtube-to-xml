@@ -3,8 +3,10 @@
 Following TDD principles with focused separation of concerns.
 """
 
+from __future__ import annotations
+
 import xml.etree.ElementTree as ET
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from youtube_to_xml.models import (
     Chapter as ModelsChapter,
@@ -15,6 +17,9 @@ from youtube_to_xml.models import (
     VideoMetadata,
 )
 from youtube_to_xml.xml_builder import transcript_to_xml
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # ============= FIXTURES =============
 

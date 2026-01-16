@@ -3,14 +3,19 @@
 Converts parsed Chapter objects into XML format following the specified template.
 """
 
-import xml.etree.ElementTree as ET
+from __future__ import annotations
 
-from youtube_to_xml.models import TranscriptDocument
+import xml.etree.ElementTree as ET
+from typing import TYPE_CHECKING
+
 from youtube_to_xml.time_utils import (
     format_video_duration,
     format_video_published,
     seconds_to_timestamp,
 )
+
+if TYPE_CHECKING:
+    from youtube_to_xml.models import TranscriptDocument
 
 
 def _create_transcript_root_element(

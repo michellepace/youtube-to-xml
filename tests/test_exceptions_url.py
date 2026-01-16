@@ -3,10 +3,15 @@
 Each test verifies both exit code and error message for comprehensive coverage.
 """
 
+from __future__ import annotations
+
 import subprocess
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
