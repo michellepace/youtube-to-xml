@@ -1,8 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Capabilities
+
 **Purpose**: Convert YouTube transcripts to XML for improved LLM comprehension
 
 **Architecture**: UV Package Application with TDD, pure functions, layer separation
@@ -12,10 +11,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Core Architecture Pattern
 
 **Unified Data Flow**: Single CLI with auto-detection routes to shared infrastructure:
+
 - **URL Input**: `youtube-to-xml https://youtube.com/...` → `url_parser.parse_youtube_url()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 - **File Input**: `youtube-to-xml file.txt` → `file_parser.parse_transcript_file()` → `TranscriptDocument` → `xml_builder.transcript_to_xml()` → XML
 
 **Key Modules**:
+
 - `src/youtube_to_xml/cli.py` - Unified CLI with auto-detection (URLs vs .txt files)
 - `src/youtube_to_xml/models.py` - Unified data structures for both file and URL processing
 - `src/youtube_to_xml/url_parser.py` - URL-based transcript parsing to `TranscriptDocument`
@@ -34,11 +35,13 @@ Full details with I/O examples: [README.md](README.md)
 ## UV Workflow (Always)
 
 **Strict Rules:**
+
 - Use `uv run` - never activate venv
-- Use `uv add` - never pip
+- Use `uv add` - never pip (including `uv pip` commands)
 - Use `pyproject.toml` - never requirements.txt
 
 **Common Commands:**
+
 ```bash
 # Setup & Dependencies
 uv sync # Match packages to lockfile
@@ -61,11 +64,13 @@ uv run ruff format # Format (see pyproject.toml)
 ## Code Design Principles: Elegant Simplicity over Over-Engineered
 
 **TDD-Driven Design**: Write tests first - this naturally creates better architecture:
+
 - **Pure functions preferred** - no side effects in business logic, easier to test
 - **Clear module boundaries** - easier to test and understand
 - **Single responsibility** - complex functions are hard to test
 
 **Key Architecture Guidelines**:
+
 - **Layer separation** - CLI → business logic → I/O
 - **One module, one purpose** - Each `.py` file has a clear, focused role
 - **Handle errors at boundaries** - Catch exceptions in CLI layer, not business logic
