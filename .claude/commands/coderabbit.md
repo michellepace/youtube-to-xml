@@ -1,28 +1,59 @@
 ---
-description: Analyse CodeRabbit AI comments and recommend if to proceed
-argument-hint: "[group-of-coderabbit-comments]"
+description: Evaluate CodeRabbit comment and recommend whether to action it
+argument-hint: <comment-url>
+allowed-tools: Bash(gh api:*), Read, Glob, Grep
 ---
 
-# CodeRabbit Comment Analysis
+## 1. Fetch
 
-You are reviewing CodeRabbit AI comment(s) on the current branch's open GitHub PR. The comment group may contain one or multiple comments, all related to a single file. CodeRabbit AI doesn't always have full context of our codebase, so critical analysis is required.
+Parse `$1` to extract owner, repo, and comment ID.
 
-## Comment to Review
-
+```bash
+# strips analysis chain
+gh api repos/OWNER/REPO/pulls/comments/COMMENT_ID \
+  --jq '.body | gsub("<details>\\s*<summary>🧩 Analysis chain</summary>[\\s\\S]*?</details>\\s*"; "")' \
+  > x_coderabbit_COMMENT_ID.md
 ```
-$ARGUMENTS
+
+**Important:** Write `x_coderabbit_COMMENT_ID.md` to the project root.
+
+## 2. Evaluate
+
+CodeRabbit AI is not always right.
+
+Evaluate the comment `x_coderabbit_COMMENT_ID.md` against the context of our codebase and files it references. Assess:
+
+| Criterion | Question |
+|-----------|----------|
+| **Contextually valid** | Does it make sense with full codebase context? |
+| **Valuable** | Worth doing? Good practice? Or is it over-engineering? |
+| **Elegant** | Is the suggested fix pragmatic and clean? |
+
+## 3. Recommend
+
+1. **Summary**: Explain the comment (2-4 simple sentences)
+
+2. **Verdict**: [Action | Skip | Clarify]
+    - **Action** - Valid and valuable; implement (or with modifications)
+    - **Skip** - Not applicable, over-engineered, or incorrect
+    - **Clarify** - Need more information before deciding
+
+3. **Reasoning**: Why this verdict (2-3 sentences)
+
+## Output Format
+
+Well structured, use emojis, if using tables keep width <100 chars for readability.
+
+## Replying to CodeRabbit on GitHub
+
+When you recommend to skip a fix, offer if the user would like to reply back to coderabbit.
+
+To reply to a PR review comment, use `in_reply_to` on the pull comments endpoint:
+
+```bash
+gh api repos/OWNER/REPO/pulls/PULL_NUMBER/comments \
+  -f body="@coderabbitai ..." \
+  -F in_reply_to=COMMENT_ID
 ```
 
-## Your Task
-
-1. **Explain the comment**: In simple words
-2. **Investigate the code**: Trace through relevant codebase sections to understand context
-3. **Evaluate validity**: Determine if CodeRabbit's comment is valid and sane given context
-4. **Provide recommendation**: Should we action this comment (please include reasoning)?
-
-## Analysis Framework
-
-- Is CodeRabbit accurate against the code?
-- Consider elegant simplicity over unwarranted complexity
-- Evaluate impact on existing functionality
-- Consider maintainability and readability implications
+Never reply to a CodeRabbit comment unless confirmed by the user.

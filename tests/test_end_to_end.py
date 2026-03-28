@@ -293,30 +293,24 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
 
     content = first_chapter.text or ""
     content_lines = [line.strip() for line in content.split("\n") if line.strip()]
-    first_6_lines = content_lines[:6]
+    first_3_lines = content_lines[:3]
 
-    # Expect to use manual transcripts as priorty
+    # Expect to use manual transcripts as priority
     expected_manual_version = [
-        "0:01",
-        "[♪♪♪]",
-        "0:18",
-        "♪ We're no strangers to love ♪",
-        "0:22",
-        "♪ You know the rules and so do I ♪",
+        "0:01 [♪♪♪]",
+        "0:18 ♪ We're no strangers to love ♪",
+        "0:22 ♪ You know the rules and so do I ♪",
     ]
-    assert first_6_lines == expected_manual_version, (
-        f"Expected clean manual transcript, got: {first_6_lines}"
+    assert first_3_lines == expected_manual_version, (
+        f"Expected clean manual transcript, got: {first_3_lines}"
     )
 
     # Auto generated transcript (messier)
     autogen_version = [
-        "0:00",
-        "[Music]",
-        "0:18",
-        "We're no strangers to",
-        "0:21",
-        "love. You know the rules and so do",
+        "0:00 [Music]",
+        "0:18 We're no strangers to",
+        "0:21 love. You know the rules and so do",
     ]
-    assert first_6_lines != autogen_version, (
+    assert first_3_lines != autogen_version, (
         "Should not match messy auto-generated transcript"
     )

@@ -5,6 +5,7 @@ Following TDD principles with focused separation of concerns.
 
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
@@ -64,8 +65,8 @@ def test_transcript_to_xml_basic_structure() -> None:
     assert 'video_duration="" video_url="">' in xml
     assert "<chapters>" in xml
     assert '<chapter title="Introduction" start_time="0:02">' in xml
-    assert "      0:02\n      Welcome to the session" in xml
-    assert "      2:30\n      Let's begin" in xml
+    assert "      0:02 Welcome to the session" in xml
+    assert "      2:30 Let's begin" in xml
     assert "</chapter>" in xml
     assert "</chapters>" in xml
     assert "</transcript>" in xml
@@ -91,16 +92,13 @@ def test_transcript_to_xml_single_untitled_chapter() -> None:
 
     xml = transcript_to_xml(document)
 
-    expected = """<?xml version='1.0' encoding='utf-8'?>
+    expected = """<?xml version="1.0" encoding="utf-8"?>
 <transcript video_title="" video_published="" video_duration="" video_url="">
   <chapters>
     <chapter title="" start_time="0:06">
-      0:06
-      [Music]
-      0:15
-      I'm so
-      0:18
-      [Music]
+      0:06 [Music]
+      0:15 I'm so
+      0:18 [Music]
     </chapter>
   </chapters>
 </transcript>
@@ -110,6 +108,28 @@ def test_transcript_to_xml_single_untitled_chapter() -> None:
 
 
 # ============= 2. CONTENT FORMATTING TESTS (Data Processing) =============
+
+
+def test_transcript_to_xml_inline_timestamp_format() -> None:
+    """Transcript lines have inline timestamps, no bare timestamp lines."""
+    lines = [
+        TranscriptLine(timestamp=0.0, text="Hello world"),
+        TranscriptLine(timestamp=150.0, text="Goodbye world"),
+        TranscriptLine(timestamp=3661.0, text="Final line"),
+    ]
+    chapter = ModelsChapter(
+        title="Test", start_time=0.0, end_time=4000.0, transcript_lines=lines
+    )
+    document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
+    xml = transcript_to_xml(document)
+
+    # Each line should have timestamp and text on the same line
+    assert "      0:00 Hello world" in xml
+    assert "      2:30 Goodbye world" in xml
+    assert "      1:01:01 Final line" in xml
+
+    # No bare timestamp lines (timestamp alone on a line)
+    assert re.search(r"^\s*\d+:\d{2}\s*$", xml, re.MULTILINE) is None
 
 
 def test_transcript_to_xml_metadata_formatting() -> None:
@@ -131,7 +151,7 @@ def test_transcript_to_xml_metadata_formatting() -> None:
 
 
 def test_transcript_to_xml_transcript_line_conversion() -> None:
-    """TranscriptLine objects produce alternating timestamp and text lines in XML."""
+    """TranscriptLine objects produce inline timestamp/text entries in XML."""
     lines = [
         TranscriptLine(timestamp=0.0, text="Hello world"),
         TranscriptLine(timestamp=150.0, text="Goodbye world"),
@@ -143,10 +163,8 @@ def test_transcript_to_xml_transcript_line_conversion() -> None:
     xml = transcript_to_xml(document)
 
     expected_chapter = """    <chapter title="Test Chapter" start_time="0:00">
-      0:00
-      Hello world
-      2:30
-      Goodbye world
+      0:00 Hello world
+      2:30 Goodbye world
     </chapter>"""
 
     assert expected_chapter in xml
@@ -205,7 +223,7 @@ def test_transcript_to_xml_xml_declaration() -> None:
     document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
     xml_string = transcript_to_xml(document)
 
-    assert xml_string.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml_string.startswith('<?xml version="1.0" encoding="utf-8"?>')
     assert xml_string.endswith("</transcript>\n")
 
 
@@ -220,7 +238,7 @@ def test_transcript_to_xml_indentation() -> None:
     assert xml_lines[2] == "  <chapters>"  # Level 1: 2 spaces
     assert xml_lines[3].startswith("    <chapter")  # Level 2: 4 spaces
     assert xml_lines[4].startswith("      0:00")  # Content: 6 spaces
-    assert xml_lines[8] == "    </chapter>"  # Closing: 4 spaces
+    assert xml_lines[6] == "    </chapter>"  # Closing: 4 spaces
 
 
 # ============= 4. COMPREHENSIVE TESTS (Complete XML Generation) =============
@@ -266,7 +284,7 @@ def test_transcript_to_xml_multi_chapter_complete() -> None:
     root = ET.fromstring(xml)
 
     # Verify XML declaration and root structure
-    assert xml.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml.startswith('<?xml version="1.0" encoding="utf-8"?>')
     assert root.tag == "transcript"
 
     # Verify metadata attributes (URL method - populated and formatted)
@@ -288,25 +306,19 @@ def test_transcript_to_xml_multi_chapter_complete() -> None:
     assert hooks_chapter.get("title") == "Hooks"
     assert hooks_chapter.get("start_time") == "0:20"
 
-    # Verify transcript content (alternating timestamp/text pattern)
+    # Verify transcript content (inline timestamp/text format)
     intro_text = intro_chapter.text.strip().split("\n") if intro_chapter.text else []
     intro_lines = [line.strip() for line in intro_text if line.strip()]
 
-    # Check transcript lines in intro chapter (3 lines = 6 elements total)
-    assert intro_lines[0] == "0:00"
-    assert intro_lines[1] == "Hooks are hands down one of the best"
-    assert intro_lines[2] == "0:02"
-    assert intro_lines[3] == "features in Claude Code and for some"
-    assert intro_lines[4] == "0:05"
-    assert intro_lines[5] == "reason a lot of people don't know about"
+    # Check transcript lines in intro chapter (3 inline entries)
+    assert intro_lines[0] == "0:00 Hooks are hands down one of the best"
+    assert intro_lines[1] == "0:02 features in Claude Code and for some"
+    assert intro_lines[2] == "0:05 reason a lot of people don't know about"
 
-    # Check transcript lines in hooks chapter (3 lines = 6 elements)
+    # Check transcript lines in hooks chapter (3 inline entries)
     hooks_text = hooks_chapter.text.strip().split("\n") if hooks_chapter.text else []
     hooks_lines = [line.strip() for line in hooks_text if line.strip()]
 
-    assert hooks_lines[0] == "0:20"
-    assert hooks_lines[1] == "To create your first hook, use the hooks"
-    assert hooks_lines[2] == "0:22"
-    assert hooks_lines[3] == "slash command, which shows this scary"
-    assert hooks_lines[4] == "0:25"
-    assert hooks_lines[5] == "looking warning because hooks are"
+    assert hooks_lines[0] == "0:20 To create your first hook, use the hooks"
+    assert hooks_lines[1] == "0:22 slash command, which shows this scary"
+    assert hooks_lines[2] == "0:25 looking warning because hooks are"

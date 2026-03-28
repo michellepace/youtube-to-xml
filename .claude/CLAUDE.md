@@ -86,6 +86,7 @@ uv run ruff format # Format (see pyproject.toml)
 
 ## Code Quality Standards
 
+Run as pre-commit hooks and config in [pyproject.toml](pyproject.toml)
+
 - **Ruff**: Strictest settings (ALL rules enabled)
-- **Pyright**: Configured to avoid Ruff duplicates (see [pyproject.toml](pyproject.toml))
-- **Pre-commit**: Auto-runs on every commit
+- **Pyright**: Type checking, configured to avoid ruff dupes
