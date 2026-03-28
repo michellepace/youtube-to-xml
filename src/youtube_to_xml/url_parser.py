@@ -200,7 +200,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
         "noprogress": True,
     }
 
-    with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:
+    with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:  # type: ignore[reportArgumentType]
         try:
             # a) YT-DLP: get complete video metadata from YouTube
             raw_metadata = ydl.extract_info(url, download=False)
@@ -213,7 +213,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
     if raw_metadata is None:
         msg = "Something weird happened, we couldn't get this video's information."
         raise URLUnmappedError(msg)
-    return raw_metadata
+    return raw_metadata  # type: ignore[reportReturnType]
 
 
 def _extract_transcript_lines_from_files(temp_dir: Path) -> list[TranscriptLine]:
