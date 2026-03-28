@@ -112,7 +112,7 @@ Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 2
 ## 📊 Technical Details
 
 - **Architecture**: Pure functions with clear module separation
-- **Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
+- **Key Modules**: See [CLAUDE.md](.claude/CLAUDE.md)
 - **Dependencies**: Python 3.14+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 - **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
 - **Test Driven Development**: 125 tests (19 slow, 106 unit)
