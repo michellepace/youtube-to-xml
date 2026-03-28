@@ -15,7 +15,7 @@ from youtube_to_xml.time_utils import (
 )
 
 if TYPE_CHECKING:
-    from youtube_to_xml.models import TranscriptDocument
+    from youtube_to_xml.models import TranscriptDocument, TranscriptLine
 
 _XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 
@@ -42,7 +42,7 @@ def _create_chapter_element(
     return chapter_elem
 
 
-def _format_transcript_lines(transcript_lines: list) -> list[str]:
+def _format_transcript_lines(transcript_lines: list[TranscriptLine]) -> list[str]:
     """Format TranscriptLine objects as inline timestamp/text entries."""
     return [
         f"{seconds_to_timestamp(line.timestamp)} {line.text}" for line in transcript_lines
