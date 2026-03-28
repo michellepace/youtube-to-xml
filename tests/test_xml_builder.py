@@ -92,7 +92,7 @@ def test_transcript_to_xml_single_untitled_chapter() -> None:
 
     xml = transcript_to_xml(document)
 
-    expected = """<?xml version='1.0' encoding='utf-8'?>
+    expected = """<?xml version="1.0" encoding="utf-8"?>
 <transcript video_title="" video_published="" video_duration="" video_url="">
   <chapters>
     <chapter title="" start_time="0:06">
@@ -223,7 +223,7 @@ def test_transcript_to_xml_xml_declaration() -> None:
     document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
     xml_string = transcript_to_xml(document)
 
-    assert xml_string.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml_string.startswith('<?xml version="1.0" encoding="utf-8"?>')
     assert xml_string.endswith("</transcript>\n")
 
 
@@ -284,7 +284,7 @@ def test_transcript_to_xml_multi_chapter_complete() -> None:
     root = ET.fromstring(xml)
 
     # Verify XML declaration and root structure
-    assert xml.startswith("<?xml version='1.0' encoding='utf-8'?>")
+    assert xml.startswith('<?xml version="1.0" encoding="utf-8"?>')
     assert root.tag == "transcript"
 
     # Verify metadata attributes (URL method - populated and formatted)

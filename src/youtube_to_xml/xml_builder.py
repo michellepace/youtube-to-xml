@@ -17,6 +17,8 @@ from youtube_to_xml.time_utils import (
 if TYPE_CHECKING:
     from youtube_to_xml.models import TranscriptDocument
 
+_XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
+
 
 def _create_transcript_root_element(
     title: str = "", published: str = "", duration: str = "", url: str = ""
@@ -57,7 +59,8 @@ def _add_indented_content(element: ET.Element, lines: list[str]) -> None:
 def _finalise_xml(root: ET.Element) -> str:
     """Apply indentation and convert to XML string with declaration."""
     ET.indent(root, space="  ")
-    return ET.tostring(root, encoding="unicode", xml_declaration=True) + "\n"
+    xml_body = ET.tostring(root, encoding="unicode")
+    return f"{_XML_DECLARATION}\n{xml_body}\n"
 
 
 def transcript_to_xml(document: TranscriptDocument) -> str:
