@@ -41,12 +41,10 @@ def _create_chapter_element(
 
 
 def _format_transcript_lines(transcript_lines: list) -> list[str]:
-    """Format TranscriptLine objects as alternating timestamp/text pairs."""
-    lines = []
-    for line in transcript_lines:
-        lines.append(seconds_to_timestamp(line.timestamp))
-        lines.append(line.text)
-    return lines
+    """Format TranscriptLine objects as inline timestamp/text entries."""
+    return [
+        f"{seconds_to_timestamp(line.timestamp)} {line.text}" for line in transcript_lines
+    ]
 
 
 def _add_indented_content(element: ET.Element, lines: list[str]) -> None:

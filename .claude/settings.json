@@ -17,14 +17,13 @@
     "deny": [
       "Read(**/.env)",
       "Read(**/.envrc)",
-
-      "Read(**/.pytest_cache)",
-      "Read(**/.ruff_cache)",
       "Read(**/.venv)",
 
-      "Read(docs/handovers/**)",
-      "Read(docs/images/**)",
-      "Read(docs/knowledge/**)"
+      "Read(**/.pytest_cache)",
+      "Read(**/.ruff_cache)"
+    ],
+    "ask": [
+      "Read(docs/**)"
     ]
   }
 }

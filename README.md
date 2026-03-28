@@ -33,7 +33,7 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
-Output XML (condensed - 4 chapters, 163 lines total):
+Output XML (condensed - 4 chapters, 88 lines total):
 
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
@@ -43,15 +43,12 @@ Output XML (condensed - 4 chapters, 163 lines total):
             video_url="https://www.youtube.com/watch?v=Q4gsvJvRjCU">
   <chapters>
     <chapter title="Intro" start_time="0:00">
-      0:00
-      Hooks are hands down one of the best
-      0:02
-      features in Claude Code and for some
+      0:00 Hooks are hands down one of the best
+      0:02 features in Claude Code and for some
       <!-- ... more transcript content ... -->
     </chapter>
     <chapter title="Hooks" start_time="0:19">
-      0:20
-      To create your first hook, use the hooks
+      0:20 To create your first hook, use the hooks
       <!-- ... more transcript content ... -->
     </chapter>
     <!-- ... 2 more chapters ... -->
@@ -90,13 +87,12 @@ Output XML:
 <transcript video_title="" video_published="" video_duration="" video_url="">
   <chapters>
     <chapter title="Introduction to Cows" start_time="0:02">
-      0:02
-      Welcome to this talk about erm.. er
-      2:30
-      Let's start with the fundamentals</chapter>
+      0:02 Welcome to this talk about erm.. er
+      2:30 Let's start with the fundamentals
+    </chapter>
     <chapter title="Washing the cow" start_time="15:45">
-      15:45
-      First, we'll start with the patches</chapter>
+      15:45 First, we'll start with the patches
+    </chapter>
   </chapters>
 </transcript>
 ```
@@ -119,7 +115,7 @@ Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 2
 - **Key Modules**: See [CLAUDE.md Key Modules section](CLAUDE.md#key-modules)
 - **Dependencies**: Python 3.14+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 - **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
-- **Test Driven Development**: 124 tests (19 slow, 105 unit, ~102 seconds)
+- **Test Driven Development**: 125 tests (19 slow, 106 unit)
 - **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 <div align="center">
@@ -210,7 +206,41 @@ uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
 
 ---
 
-## 📕 *Personal Notes*
+## Appendix 1: Decision - Inline Transcript Timestamps
+
+Each transcript line now places the timestamp and text on the **same line**, rather than on separate lines:
+
+**Before (separate lines)**
+
+```text
+0:02
+Welcome to this talk about cows
+2:30
+Let's start with the fundamentals
+15:45
+First, we'll start with the patches
+```
+
+**After (same line)**
+
+```text
+0:02 Welcome to this talk about cows
+2:30 Let's start with the fundamentals
+15:45 First, we'll start with the patches
+```
+
+**Why?** The primary consumer of these transcripts is an LLM agent (e.g. Claude Code) that navigates large files by searching for keywords and reading line ranges. With inline timestamps, every search hit is a self-contained record — the agent immediately knows *what* was said and *when*, in a single operation. No follow-up read to find the timestamp on the line above.
+
+<div align="center">
+  <a href="docs/images/inline-timestamps.svg">
+    <img src="docs/images/inline-timestamps.svg" alt="Diagram comparing search workflows: Before requires two steps to find the timestamp, After returns timestamp and text together in one step" width="680">
+  </a>
+  <p><em>Searching a transcript with thousands of lines: separate lines require a second lookup for the timestamp, same-line format returns a complete record</em></p>
+</div>
+
+---
+
+## 📕 Appendix 2: *Personal Notes*
 
 Evals To Do (transcript.txt vs transcript.xml):
 

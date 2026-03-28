@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 720">
+  <defs>
+    <style>
+      :root {
+        --card-bg: #f1efe8;
+        --card-border: #5f5e5a;
+        --card-text: #444441;
+        --card-text-sub: #5f5e5a;
+      }
+      .card rect { fill: var(--card-bg); stroke: var(--card-border); }
+      .card .t1 { fill: var(--card-text); }
+      .card .t2 { fill: var(--card-text-sub); }
+    </style>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="m2 1 6 4-6 4" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <text x="170" y="22" text-anchor="middle" fill="#712b13" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="700">Before</text>
+  <text x="170" y="40" text-anchor="middle" fill="#993c1d" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="11" font-weight="400">timestamps on separate lines</text>
+  <text x="510" y="22" text-anchor="middle" fill="#085041" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="700">After</text>
+  <text x="510" y="40" text-anchor="middle" fill="#0f6e56" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="11" font-weight="400">timestamps on same line</text>
+  <path stroke="rgba(31,30,29,.3)" stroke-width=".5" stroke-dasharray="4 4" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M340 10v700"/>
+  <!-- Left column: Before -->
+  <!-- Row 1 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="55" width="260" height="44" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="77" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Search: "brisket"</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M170 99v31"/>
+  <!-- Row 2 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="130" width="260" height="56" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Result: line 847</text>
+    <text class="t2" x="170" y="168" text-anchor="middle" dominant-baseline="central" font-size="12">First, we'll start with the brisket</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M170 186v32"/>
+  <!-- Row 3 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="218" width="260" height="56" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="236" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">No timestamp!</text>
+    <text class="t2" x="170" y="256" text-anchor="middle" dominant-baseline="central" font-size="12">When was this said?</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M170 274v32"/>
+  <!-- Row 4 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="306" width="260" height="56" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="324" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Step 2: read surrounding lines</text>
+    <text class="t2" x="170" y="344" text-anchor="middle" dominant-baseline="central" font-size="12">lines 846-847</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M170 362v32"/>
+  <!-- Row 5 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="394" width="260" height="56" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="412" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Result: lines 846-847</text>
+    <text class="t2" x="170" y="432" text-anchor="middle" dominant-baseline="central" font-size="12">15:45 &#x21B5; First, we'll start with the brisket</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M170 450v32"/>
+  <!-- Row 6 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="482" width="260" height="44" rx="8" stroke-width=".5"/>
+    <text class="t1" x="170" y="504" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Now has timestamp (15:45)</text>
+  </g>
+  <!-- Row 7 (unchanged) -->
+  <g color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="65" y="550" width="210" height="44" rx="8" stroke-width=".5" fill="#faece7" stroke="#993c1d"/>
+    <text x="170" y="572" text-anchor="middle" dominant-baseline="central" fill="#712b13" font-size="14" font-weight="500">2 tool calls minimum</text>
+  </g>
+  <!-- Row 8 (unchanged) -->
+  <g color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="40" y="618" width="260" height="70" rx="8" stroke-width=".5" fill="#faece7" stroke="#993c1d"/>
+    <text x="170" y="640" text-anchor="middle" dominant-baseline="central" fill="#712b13" font-size="14" font-weight="500">Risk: off-by-one</text>
+    <text x="170" y="660" text-anchor="middle" dominant-baseline="central" fill="#993c1d" font-size="12">Line 846 might be text from</text>
+    <text x="170" y="676" text-anchor="middle" dominant-baseline="central" fill="#993c1d" font-size="12">previous entry, not timestamp</text>
+  </g>
+  <!-- Right column: After -->
+  <!-- Row 1 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="380" y="55" width="260" height="44" rx="8" stroke-width=".5"/>
+    <text class="t1" x="510" y="77" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Search: "brisket"</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M510 99v31"/>
+  <!-- Row 2 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="380" y="130" width="260" height="56" rx="8" stroke-width=".5"/>
+    <text class="t1" x="510" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Result: line 847</text>
+    <text class="t2" x="510" y="168" text-anchor="middle" dominant-baseline="central" font-size="12">15:45 First, we'll start with the brisket</text>
+  </g>
+  <path marker-end="url(#a)" fill="none" stroke="#73726c" color="#000" stroke-width="1.5" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400" d="M510 186v32"/>
+  <!-- Row 3 -->
+  <g class="card" color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="380" y="218" width="260" height="44" rx="8" stroke-width=".5"/>
+    <text class="t1" x="510" y="240" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500">Timestamp included (15:45)</text>
+  </g>
+  <!-- Row 7 (unchanged) -->
+  <g color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="405" y="550" width="210" height="44" rx="8" stroke-width=".5" fill="#e1f5ee" stroke="#0f6e56"/>
+    <text x="510" y="572" text-anchor="middle" dominant-baseline="central" fill="#085041" font-size="14" font-weight="500">1 tool call, done</text>
+  </g>
+  <!-- Row 8 (unchanged) -->
+  <g color="#000" font-family="&quot;Anthropic Sans&quot;,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif" font-size="16" font-weight="400">
+    <rect x="380" y="618" width="260" height="70" rx="8" stroke-width=".5" fill="#e1f5ee" stroke="#0f6e56"/>
+    <text x="510" y="640" text-anchor="middle" dominant-baseline="central" fill="#085041" font-size="14" font-weight="500">No ambiguity</text>
+    <text x="510" y="660" text-anchor="middle" dominant-baseline="central" fill="#0f6e56" font-size="12">Every search hit is a complete</text>
+    <text x="510" y="676" text-anchor="middle" dominant-baseline="central" fill="#0f6e56" font-size="12">record: timestamp + content</text>
+  </g>
+</svg>
