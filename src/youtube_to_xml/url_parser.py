@@ -102,6 +102,16 @@ def _validate_basic_url_structure(url: str) -> None:
         raise URLIsInvalidError from None
 
 
+def is_valid_url(url: str) -> bool:
+    """Check if input has valid URL structure (scheme, netloc, TLD)."""
+    try:
+        _validate_basic_url_structure(url)
+    except URLIsInvalidError:
+        return False
+    else:
+        return True
+
+
 def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
     """Build VideoMetadata object from raw yt-dlp metadata.
 
