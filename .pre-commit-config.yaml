@@ -23,13 +23,22 @@ repos:
         pass_filenames: false
 
       - id: pytest
-        name: pytest
-        entry: uv run pytest
+        name: pytest (fast)
+        entry: uv run pytest -m "not slow"
         language: system
         types: [python]
         pass_filenames: false
 
+      - id: pytest-all
+        name: pytest (full suite)
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
+
 # Notes:
-# 1. `uv-lock` hook automatically updates the lockfile to ensure it matches specs in pyproject.toml
+# 1. `uv-lock` hook updates uv.lock if out of sync with pyproject.toml, then blocks the commit to review
 # 2. `--exit-non-zero-on-fix` flag blocks commits when ruff makes automatic fixes, must review first
-# 3. `pass_filenames`: false` makes pytest run all tests rather than only testing modified files
+# 3. `pass_filenames: false` runs pyright and pytest project-wide rather than on individual changed files
+# 4. Pre-commit runs fast tests only; pre-push runs the full suite including slow (network) tests
