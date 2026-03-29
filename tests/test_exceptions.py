@@ -24,7 +24,7 @@ from youtube_to_xml.exceptions import (
 # Auto-discover all exception classes that inherit from BaseTranscriptError
 ALL_EXCEPTION_CLASSES = [
     cls
-    for name, cls in inspect.getmembers(exceptions, inspect.isclass)
+    for _name, cls in inspect.getmembers(exceptions, inspect.isclass)
     if (issubclass(cls, BaseTranscriptError) and cls != BaseTranscriptError)
 ]
 
