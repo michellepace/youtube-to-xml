@@ -4,6 +4,7 @@ Provides the main interface for parsing YouTube URLs into TranscriptDocument obj
 
 Public API:
     parse_youtube_url(url: str) -> TranscriptDocument
+    is_valid_url(url: str) -> bool
 """
 
 import json
