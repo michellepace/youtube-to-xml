@@ -4,6 +4,8 @@ Tests the URL parser module interface and functionality for converting
 YouTube URLs into structured TranscriptDocument objects.
 """
 
+# pyright: reportPrivateUsage=false
+
 import inspect
 from pathlib import Path
 from typing import get_args
@@ -30,6 +32,7 @@ from youtube_to_xml.url_parser import (
     _InternalChapterDict,
     _Json3Event,
     _validate_url_is_youtube_video,
+    _YtDlpMetadata,
     is_valid_url,
     parse_youtube_url,
 )
@@ -160,7 +163,7 @@ class TestParseYoutubeUrlFunction:
 
     @pytest.mark.slow
     def test_parse_youtube_url_suppresses_yt_dlp_noise(
-        self, capsys: pytest.CaptureFixture
+        self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Verify yt-dlp technical output is suppressed for clean output."""
         # Use a real YouTube video that will succeed
@@ -285,7 +288,7 @@ class TestDecomposedFunctions:
 
     def test_create_video_metadata_from_raw_data(self) -> None:
         """Verify VideoMetadata construction from raw yt-dlp data."""
-        raw_metadata = {
+        raw_metadata: _YtDlpMetadata = {
             "title": "Test Video Title",
             "upload_date": "20240315",
             "duration": 163,
@@ -303,7 +306,7 @@ class TestDecomposedFunctions:
 
     def test_create_video_metadata_with_missing_fields(self) -> None:
         """Verify default values used when metadata fields are missing."""
-        raw_metadata = {}  # Empty metadata
+        raw_metadata: _YtDlpMetadata = {}  # Empty metadata
         url = "https://youtube.com/watch?v=fallback"
 
         result = _create_video_metadata(raw_metadata, url)
