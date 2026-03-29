@@ -116,7 +116,7 @@ def format_video_duration(seconds: float) -> str:
     hours, remainder = divmod(total_seconds, SECONDS_PER_HOUR)
     minutes, secs = divmod(remainder, SECONDS_PER_MINUTE)
 
-    parts = []
+    parts: list[str] = []
     if hours > 0:
         parts.append(f"{hours}h")
     if minutes > 0:

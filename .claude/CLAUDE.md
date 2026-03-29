@@ -89,4 +89,4 @@ uv run ruff format # Format (see pyproject.toml)
 Run as pre-commit hooks and config in [pyproject.toml](pyproject.toml)
 
 - **Ruff**: Strictest settings (ALL rules enabled)
-- **Pyright**: Type checking, configured to avoid ruff dupes
+- **Pyright**: Strict mode, configured to avoid ruff dupes

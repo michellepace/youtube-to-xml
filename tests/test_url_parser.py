@@ -4,6 +4,8 @@ Tests the URL parser module interface and functionality for converting
 YouTube URLs into structured TranscriptDocument objects.
 """
 
+# pyright: reportPrivateUsage=false
+
 import inspect
 from pathlib import Path
 from typing import get_args
@@ -12,7 +14,6 @@ import pytest
 
 import youtube_to_xml.url_parser as url_parser_module
 from youtube_to_xml.exceptions import (
-    URLIsInvalidError,
     URLNotYouTubeError,
     URLPlaylistNotSupportedError,
 )
@@ -30,8 +31,9 @@ from youtube_to_xml.url_parser import (
     _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
-    _validate_basic_url_structure,
     _validate_url_is_youtube_video,
+    _YtDlpMetadata,
+    is_valid_url,
     parse_youtube_url,
 )
 
@@ -161,7 +163,7 @@ class TestParseYoutubeUrlFunction:
 
     @pytest.mark.slow
     def test_parse_youtube_url_suppresses_yt_dlp_noise(
-        self, capsys: pytest.CaptureFixture
+        self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Verify yt-dlp technical output is suppressed for clean output."""
         # Use a real YouTube video that will succeed
@@ -286,7 +288,7 @@ class TestDecomposedFunctions:
 
     def test_create_video_metadata_from_raw_data(self) -> None:
         """Verify VideoMetadata construction from raw yt-dlp data."""
-        raw_metadata = {
+        raw_metadata: _YtDlpMetadata = {
             "title": "Test Video Title",
             "upload_date": "20240315",
             "duration": 163,
@@ -304,7 +306,7 @@ class TestDecomposedFunctions:
 
     def test_create_video_metadata_with_missing_fields(self) -> None:
         """Verify default values used when metadata fields are missing."""
-        raw_metadata = {}  # Empty metadata
+        raw_metadata: _YtDlpMetadata = {}  # Empty metadata
         url = "https://youtube.com/watch?v=fallback"
 
         result = _create_video_metadata(raw_metadata, url)
@@ -315,11 +317,11 @@ class TestDecomposedFunctions:
         assert result.video_url == "https://youtube.com/watch?v=fallback"
 
 
-class TestValidateBasicUrlStructure:
+class TestIsValidUrl:
     """Test basic URL structure validation (Tier 1 - instant validation)."""
 
     def test_rejects_invalid_url_structures(self) -> None:
-        """Invalid URL structures raise URLIsInvalidError."""
+        """Invalid URL structures return False."""
         invalid_urls = [
             "youtube.com",  # No scheme
             "http://",  # No netloc
@@ -336,11 +338,10 @@ class TestValidateBasicUrlStructure:
         ]
 
         for invalid_url in invalid_urls:
-            with pytest.raises(URLIsInvalidError):
-                _validate_basic_url_structure(invalid_url)
+            assert is_valid_url(invalid_url) is False
 
     def test_accepts_valid_url_structures(self) -> None:
-        """Valid URL structures pass validation without errors."""
+        """Valid URL structures return True."""
         valid_urls = [
             # YouTube variants (primary use case)
             "https://www.youtube.com/watch?v=abc123",
@@ -352,8 +353,7 @@ class TestValidateBasicUrlStructure:
         ]
 
         for valid_url in valid_urls:
-            # Should not raise exception
-            _validate_basic_url_structure(valid_url)
+            assert is_valid_url(valid_url) is True
 
 
 class TestValidateUrlIsYoutubeVideo:

@@ -12,24 +12,13 @@ from youtube_to_xml.exceptions import (
     FileNotExistsError,
     FilePermissionError,
     InvalidInputError,
-    URLIsInvalidError,
 )
 from youtube_to_xml.file_parser import parse_transcript_file
 from youtube_to_xml.logging_config import get_logger, setup_logging
-from youtube_to_xml.url_parser import _validate_basic_url_structure, parse_youtube_url
+from youtube_to_xml.url_parser import is_valid_url, parse_youtube_url
 from youtube_to_xml.xml_builder import transcript_to_xml
 
 ARGPARSE_ERROR_CODE = 2  # argparse uses exit code 2 for argument errors
-
-
-def _is_valid_url(input_string: str) -> bool:
-    """Check if input is a proper URL (delegates to url_parser validation)."""
-    try:
-        _validate_basic_url_structure(input_string)
-    except URLIsInvalidError:
-        return False
-    else:
-        return True
 
 
 def _has_txt_extension(input_string: str) -> bool:
@@ -180,7 +169,7 @@ def main() -> None:
 
     # Main processing with single exception handler
     try:
-        if _is_valid_url(user_input):
+        if is_valid_url(user_input):
             xml_content, output_filename = _process_url_input(user_input, execution_id)
         elif _has_txt_extension(user_input):
             xml_content, output_filename = _process_file_input(user_input, execution_id)

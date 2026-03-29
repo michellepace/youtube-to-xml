@@ -6,8 +6,7 @@ import subprocess
 from typing import TYPE_CHECKING
 
 from youtube_to_xml.cli import (
-    _has_txt_extension,
-    _sanitise_video_title_for_filename,
+    _sanitise_video_title_for_filename,  # pyright: ignore[reportPrivateUsage]
 )
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
@@ -43,31 +42,8 @@ def assert_error_has_prefix_and_suffix(output: str) -> None:
 # =============================================================================
 # Unit Tests: Core Validation Functions
 # =============================================================================
+# NOTE: _has_txt_extension covered by CLI integration tests below
 # NOTE: URL validation logic tested in test_url_parser.py::TestValidateBasicUrlStructure
-# CLI only tests routing behavior (_is_valid_url delegates to url_parser)
-
-
-def test_has_txt_extension_accepts_txt_files() -> None:
-    """Test .txt extension detection with various path formats."""
-    txt_files = [
-        "transcript.txt",
-        "/path/to/file.txt",
-        "./local/file.txt",
-    ]
-    for file_path in txt_files:
-        assert _has_txt_extension(file_path) is True
-
-
-def test_has_txt_extension_rejects_non_txt() -> None:
-    """Test rejection of non-.txt extensions and extensionless inputs."""
-    non_txt_files = [
-        "data.md",
-        "file.xml",
-        "random_text",
-        "",
-    ]
-    for input_str in non_txt_files:
-        assert _has_txt_extension(input_str) is False
 
 
 def test_sanitise_video_title_for_filename_comprehensive() -> None:

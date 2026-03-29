@@ -108,7 +108,7 @@ def _find_subsequent_chapters(
     transcript_lines: list[str], timestamp_indices: list[int]
 ) -> list[_InternalChapterDict]:
     """Find subsequent chapters using the 2-line gap rule."""
-    chapters = []
+    chapters: list[_InternalChapterDict] = []
     for i in range(len(timestamp_indices) - 1):
         current_idx = timestamp_indices[i]
         next_idx = timestamp_indices[i + 1]
@@ -146,7 +146,7 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
     transcript_lines = sanitized_transcript.splitlines()
     timestamp_indices = _find_timestamps(transcript_lines)
 
-    file_chapter_dicts = []
+    file_chapter_dicts: list[_InternalChapterDict] = []
 
     # Find first chapter
     if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
@@ -158,7 +158,7 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
     )
 
     # Build chapters with TranscriptLine objects
-    chapters = []
+    chapters: list[ModelsChapter] = []
     for i, file_chapter_dict in enumerate(file_chapter_dicts):
         # Determine transcript range and end time for this chapter
         if i < len(file_chapter_dicts) - 1:
@@ -222,7 +222,7 @@ def _convert_strings_to_transcript_lines(
     Returns:
         List of TranscriptLine objects
     """
-    result = []
+    result: list[TranscriptLine] = []
     i = 0
 
     while i < len(raw_lines):

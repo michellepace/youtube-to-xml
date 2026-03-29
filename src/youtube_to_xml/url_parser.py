@@ -4,13 +4,14 @@ Provides the main interface for parsing YouTube URLs into TranscriptDocument obj
 
 Public API:
     parse_youtube_url(url: str) -> TranscriptDocument
+    is_valid_url(url: str) -> bool
 """
 
 import json
 import math
 import tempfile
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, cast
 from urllib.parse import urlparse
 
 import yt_dlp
@@ -41,6 +42,16 @@ class _InternalChapterDict(TypedDict):
     title: str
     start_time: float
     end_time: float
+
+
+class _YtDlpMetadata(TypedDict, total=False):
+    """Internal type for the yt-dlp metadata fields we access."""
+
+    title: str
+    upload_date: str
+    duration: int
+    webpage_url: str
+    chapters: list[_InternalChapterDict]
 
 
 class _Json3Seg(TypedDict, total=False):
@@ -102,7 +113,17 @@ def _validate_basic_url_structure(url: str) -> None:
         raise URLIsInvalidError from None
 
 
-def _create_video_metadata(raw_metadata: dict, url: str) -> VideoMetadata:
+def is_valid_url(url: str) -> bool:
+    """Check if input has valid URL structure (scheme, netloc, TLD)."""
+    try:
+        _validate_basic_url_structure(url)
+    except URLIsInvalidError:
+        return False
+    else:
+        return True
+
+
+def _create_video_metadata(raw_metadata: _YtDlpMetadata, url: str) -> VideoMetadata:
     """Build VideoMetadata object from raw yt-dlp metadata.
 
     Args:
@@ -153,7 +174,8 @@ def _validate_url_is_youtube_video(url: str) -> None:
             info = ydl.extract_info(url, download=False, process=False)
 
             # Validate info was returned
-            if info is None:
+            # Stubs say non-None, but yt-dlp can return None at runtime
+            if info is None:  # type: ignore[reportUnnecessaryComparison]
                 raise URLIsInvalidError
 
             # Double-check extractor (yt-dlp may redirect)
@@ -170,7 +192,7 @@ def _validate_url_is_youtube_video(url: str) -> None:
             raise mapped_exception from e
 
 
-def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
+def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata:
     """Handle yt-dlp configuration and download of transcript.
 
     Args:
@@ -210,10 +232,11 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> dict:
             mapped_exception = map_yt_dlp_exception(e)
             raise mapped_exception from e
 
-    if raw_metadata is None:
+    # Stubs say non-None, but yt-dlp can return None at runtime
+    if raw_metadata is None:  # type: ignore[reportUnnecessaryComparison]
         msg = "Something weird happened, we couldn't get this video's information."
         raise URLUnmappedError(msg)
-    return raw_metadata  # type: ignore[reportReturnType]
+    return cast("_YtDlpMetadata", raw_metadata)
 
 
 def _extract_transcript_lines_from_files(temp_dir: Path) -> list[TranscriptLine]:
@@ -292,7 +315,7 @@ def _extract_transcript_lines_from_json3(
     Returns:
         List of TranscriptLine objects with cleaned text and timestamps
     """
-    transcript_lines = []
+    transcript_lines: list[TranscriptLine] = []
 
     for event in events:
         # Skip events without transcript data
@@ -341,7 +364,7 @@ def _assign_transcript_lines_to_chapters(
             )
         ]
 
-    chapters = []
+    chapters: list[Chapter] = []
 
     for i, youtube_chapter_dict in enumerate(chapter_dicts):
         chapter_start_time = float(youtube_chapter_dict.get("start_time", 0))

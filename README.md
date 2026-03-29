@@ -135,6 +135,8 @@ Setup:
 git clone https://github.com/michellepace/youtube-to-xml.git
 cd youtube-to-xml
 uv sync
+uv run pre-commit install
+uv run pre-commit install --hook-type pre-push
 ```
 
 Code Quality:
