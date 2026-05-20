@@ -1,29 +1,45 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "WebFetch(domain:docs.python.org)",
-      "WebFetch(domain:docs.pytest.org)",
-      "WebFetch(domain:docs.astral.sh)",
-
-      "Bash(mkdir:*)",
-      "Bash(echo:*)",
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(uv --help:*)",
-      "Bash(uv run:*)",
-      "Bash(uv sync:*)",
-      "Bash(uv tree:*)"
+      "Bash(echo *)",
+      "Bash(find *)",
+      "Bash(git log *)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(pwd)",
+      "Bash(tail *)",
+      "Bash(test *)",
+      "Bash(uv *)",
+      "Bash(wc *)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [
       "Read(**/.env)",
-      "Read(**/.envrc)",
-      "Read(**/.venv)",
-
-      "Read(**/.pytest_cache)",
-      "Read(**/.ruff_cache)"
+      "Read(**/.envrc)"
     ],
     "ask": [
       "Read(docs/**)"
     ]
+  },
+  "enabledPlugins": {
+    "git-utils@my-claude-marketplace": true,
+    "superpowers@claude-plugins-official": false
+  },
+  "extraKnownMarketplaces": {
+    "my-claude-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "michellepace/my-claude-marketplace"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
   }
 }
