@@ -29,19 +29,19 @@ youtube-to-xml = "youtube_to_xml.cli:main"
 # Development dependencies 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.5.1",
-    "pyright>=1.1.408",
-    "pytest>=9.0.2",
-    "ruff>=0.15.8",
+    "pre-commit>=4.6.0",
+    "pyright>=1.1.409",
+    "pytest>=9.0.3",
+    "ruff>=0.15.13",
 ]
 
 # =================================
 # Package Manager Configuration
 # =================================
 
-# Allow PyPI nightly builds (❌ DISABLED to use stable releases only)
+# Allow PyPI pre-releases (❌ DISABLED to use stable releases only)
 #   for example yt-dlp dev versions like "2025.9.19.232813.dev0"
-#   but manual upgrade still needed, run `uv lock --upgrade`
+#   note: even when enabled, run `uv lock --upgrade` to pull them into the lockfile
 #[tool.uv]
 #prerelease = "allow"
 

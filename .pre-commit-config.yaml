@@ -1,16 +1,14 @@
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.8.5
+    rev: 0.11.15
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.7
+    rev: v0.15.13
     hooks:
-      # Run the linter
       - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix]
-      # Run the formatter  
       - id: ruff-format
 
   - repo: local
@@ -38,7 +36,7 @@ repos:
         stages: [pre-push]
 
 # Notes:
-# 1. `uv-lock` hook updates uv.lock if out of sync with pyproject.toml, then blocks the commit to review
-# 2. `--exit-non-zero-on-fix` flag blocks commits when ruff makes automatic fixes, must review first
-# 3. `pass_filenames: false` runs pyright and pytest project-wide rather than on individual changed files
-# 4. Pre-commit runs fast tests only; pre-push runs the full suite including slow (network) tests
+# 1. `uv-lock` syncs uv.lock with pyproject.toml, then blocks the commit for review
+# 2. `--exit-non-zero-on-fix` blocks commits when ruff auto-fixes, so changes get reviewed
+# 3. `pass_filenames: false` runs pyright/pytest project-wide, not just on changed files
+# 4. Fast tests run at commit; full suite (incl. slow network tests) runs at push
