@@ -4,15 +4,22 @@ repos:
     hooks:
       - id: uv-lock
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.13
-    hooks:
-      - id: ruff-check
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-
   - repo: local
     hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix --exit-non-zero-on-fix
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: pyright
         name: pyright
         entry: uv run pyright
@@ -35,8 +42,16 @@ repos:
         pass_filenames: false
         stages: [pre-push]
 
+      - id: xmllint
+        name: xmllint
+        entry: xmllint --noout
+        language: system
+        types: [xml]
+
 # Notes:
-# 1. `uv-lock` syncs uv.lock with pyproject.toml, then blocks the commit for review
-# 2. `--exit-non-zero-on-fix` blocks commits when ruff auto-fixes, so changes get reviewed
-# 3. `pass_filenames: false` runs pyright/pytest project-wide, not just on changed files
-# 4. Fast tests run at commit; full suite (incl. slow network tests) runs at push
+# 1. `uv-lock` syncs uv.lock with pyproject.toml, then blocks commit for review
+# 2. Python tools run via `uv run` (single version source: pyproject.toml)
+# 3. `ruff-format` precedes `ruff-check` so linting validates formatted code
+# 4. `--exit-non-zero-on-fix` blocks commits when ruff auto-fixes, must review changes
+# 5. `pass_filenames: false` runs pyright/pytest project-wide, not just on changed files
+# 6. Fast tests run at commit; full suite (incl. slow network tests) runs at push

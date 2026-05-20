@@ -139,21 +139,14 @@ uv run pre-commit install
 uv run pre-commit install --hook-type pre-push
 ```
 
-Code Quality:
+The `xmllint` pre-commit hook requires libxml2's CLI tool (system package, not a Python dep):
 
 ```bash
-uv run ruff check --fix           # Lint and auto-fix (see pyproject.toml)
-uv run ruff format                # Format code (see pyproject.toml)
+sudo apt install libxml2-utils    # Debian/Ubuntu/WSL
+# brew install libxml2            # macOS
 ```
 
-Testing:
-
-```bash
-uv run pytest                     # All tests
-uv run pytest -m "slow"           # Only slow tests (internet required)
-uv run pytest -m "not slow"       # All tests except slow tests
-uv run pre-commit run --all-files # (see .pre-commit-config.yaml)
-```
+Day-to-day commands (ruff, pytest, pre-commit) — see **[CLAUDE.md](.claude/CLAUDE.md#uv-workflow-always)** for the full list.
 
 <div align="center">
   <a href="docs/images/repo_evolution_commit.webp">
