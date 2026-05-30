@@ -1,19 +1,15 @@
 {
     "recommendations": [
-
-        // Cursor recommneded https://docs.cursor.com/guides/languages/python
-        "ms-python.python",           // Base Python: debugging, Test Explorer UI, venv integration
+        "ms-python.python",           // core Python: debugging, Test Explorer, venv integration
         "ms-python.debugpy",          // Python debugger (breakpoints, stepping)
-        "charliermarsh.ruff",         // Python linter & formatter (Astral ecosystem like UV)
-        "anysphere.cursorpyright",    // Python language server (autocomplete, hover info, go-to-definition)
-        "tamasfe.even-better-toml",   // TOML language support (syntax highlighting, validation)
+        "charliermarsh.ruff",         // linter & formatter (Astral, same family as uv)
+        "ms-python.vscode-pylance",   // (vscode) language server: autocomplete, hover, go-to-definition
+        "tamasfe.even-better-toml",   // TOML support for pyproject.toml (highlighting, validation)
         "davidanson.vscode-markdownlint",  // Markdown linter (same tool CodeRabbit uses)
 
-        // For VSCode users in place of anysphere.cursorpyright
-        "ms-python.vscode-pylance",
-
         // Notes:
-        // 1. ms-python.python integrates venv with the IDE, but UV creates it
-        // 2. Ruff doesn't have type checking, CP overlaps some of ruff, control in pyproject.toml
+        // 1. ms-python.python expects to manage the venv, but here uv owns it (`uv sync`)
+        // 2. Ruff doesn't type-check — Pyright/Pylance does (and overlaps some Ruff checks);
+        //    configure both in pyproject.toml
     ]
 }
