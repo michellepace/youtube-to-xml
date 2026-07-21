@@ -104,7 +104,7 @@ def test_video_without_transcript_raises_transcript_not_found_error(
     tmp_path: Path,
 ) -> None:
     """Test error message for videos without available transcripts."""
-    exit_code, output = run_cli("https://www.youtube.com/watch?v=6eBSHbLKuN0", tmp_path)
+    exit_code, output = run_cli("https://youtu.be/KfX5GZe87gk", tmp_path)
     assert exit_code == 1
     assert EXCEPTION_MESSAGES["url_transcript_not_found_error"] in output
 
