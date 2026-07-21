@@ -13,12 +13,13 @@ Since people interact with YouTube's "Show transcript" button and this applicati
 
 When you click "Show Transcript" on YouTube, this is what you see:
 
-<figure>
-  <a href="images/terminology-youtube.jpg" target="_blank">
-    <img src="images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure.">
+<div align="center">
+  <a href="images/terminology-youtube.jpg">
+    <img src="images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure." width="1200">
   </a>
-  <figcaption>YouTube's transcript display format (click to enlarge)</figcaption>
-</figure>
+  <br>
+  <em>YouTube's transcript display format (click to enlarge)</em>
+</div>
 
 YouTube displays each transcript line as timestamp + text on one line (as shown in image above). But when copy-pasted, these get separated onto consecutive lines:
 
