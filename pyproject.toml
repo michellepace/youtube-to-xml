@@ -3,7 +3,7 @@
 # =================================
 
 [build-system]
-requires = ["uv_build>=0.8.4,<0.9.0"]
+requires = ["uv_build>=0.11.30"]
 build-backend = "uv_build"
 
 
@@ -19,7 +19,7 @@ readme = "README.md"
 authors = [{ name = "Michelle", email = "your.email@example.com" }]
 requires-python = ">=3.14"
 dependencies = [        # runtime
-    "yt-dlp>=2026.3.17",
+    "yt-dlp>=2026.7.4",
 ]
 
 # CLI entry points
@@ -30,9 +30,9 @@ youtube-to-xml = "youtube_to_xml.cli:main"
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.0",
-    "pyright>=1.1.409",
-    "pytest>=9.0.3",
-    "ruff>=0.15.13",
+    "pyright>=1.1.411",
+    "pytest>=9.1.1",
+    "ruff>=0.15.22",
 ]
 
 # =================================
