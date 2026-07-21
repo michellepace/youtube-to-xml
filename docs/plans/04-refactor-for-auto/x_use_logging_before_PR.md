@@ -20,7 +20,7 @@ I have an unused `logging_config.py` module that needs integration before mergin
 | `URLRateLimitError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Line 201 | Experimental |
 | `URLSubtitlesNotFoundError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Lines 206, 402 | Experimental |
 
-### Exception Catches  
+### Exception Catches
 
 | Exception Type | Module | File | Location(s) | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
@@ -31,7 +31,7 @@ I have an unused `logging_config.py` module that needs integration before mergin
 
 **Notes:**
 
-- **3 YouTube exceptions are proven** in experimental script; **1 is unused** (`URLFormatError`)  
+- **3 YouTube exceptions are proven** in experimental script; **1 is unused** (`URLFormatError`)
 - **YouTube exceptions are unused** in active `src/` code - they exist as infrastructure for future integration
 
 ## Logging Implications

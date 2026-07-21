@@ -17,8 +17,8 @@ YouTube frequently changes its API and rate limiting rules, causing `uv run scri
 **Before**: Two-step process with direct HTTP requests
 
 ```python
-# Step 1: yt-dlp gets metadata + subtitle URLs  
-metadata = fetch_video_metadata(url)  
+# Step 1: yt-dlp gets metadata + subtitle URLs
+metadata = fetch_video_metadata(url)
 # Step 2: urllib directly downloads subtitle files (❌ Rate limited)
 with urlopen(metadata.subtitle_url) as response:
     json_text = response.read().decode("utf-8")
@@ -26,7 +26,7 @@ with urlopen(metadata.subtitle_url) as response:
 
 **After**: Single-step process using yt-dlp throughout
 
-```python  
+```python
 # yt-dlp handles both metadata AND subtitle download (✅ Rate limiting protection)
 with tempfile.TemporaryDirectory() as temp_dir:
     ydl.process_info(info)
@@ -102,7 +102,7 @@ prerelease = "allow"
 Even with **all code improvements implemented**, the script **still fails on the original network** that experienced heavy rate limiting. This proves:
 
 1. **Code changes provide architectural benefits** (cleaner, shorter, better error handling)
-2. **Rate limiting is primarily IP-based**, not method-based  
+2. **Rate limiting is primarily IP-based**, not method-based
 3. **Network switching remains the primary solution** for immediate relief
 4. **yt-dlp's built-in methods are also affected** by aggressive IP-based rate limiting
 
@@ -115,7 +115,7 @@ Even with **all code improvements implemented**, the script **still fails on the
 - **Code improvements don't overcome IP-based blocks**
 - **Network switching provides immediate relief**
 
-### **yt-dlp Nightly Builds Still Matter**  
+### **yt-dlp Nightly Builds Still Matter**
 
 - **YouTube changes detection methods frequently**
 - **Nightly builds stay ahead of changes** with latest countermeasures

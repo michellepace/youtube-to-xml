@@ -154,7 +154,7 @@ class TranscriptSource(ABC):
 class FileSource(TranscriptSource):
     def __init__(self, file_path: Path):
         self.file_path = file_path
-    
+
     def load(self) -> TranscriptData:
         # Adapt existing parser.py logic
         # Returns TranscriptData with empty metadata
@@ -162,7 +162,7 @@ class FileSource(TranscriptSource):
 class YouTubeSource(TranscriptSource):
     def __init__(self, url: str):
         self.url = url
-    
+
     def load(self) -> TranscriptData:
         # Fetch via yt-dlp
         # Convert subtitles to content_lines format
@@ -231,7 +231,7 @@ def build_xml(data: TranscriptData) -> str:
     root.set("upload_date", data.upload_date)  # "" for files
     root.set("duration", data.duration)        # "" for files
     root.set("video_url", data.video_url)      # "" for files
-    
+
     # Rest remains similar
 ```
 
@@ -294,9 +294,9 @@ def build_xml(data: TranscriptData) -> str:
 def main():
     setup_logging()
     logger = logging.getLogger(__name__)
-    
+
     args = parse_arguments()
-    
+
     # Auto-detect: URL pattern or file path
     if is_youtube_url(args.input):
         source = YouTubeSource(args.input)
@@ -304,7 +304,7 @@ def main():
     else:
         source = FileSource(Path(args.input))
         logger.info(f"Processing file: {args.input}")
-    
+
     try:
         data = source.load()
         xml = build_xml(data)

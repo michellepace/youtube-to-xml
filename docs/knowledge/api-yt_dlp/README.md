@@ -436,7 +436,7 @@ Tip: Use `CTRL`+`F` (or `Command`+`F`)  to search by keywords
     --max-filesize SIZE             Abort download if filesize is larger than
                                     SIZE, e.g. 50k or 44.6M
     --date DATE                     Download only videos uploaded on this date.
-                                    The date can be "YYYYMMDD" or in the format 
+                                    The date can be "YYYYMMDD" or in the format
                                     [now|today|yesterday][-N[day|week|month|year]].
                                     E.g. "--date today-2weeks" downloads only
                                     videos uploaded on the same day two weeks ago

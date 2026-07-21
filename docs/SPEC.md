@@ -43,7 +43,7 @@ config:
 flowchart TD
     subgraph TOP[" "]
         direction LR
-        
+
         CLI["`**🙂 User Command**
         youtube-to-xml transcript.txt`"]
 
@@ -59,27 +59,27 @@ flowchart TD
         CLI --> CLIMOD
         CLIMOD --> OUTPUT
     end
-    
+
     EXCEPTIONS["`**exceptions.py**
     • BaseTranscriptError
     • FileEmptyError
     • FileInvalidFormatError`"]
-    
+
     PARSER["`**file_parser.py**
     • Validate format
     • Find chapters
     • Extract content`"]
-    
+
     XMLBUILDER["`**xml_builder.py**
     • Generate XML
     • Handle escaping`"]
-    
+
     CLIMOD --> |Raw text<br>as string| PARSER
     PARSER --> |"List[Chapter]<br>(frozen dataclass)"| XMLBUILDER
     XMLBUILDER --> |XML string| CLIMOD
     EXCEPTIONS -.-> PARSER
     EXCEPTIONS -.-> CLIMOD
-    
+
     style CLI color:#fff,fill:#3874ac
     style OUTPUT color:#fff,fill:#419f52
 ```
@@ -106,7 +106,7 @@ flowchart TD
 - Use pytest's `tmp_path` fixture to avoid creating test files
 - Avoid mocks as they introduce unnecessary complexity
 - Test incrementally: One test should drive one behavior
-- Use focused test names that describe what's being tested  
+- Use focused test names that describe what's being tested
 
 ## Python Tech Stack
 
@@ -137,7 +137,7 @@ Let's dive into the topic
 First point about methodology
 23:30
 Second point here
-Getting Started Guide  
+Getting Started Guide
 1:15:30
 Download the software
 2:45:12

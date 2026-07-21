@@ -30,7 +30,7 @@ Integrate the experimental script's YouTube transcript functionality into the ma
 ## Technical Context
 
 - Two distinct sources (file vs YouTube) require different parsing logic
-- Each source has substantial, specialized code that should remain in separate modules  
+- Each source has substantial, specialized code that should remain in separate modules
 - Once parsed, both sources should produce identical data structures for downstream processing
 - The experimental script proves the YouTube functionality works but won't be copied directly
 
@@ -47,7 +47,7 @@ The main application will support two transcript sources (file and YouTube URL) 
 1. **CLI uses explicit flags**: `--file <path>` and `--url <youtube_url>` to select source adapter (no auto-detection)
 
 2. **Output XML format identical for both sources**:
-   - Same XML structure and chapter content  
+   - Same XML structure and chapter content
    - Only metadata attributes differ:
      - File source: All attributes empty (`video_title=""`, `upload_date=""`, `duration=""`, `video_url=""`)
      - YouTube source: All attributes populated with actual values

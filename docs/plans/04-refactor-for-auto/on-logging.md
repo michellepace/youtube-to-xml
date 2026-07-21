@@ -73,7 +73,7 @@ class SubtitlesUnavailableError(YouTubeXMLError):
     def __init__(self, video_title: str):
         super().__init__(f"No subtitles available for: {video_title}", 422)
 
-# Server Errors (5xx) - Our fault or external service fault  
+# Server Errors (5xx) - Our fault or external service fault
 class YouTubeServiceError(YouTubeXMLError):
     """YouTube API is down or rate limiting."""
     def __init__(self, message: str):
@@ -106,7 +106,7 @@ try:
 except YouTubeXMLError as e:
     logger.error(f"API error: {e.__class__.__name__}: {e}")
     return JSONResponse(
-        {"error": e.__class__.__name__, "message": str(e)}, 
+        {"error": e.__class__.__name__, "message": str(e)},
         status_code=e.status_code
     )
 ```
@@ -116,7 +116,7 @@ except YouTubeXMLError as e:
 **Current workflow (painful):**
 
 1. Open YouTube video
-2. Open transcript manually  
+2. Open transcript manually
 3. Copy entire transcript text
 4. Paste into text file
 5. Run command with text file
@@ -156,7 +156,7 @@ class VideoMetadata:
     chapter_markers: list[ChapterMarker]
     subtitle_url: str | None
 
-@dataclass(frozen=True, slots=True) 
+@dataclass(frozen=True, slots=True)
 class ChapterMarker:
     """YouTube's native chapter boundary."""
     title: str
@@ -168,7 +168,7 @@ class SubtitleEntry:
     """Individual subtitle with precise timing."""
     start_time_seconds: float
     text_content: str
-    
+
 @dataclass(frozen=True, slots=True)
 class ProcessedChapter:
     """Chapter with assigned subtitles for XML generation."""
@@ -201,11 +201,11 @@ def main():
     setup_logging(log_level="INFO", log_file="youtube_xml_cli.log")
     # ... rest of CLI logic
 
-# api_service.py:  
+# api_service.py:
 from .logging_config import setup_logging
 
 def handle_transcript_request(request):
-    setup_logging(log_level="INFO", log_file="youtube_xml_api.log") 
+    setup_logging(log_level="INFO", log_file="youtube_xml_api.log")
     # ... rest of API logic
 
 # 2. Add to every new module:
@@ -217,7 +217,7 @@ def your_function():
     logger.info("Operation starting")
     try:
         # Your code here
-        logger.info("Operation completed successfully") 
+        logger.info("Operation completed successfully")
     except Exception as e:
         logger.error(f"Operation failed: {e}")
         raise
@@ -231,7 +231,7 @@ def your_function():
 
 ```bash
 rm src/youtube_to_xml/cli.py           # File-based I/O approach
-rm src/youtube_to_xml/exceptions.py    # File-specific exceptions  
+rm src/youtube_to_xml/exceptions.py    # File-specific exceptions
 rm src/youtube_to_xml/parser.py        # Regex-based parsing
 rm src/youtube_to_xml/xml_builder.py   # Simple XML without metadata
 ```
@@ -262,30 +262,30 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
     """Configure logging for the application."""
     # Create logs directory
     Path("logs").mkdir(exist_ok=True)
-    
+
     # File handler with rotation (10MB files, keep 5 backups)
     file_handler = logging.handlers.RotatingFileHandler(
         f"logs/{log_file}",
         maxBytes=10*1024*1024,
         backupCount=5
     )
-    
+
     # Console handler for immediate feedback
     console_handler = logging.StreamHandler()
-    
+
     # Detailed format for files (includes function name and line number)
     file_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
     )
-    
+
     # Simple format for console (module name and message)
     console_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
+
     file_handler.setFormatter(file_formatter)
     console_handler.setFormatter(console_formatter)
-    
+
     # Configure root logger
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
@@ -301,7 +301,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 
 ### **Step 3: Exception System with Logging**
 
-```python  
+```python
 # Create: src/youtube_to_xml/error_types.py
 # Design hierarchy: YouTubeXMLError base with HTTP status codes + logging
 # Logging Level: Exception creation for pattern analysis
@@ -309,7 +309,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 
 **Design Decision:** Exception classes include HTTP status codes so **same error handling code works for both CLI and API**.
 
-### **Step 4: External Service Layer with API Logging**  
+### **Step 4: External Service Layer with API Logging**
 
 ```python
 # Create: src/youtube_to_xml/youtube_client.py
@@ -332,7 +332,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 ### **Step 6: Output Formatting with Generation Logging**
 
 ```python
-# Transform: xml_builder.py → transcript_formatter.py  
+# Transform: xml_builder.py → transcript_formatter.py
 # Add: video metadata attributes, timestamped content formatting
 # Logging Level: XML generation operations, output validation
 ```
@@ -357,7 +357,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 # test_logging_integration.py - Dedicated logging behavior verification
 # test_youtube_client.py - API operations + log message validation
 # test_transcript_processor.py - Business logic + operation logging
-# test_transcript_formatter.py - XML generation + output logging  
+# test_transcript_formatter.py - XML generation + output logging
 # test_command_interface.py - CLI operations + user workflow logging
 # test_api_service.py - HTTP requests + request tracking validation
 # test_end_to_end.py - Full pipeline + comprehensive log analysis
@@ -371,7 +371,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 
 ```python
 # test_video_data.py - Data structure validation (no logging needed)
-# test_transcript_processor.py - Business logic + log message validation  
+# test_transcript_processor.py - Business logic + log message validation
 # test_transcript_formatter.py - XML generation + output logging verification
 ```
 
@@ -439,7 +439,7 @@ def handler(request):
 **When to Choose This:**
 
 - Videos longer than 1 hour (need more processing time)
-- High-volume usage (want warm instances)  
+- High-volume usage (want warm instances)
 - Need persistent logging files for analysis
 
 **Deployment Options:**
@@ -453,13 +453,13 @@ def handler(request):
 ### **CLI Success Criteria**
 
 - ✅ **Single command operation:** `youtube-to-xml <URL> <output>`
-- ✅ **Rich metadata output:** Video title, date, duration in XML  
+- ✅ **Rich metadata output:** Video title, date, duration in XML
 - ✅ **Accurate chapters:** Uses YouTube's native chapter markers
 - ✅ **Comprehensive logging:** All operations logged to file + console
 - ✅ **Error visibility:** Clear error messages + detailed log context
 - ✅ **Performance:** < 10 seconds for typical videos with timing logs
 
-### **API Success Criteria**  
+### **API Success Criteria**
 
 - ✅ **Simple request format:** `POST {"url": "https://youtu.be/..."}`
 - ✅ **Proper HTTP semantics:** Correct status codes for each error type
@@ -471,7 +471,7 @@ def handler(request):
 ### **Logging Success Criteria**
 
 - ✅ **Development visibility:** All major operations logged during development
-- ✅ **Production debugging:** Sufficient context to diagnose user issues  
+- ✅ **Production debugging:** Sufficient context to diagnose user issues
 - ✅ **Performance tracking:** Operation timing available for optimization
 - ✅ **Error patterns:** Failure types and frequencies trackable
 - ✅ **File management:** Log rotation prevents disk space issues
@@ -498,7 +498,7 @@ def handler(request):
 - **Clear boundaries:** Each module has obvious responsibility + logging scope
 - **Predictable behavior:** Same logic for CLI and API + consistent error visibility
 
-**2. Development-First Design**  
+**2. Development-First Design**
 
 - **Immediate debugging:** See exactly what happens during development
 - **External API visibility:** Track YouTube API successes/failures/patterns
@@ -513,7 +513,7 @@ def handler(request):
 **4. Future-Proof Architecture**
 
 - **Extensible:** Easy to add support for other video platforms
-- **Observable:** Logging provides data for optimization decisions  
+- **Observable:** Logging provides data for optimization decisions
 - **Maintainable:** Clean separation enables safe changes with audit trail
 
 **The refactor transforms a brittle, manual tool into a robust, automated service with complete operational visibility from day one! 🌟**

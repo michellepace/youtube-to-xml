@@ -57,7 +57,7 @@ I need you to be my chief architect who values **separation of concerns, DRY pri
 ## Key Files to Review
 
 - `PROJECT_INDEX.json`: Complete project map with all `.py` modules, function signatures, and pytest tests
-- `README.md`: Application functionality and I/O documentation  
+- `README.md`: Application functionality and I/O documentation
 - `scripts/url_to_transcript.py`: Experimental URL-based implementation to integrate
 - `src/file_parser.py`: Current FILE-based implementation
 - `next.md`: My unvalidated integration ideas (see lines 14-57 for proposed `VideoMetadata` model)

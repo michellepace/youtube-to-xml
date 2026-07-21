@@ -25,7 +25,7 @@ The main application will support two transcript sources (file and YouTube URL) 
 1. **CLI uses explicit flags**: `--file <path>` and `--url <youtube_url>` to select source adapter (no auto-detection)
 
 2. **Output XML format identical for both sources**:
-   - Same XML structure and chapter content  
+   - Same XML structure and chapter content
    - Only metadata attributes differ:
      - File source: All attributes empty (`video_title=""`, `upload_date=""`, `duration=""`, `video_url=""`)
      - YouTube source: All attributes populated with actual values

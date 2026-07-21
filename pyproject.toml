@@ -26,7 +26,7 @@ dependencies = [        # runtime
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
 
-# Development dependencies 
+# Development dependencies
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.0",
@@ -109,7 +109,7 @@ max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "D103",    # Missing docstring in public function  
+    "D103",    # Missing docstring in public function
     "PLR2004", # Magic value used in comparison
     "S101",    # Use of assert detected
     "S314",    # XML parsing (safe in tests with self-generated XML)

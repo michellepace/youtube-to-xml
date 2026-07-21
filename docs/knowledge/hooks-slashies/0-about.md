@@ -21,7 +21,7 @@ A progressive exploration of Claude Code's most powerful automation features, fr
 Learn the fundamentals through concrete examples:
 
 - What hooks and slash commands actually do
-- 4 detailed scenarios for each feature  
+- 4 detailed scenarios for each feature
 - How to combine them for powerful workflows
 - Specific recommendations for the youtube-to-xml project
 
@@ -84,7 +84,7 @@ Deep dive into what hooks can actually do:
 ## Key Insights Across Documents 🎯
 
 1. **Hooks = Automation** (reactive, automatic, event-driven)
-2. **Slash Commands = Templates** (proactive, manual, workflow-driven)  
+2. **Slash Commands = Templates** (proactive, manual, workflow-driven)
 3. **Together = Intelligent Development Environment** (guided yet flexible)
 4. **Beyond Code = Universal Intelligence Platform** (reasoning-powered workflow automation)
 5. **Shell Scripts = Unlimited Power** (can execute any program, language, or service)

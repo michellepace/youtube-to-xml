@@ -158,7 +158,7 @@ class Chapter:
 class Metadata:
     """Video metadata for XML attributes."""
     video_title: str
-    upload_date: str  
+    upload_date: str
     duration: str
     video_url: str
 ```
@@ -189,7 +189,7 @@ class TranscriptSource(Protocol):
 class YouTubeSource:
     DEFAULT_TIMEOUT = 30  # seconds
     MAX_RETRIES = 2
-    
+
     def __init__(self, timeout: int = DEFAULT_TIMEOUT):
         self.timeout = timeout
 ```
@@ -220,15 +220,15 @@ class YouTubeSource:
 # file_parser.py
 def parse_transcript(raw_transcript: str) -> list[Chapter]:
     """Parse transcript text and return chapters.
-    
+
     Content lines are returned as-is from the transcript,
     preserving original formatting with timestamps and text.
     """
 
-# youtube_parser.py  
+# youtube_parser.py
 def parse_youtube_subtitles(...) -> list[Chapter]:
     """Transform YouTube subtitles into Chapter objects.
-    
+
     Content lines alternate between timestamps and text,
     matching the format expected by xml_builder.
     """

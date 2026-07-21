@@ -123,7 +123,7 @@ Your step 1 proposes standardizing VideoMetadata in `file_parser.py` **before** 
 **Your vision is correct**, but the execution order needs adjustment:
 
 - ❌ Don't add VideoMetadata to file_parser first
-- ✅ Create models.py with tests first (TDD)  
+- ✅ Create models.py with tests first (TDD)
 - ✅ Update xml_builder WITH metadata support in same commit as model extraction
 - ✅ Keep url_to_transcript refactoring for separate PR
 

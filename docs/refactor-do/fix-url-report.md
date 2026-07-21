@@ -189,7 +189,7 @@ Your file-based exceptions are excellently designed - simple, consistent, always
 
 ```python
 In map_yt_dlp_exception(), line 162 vs line 157:
-return exception_class() # ✅ Clean: "YouTube video unavailable" 
+return exception_class() # ✅ Clean: "YouTube video unavailable"
 return URLUnmappedError(raw_msg) # ❌ Technical: "Private video", "Unable to download webpage"
 ```
 
