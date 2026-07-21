@@ -29,7 +29,7 @@ Slash Commands are **reusable prompt templates** stored as markdown files. They'
 ### The Fundamental Contrast
 
 | Aspect | Hooks 🎣 | Slash Commands ⚡ |
-|--------|---------|-------------------|
+| :--- | :--- | :--- |
 | **Trigger** | Automatic (event-driven) | Manual (user-invoked) |
 | **Purpose** | Process control & automation | Prompt templating & workflows |
 | **Configuration** | JSON in settings files | Markdown files in directories |

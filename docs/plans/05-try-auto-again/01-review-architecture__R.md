@@ -53,7 +53,7 @@ The **logging infrastructure** module configures application-wide logging with f
 ### Summary Table
 
 | Module | Purpose | Responsibilities |
-|--------|---------|-----------------|
+| :--- | :--- | :--- |
 | 🎯 `cli.py` | Application entry point and orchestration | Argument parsing • File I/O • Error handling • User messaging • Logging setup |
 | 🔍 `parser.py` | Core transcript processing logic | Format validation • Timestamp detection • Chapter identification • Content extraction |
 | 📄 `xml_builder.py` | XML document generation | Element tree construction • Attribute setting • Content indentation • XML serialization |
@@ -73,7 +73,7 @@ The architecture shows **thoughtful error handling design**. Rather than using g
 ### CLI Design Summary
 
 | Aspect | Implementation | Quality Rating |
-|--------|---------------|----------------|
+| :--- | :--- | :--- |
 | 🎨 User Experience | Emoji indicators, clear messages, helpful documentation | ⭐⭐⭐⭐⭐ |
 | 🏗️ Separation of Concerns | Pure orchestration, delegated business logic | ⭐⭐⭐⭐⭐ |
 | 🛡️ Error Handling | Semantic exceptions, boundary catching, user-friendly messages | ⭐⭐⭐⭐⭐ |
@@ -93,7 +93,7 @@ The **minimal refactoring required** for service conversion demonstrates the str
 ### API Service Readiness Summary
 
 | Aspect | Current State | Service Adaptation Required |
-|--------|--------------|---------------------------|
+| :--- | :--- | :--- |
 | 🔄 Statelessness | Pure functions, immutable data | ✅ None |
 | 📊 Performance | 20ms for 15k lines | ✅ None |
 | 🚪 Entry Points | Clean function signatures | 🔧 Add HTTP/gRPC handlers |
@@ -112,7 +112,7 @@ The **naming and organization** of tests demonstrates professional craftsmanship
 ### Testing Excellence Summary
 
 | Aspect | Implementation | Benefits |
-|--------|---------------|----------|
+| :--- | :--- | :--- |
 | 📁 Organization | Mirrors source structure, clear naming | Easy navigation, clear purpose |
 | 🎯 Coverage | Edge cases, happy paths, error conditions | Comprehensive confidence |
 | 🔧 Fixtures | Reusable, progressively complex | Reduced duplication, clear patterns |

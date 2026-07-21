@@ -173,7 +173,7 @@ Code Rabbit uses Anthropic <https://www.anthropic.com/customers/coderabbit> 🙂
 **Note**: Project foundation (UV package structure, pyproject.toml) already committed to main ✅
 
 | **Branch Name** | **Scope** | **Key Deliverables** | **Duration** |
-|-----------------|-----------|---------------------|--------------|
+| :--- | :--- | :--- | :--- |
 | `feature/parser` | Complete parser module | TDD implementation: timestamp detection, validation, chapter identification, content extraction, edge cases | 🟡 Medium |
 | `feature/xml-builder` | XML generation module | ElementTree XML building, escaping, template compliance | 🟡 Medium |
 | `feature/file-handler` | File I/O operations | Read/write functions, directory creation, path handling | 🟢 Quick |

@@ -13,7 +13,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 ## 🎭 The Fundamental Difference
 
 | Aspect | 🎣 Hooks | ⚡ Slash Commands |
-|--------|----------|------------------|
+| :--- | :--- | :--- |
 | **Nature** | Reactive & Automatic | Proactive & Manual |
 | **When** | Triggered by Claude's actions | Triggered by your commands |
 | **Purpose** | Guard, monitor, enforce | Template, standardize, accelerate |
@@ -53,7 +53,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 ### 🎣 Hook Scenarios: The Invisible Infrastructure
 
 | Scenario | What It Solves | Business Impact |
-|----------|----------------|-----------------|
+| :--- | :--- | :--- |
 | **Quality Gates** | Prevents broken code from being committed | Reduces production bugs, saves debugging time |
 | **Security Enforcement** | Blocks accidental secret exposure | Prevents security incidents, maintains compliance |
 | **Performance Monitoring** | Tracks resource usage patterns | Identifies optimization opportunities early |
@@ -62,7 +62,7 @@ Think of Claude Code as a brilliant assistant who can be enhanced with two types
 ### ⚡ Slash Command Scenarios: The Workflow Accelerators  
 
 | Scenario | What It Solves | Business Impact |
-|----------|----------------|-----------------|
+| :--- | :--- | :--- |
 | **Architectural Reviews** | Standardizes complex analysis processes | Ensures consistent design quality across projects |
 | **Debugging Protocols** | Captures systematic troubleshooting approaches | Reduces time to resolution, prevents repeated investigations |
 | **Release Management** | Codifies deployment best practices | Minimizes deployment risks, ensures checklist completion |

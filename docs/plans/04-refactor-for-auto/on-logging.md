@@ -7,7 +7,7 @@
 Your experimental script demonstrates a **fundamentally better architecture**:
 
 | Current (Manual File) | New (YouTube URL) | Technical Benefit |
-|----------------------|-------------------|------------------|
+| :--- | :--- | :--- |
 | User copies transcript manually | Direct YouTube URL input | **Eliminates human error** in data entry |
 | Regex parsing of timestamps | Structured JSON from YouTube API | **Reliable data parsing** vs brittle regex |
 | Manual chapter detection | Native YouTube chapter markers | **Authoritative source** vs heuristic guessing |
@@ -180,7 +180,7 @@ class ProcessedChapter:
 ### **Consistent Method Naming Convention**
 
 | Module | Method Pattern | Examples | Logging Focus |
-|--------|----------------|----------|---------------|
+| :--- | :--- | :--- | :--- |
 | `logging_config.py` | `setup_*` | `setup_logging()` | Configuration |
 | `youtube_client.py` | `fetch_*` | `fetch_video_metadata()`, `fetch_subtitle_data()` | External API calls |
 | `transcript_processor.py` | `process_*` | `process_subtitles_to_chapters()` | Business logic operations |
@@ -479,7 +479,7 @@ def handler(request):
 ## 📊 **Complete Module Summary with Logging**
 
 | Module | Purpose | Status | Lines Est. | Complexity | Logging Focus |
-|--------|---------|---------|------------|------------|---------------|
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | `video_data.py` | Data structures & validation | 🆕 **New** | ~100 | Low | None (pure data structures) |
 | `logging_config.py` | Centralized logging setup with file rotation | 🆕 **New** | ~60 | Low | Configuration and initialization |
 | `error_types.py` | Exception hierarchy with HTTP status codes | 🆕 **New** | ~120 | Low | Exception creation and error patterns |

@@ -140,7 +140,7 @@ Raises:
 ### ✅ **All Criteria Met**
 
 | Deliverable | Status | Evidence |
-|-------------|--------|----------|
+| :--- | :--- | :--- |
 | Enhanced `exceptions.py` | ✅ Complete | All 5 exception types implemented |
 | `logging_config.py` | ✅ Complete + Enhanced | File + console logging working |
 | Tests for new exceptions | ✅ Complete | 17 tests, all passing |

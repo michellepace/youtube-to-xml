@@ -13,7 +13,7 @@ I have an unused `logging_config.py` module that needs integration before mergin
 ### Exception Raises
 
 | Exception Type | Module | File | Location(s) | Status |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | `FileEmptyError` | parser | `src/youtube_to_xml/parser.py` | Line 57 | Active |
 | `FileInvalidFormatError` | parser | `src/youtube_to_xml/parser.py` | Lines 67, 72, 77, 82 | Active |
 | `URLVideoNotFoundError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Lines 140, 203 | Experimental |
@@ -23,7 +23,7 @@ I have an unused `logging_config.py` module that needs integration before mergin
 ### Exception Catches  
 
 | Exception Type | Module | File | Location(s) | Purpose |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | `FileEmptyError` | cli | `src/youtube_to_xml/cli.py` | Line 64 | User error handling |
 | `FileInvalidFormatError` | cli | `src/youtube_to_xml/cli.py` | Line 67 | User error handling |
 | `FileNotFoundError` | cli | `src/youtube_to_xml/cli.py` | Line 54 | System error handling |

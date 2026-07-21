@@ -5,7 +5,7 @@ A progressive exploration of Claude Code's most powerful automation features, fr
 ## Quick Navigation 🗺️
 
 | Doc | Focus | Read This For |
-|-----|-------|---------------|
+| :--- | :--- | :--- |
 | **🚀 [1-practical-guide.md](1-practical-guide.md)** | **Hands-on Implementation** | Code examples, patterns, and practical combinations of hooks + slash commands |
 | **💡 [2-strategic-benefits.md](2-strategic-benefits.md)** | **Why & When to Use** | Strategic thinking, business benefits, and system design perspectives |
 | **🔍 [3-project-index-analysis.md](3-project-index-analysis.md)** | **Real-World Case Study** | Deep dive into Eric Buess's PROJECT_INDEX tool showing hooks in production |

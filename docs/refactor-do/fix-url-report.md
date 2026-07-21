@@ -55,7 +55,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 ## Concrete Examples of Inconsistency
 
 | Scenario | Current Behavior | User Experience |
-|----------|------------------|-----------------|
+| :--- | :--- | :--- |
 | **Known Pattern** | "video unavailable" → URLVideoUnavailableError() | ✅ **Clean**: "YouTube video unavailable" |
 | **Unknown Pattern** | "Private video" → URLUnmappedError("Private video") | ❌ **Technical**: "Private video" |
 | **Unknown Pattern** | "Unable to download webpage" → URLUnmappedError("Unable to download webpage") | ❌ **Technical**: "Unable to download webpage" |

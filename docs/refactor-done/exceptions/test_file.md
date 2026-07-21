@@ -172,7 +172,7 @@ Run: `uv run youtube-to-xml example_transcripts/introduction-to-cows.txt`
 All file-based input validation is working perfectly with two message improvements: error messages now specify "YouTube URL" for clarity, and the success message typo has been corrected.
 
 | Test Case | Status | Error Type | Message Quality |
-|-----------|---------|------------|----------------|
+| :--- | :--- | :--- | :--- |
 | 1. No arguments | 🟢 | Argparse | Clean with help hint |
 | 2. Random text | 🟢 | InvalidInputError | Perfect |
 | 3. Text with spaces | 🟢 | InvalidInputError | Perfect |
@@ -188,7 +188,7 @@ All file-based input validation is working perfectly with two message improvemen
 **No issues found.** All test cases pass with perfect error handling and messaging. Two quality improvements identified and documented: message clarity enhanced ("YouTube URL" vs "URL") and success message typo corrected.
 
 | Issue Type | Count | Details |
-|------------|-------|----------|
+| :--- | :--- | :--- |
 | Broken functionality | 0 | All features working |
 | Poor error messages | 0 | All messages clear and helpful (2 improvements made) |
 | Inconsistent behavior | 0 | Uniform help hint pattern |

@@ -23,7 +23,7 @@
 Summary Table:
 
 | File | Exception Type | Exception Message | Current Lines | Status |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | **SRC DIRECTORY** | | | | |
 | src/url_parser.py | URLNotYouTubeError | URL is not a YouTube video | 317 | ✅ **UPDATED** *(docstring simplified)* |
 | **TESTS DIRECTORY** | | | | |

@@ -1,16 +1,21 @@
-globs:
-  - "**/*.md" # All .md files; pruned by ignores below
+gitignore: true
 
 ignores:
-  - ".venv/**"
-  - ".pytest_cache/**"
-  - "__pycache__/**"
+  - "docs/knowledge/api-yt_dlp/README.md"
 
 # Disable rules
 config:
   default: true # Enable all rules by default
   MD013: false  # don't enforce a maximum line length
+  MD024: false  # don't forbid duplicate heading content
+  MD031: false  # don't require blank lines around code blocks
+  MD032: false  # don't require blank lines around lists
   MD033: false  # don't forbid inline HTML
+  MD034: false  # don't forbid bare URLs
   MD036: false  # don't forbid emphasis instead of a heading
+  MD040: false  # don't require language on fenced code blocks
   MD041: false  # don't require first line to be H1 heading
-  MD060: false  # don't require consistent table pipe spacing
+  MD046: false  # don't enforce consistent code block style
+  MD059: false  # don't require descriptive link text
+  MD060:        # enforce a consistent table column style
+    style: compact  # single space around cell content
