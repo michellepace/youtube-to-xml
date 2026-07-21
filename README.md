@@ -120,9 +120,10 @@ Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 2
 
 <div align="center">
   <a href="docs/terminology.md">
-    <img src="docs/images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure." width="750">
+    <img src="docs/images/terminology-youtube.jpg" alt="YouTube video interface showing the Transcript panel with timestamp and text displayed on single lines (e.g., '0:02 features in Claude Code and for some'). Orange annotations highlight chapter titles and transcript lines structure." width="500">
   </a>
-  <p><em>YouTube transcript terminology throughout codebase: (click to read)</em></p>
+  <br>
+  <em>YouTube transcript terminology throughout codebase: (click to read)</em>
 </div>
 
 ## 🛠️ Development
@@ -152,7 +153,8 @@ Day-to-day commands (ruff, pytest, pre-commit) — see **[CLAUDE.md](.claude/CLA
   <a href="docs/images/repo_evolution_commit.webp">
     <img src="docs/images/repo_evolution_commit.webp" alt="Stacked area chart showing repository growth from 500 to 3700 lines across 250 commits, with test code (blue) comprising 60% of codebase, source code (red) 30%, and comments (green) 10%" width="750">
   </a>
-  <p><em>Counted by my <a href="https://github.com/michellepace/plot-py-repo">plot-py-repo</a> tool</em></p>
+  <br>
+  <em>Counted by my <a href="https://github.com/michellepace/plot-py-repo">plot-py-repo</a> tool</em>
 </div>
 
 ## 🏗️ Architecture
@@ -230,7 +232,8 @@ First, we'll start with the patches
   <a href="docs/images/inline-timestamps.svg">
     <img src="docs/images/inline-timestamps.svg" alt="Diagram comparing search workflows: Before requires two steps to find the timestamp, After returns timestamp and text together in one step" width="680">
   </a>
-  <p><em>Searching a transcript with thousands of lines: separate lines require a second lookup for the timestamp, same-line format returns a complete record</em></p>
+  <br>
+  <em>Searching a transcript with thousands of lines: separate lines require a second lookup for the timestamp, same-line format returns a complete record</em>
 </div>
 
 ---

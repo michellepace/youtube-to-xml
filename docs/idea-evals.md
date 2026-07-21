@@ -33,7 +33,7 @@ With yes/no approach: count wins/ties/losses — raw defect rate, binomial proce
 With 1–3 rating approach: I could do capability (not real Cpk — binomial capability instead) or just mean score per type.
 
 | Approach | Description | Strength ✅ | Weakness⚠️ | Best For Analysis |
-|----------|-------------|--------------|---------------|-------------------|
+| :--- | :--- | :--- | :--- | :--- |
 | **A: Pick Winner per Pair** | Force-select one winner (or tie) between plain-text and XML responses. | Simple tally of wins/ties; quick to execute. | Ignores cases where both succeed/fail; forces artificial choices. | Basic win rates; not ideal for defects or capability. |
 | **B: Yes/No per Response** | Independent binary judgment (yes/no: did it answer?) for each format. | Avoids forced ties; enables binomial defect rates and confidence intervals. | Loses nuance (e.g., partial successes); binary flattens data. | Binomial capability; tallying defects by question type/duration. |
 | **C: 1–3 Scoring per Response** | Ordinal scale (3=perfect, 2=partial, 1=fail) against golden answers. | Captures richness; allows averages, binning, or ordinal stats. | Subjective (needs calibration); more time-intensive to score. | Mean scores per type; pseudo-capability (treat as discrete); MSA for LLM. |

@@ -7,7 +7,7 @@ Hooks and slashes explained in application to this repo and my project here: <ht
 ### Hooks in `~/.claude/settings.json`
 
 | Hook Event | Command | Purpose | Related to Index? |
-|------------|---------|---------|-------------------|
+| :--- | :--- | :--- | :--- |
 | **UserPromptSubmit** | `i_flag_hook.py` | Detects `-i` and `-ic` flags in prompts, generates/updates PROJECT_INDEX.json | ✅ |
 | **Stop** | `stop_hook.py` | Refreshes PROJECT_INDEX.json after each session to capture changes | ✅ |
 | **PreToolUse** (Read) | `claude-docs-helper.sh hook-check` | Checks and syncs Claude Code documentation | ❌ |
@@ -15,7 +15,7 @@ Hooks and slashes explained in application to this repo and my project here: <ht
 ### Slash Commands in `~/.claude/commands/`
 
 | Command | Purpose | Related to Index? |
-|---------|---------|-------------------|
+| :--- | :--- | :--- |
 | **/docs** | Access Claude Code documentation mirror (community maintained by Eric Buess) | ❌ |
 | **/index** | Manually create or update PROJECT_INDEX.json for current project | ✅ |
 
@@ -209,7 +209,7 @@ generate architecture diagram -ic100
 After running the commands above, verify:
 
 | Check | Command | Expected Result |
-|-------|---------|-----------------|
+| :--- | :--- | :--- |
 | Index exists | `ls -la PROJECT_INDEX.json` | File present in project root |
 | Index size | `wc -c PROJECT_INDEX.json` | ~6-10KB for your small project |
 | Contains functions | `grep '"f":' PROJECT_INDEX.json \| head -3` | Shows Python function signatures |

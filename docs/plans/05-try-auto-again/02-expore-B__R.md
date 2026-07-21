@@ -102,26 +102,26 @@ src/youtube_to_xml/
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments with source selection."""
     parser = argparse.ArgumentParser(...)
-    
+
     # Mutually exclusive group for input sources
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument(
-        "--file", 
+        "--file",
         metavar="transcript.txt",
         help="Process local transcript file"
     )
     source_group.add_argument(
         "--url",
-        metavar="youtube_url", 
+        metavar="youtube_url",
         help="Process YouTube video URL"
     )
-    
+
     return parser.parse_args()
 
 def main() -> None:
     """Main entry point with source routing."""
     args = parse_arguments()
-    
+
     # Route to appropriate source adapter
     if args.file:
         chapters, metadata = FileSource().fetch(args.file)
@@ -129,10 +129,10 @@ def main() -> None:
     else:  # args.url
         chapters, metadata = YouTubeSource().fetch(args.url)
         output_path = sanitize_filename(metadata.video_title) + ".xml"
-    
+
     # Generate XML (unified path)
     xml_content = chapters_to_xml(chapters, metadata)
-    
+
     # Write output
     Path(output_path).write_text(xml_content, encoding="utf-8")
 ```
@@ -146,10 +146,10 @@ from dataclasses import dataclass
 class Metadata:
     """Video metadata for XML attributes."""
     video_title: str
-    upload_date: str  
+    upload_date: str
     duration: str
     video_url: str
-    
+
     @classmethod
     def empty(cls) -> "Metadata":
         """Create empty metadata for file sources."""
@@ -170,16 +170,16 @@ from youtube_to_xml.metadata import Metadata
 
 class FileSource:
     """Adapter for file-based transcript sources."""
-    
+
     def fetch(self, file_path: str) -> tuple[list[Chapter], Metadata]:
         """Fetch chapters from file with empty metadata.
-        
+
         Args:
             file_path: Path to transcript file
-            
+
         Returns:
             Tuple of (chapters list, empty metadata)
-            
+
         Raises:
             FileNotFoundError: If file doesn't exist
             FileEmptyError: If file is empty
@@ -204,16 +204,16 @@ from youtube_to_xml.exceptions import (
 
 class YouTubeSource:
     """Adapter for YouTube URL sources."""
-    
+
     def fetch(self, url: str) -> tuple[list[Chapter], Metadata]:
         """Fetch chapters and metadata from YouTube.
-        
+
         Args:
             url: YouTube video URL
-            
+
         Returns:
             Tuple of (chapters list, populated metadata)
-            
+
         Raises:
             URLVideoNotFoundError: If video not found
             URLSubtitlesNotFoundError: If no subtitles
@@ -222,13 +222,13 @@ class YouTubeSource:
         # Fetch video info and subtitles
         video_data = self._fetch_video_data(url)
         subtitles = self._download_subtitles(video_data['subtitle_url'])
-        
+
         # Transform to chapters
         chapters = parse_youtube_subtitles(
             subtitles,
             video_data.get('chapters', [])
         )
-        
+
         # Create metadata
         metadata = Metadata(
             video_title=video_data['title'],
@@ -236,9 +236,9 @@ class YouTubeSource:
             duration=self._format_duration(video_data['duration']),
             video_url=video_data['webpage_url']
         )
-        
+
         return chapters, metadata
-    
+
     def _fetch_video_data(self, url: str) -> dict:
         """Fetch video information using yt-dlp."""
         options = {
@@ -250,7 +250,7 @@ class YouTubeSource:
             'subtitleslangs': ['en.*', 'all'],
             'subtitlesformat': 'json3'
         }
-        
+
         with yt_dlp.YoutubeDL(options) as ydl:
             info = ydl.extract_info(url, download=False)
             if not info:
@@ -272,21 +272,21 @@ class YouTubeSource:
 from youtube_to_xml.parser import Chapter  # Reuse Chapter dataclass
 
 def parse_youtube_subtitles(
-    subtitles: list[dict], 
+    subtitles: list[dict],
     chapter_markers: list[dict]
 ) -> list[Chapter]:
     """Transform YouTube subtitles into Chapter objects.
-    
+
     Args:
         subtitles: JSON3 subtitle entries
         chapter_markers: YouTube chapter information
-        
+
     Returns:
         List of Chapter objects with formatted content
     """
     # Group subtitles by chapter boundaries
     chapters = _assign_subtitles_to_chapters(subtitles, chapter_markers)
-    
+
     # Transform to standard Chapter format
     return [
         Chapter(
@@ -310,15 +310,15 @@ def _format_subtitle_lines(subtitles: list[dict]) -> list[str]:
 
 ```python
 def chapters_to_xml(
-    chapters: list[Chapter], 
+    chapters: list[Chapter],
     metadata: Metadata
 ) -> str:
     """Build XML document with chapters and metadata.
-    
+
     Args:
         chapters: List of Chapter objects
         metadata: Metadata for XML attributes
-        
+
     Returns:
         Formatted XML string
     """
@@ -327,7 +327,7 @@ def chapters_to_xml(
     root.set("upload_date", metadata.upload_date)
     root.set("duration", metadata.duration)
     root.set("video_url", metadata.video_url)
-    
+
     # Rest unchanged - build chapters as before
     chapters_elem = ET.SubElement(root, "chapters")
     # ... existing chapter building logic

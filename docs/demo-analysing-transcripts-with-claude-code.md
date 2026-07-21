@@ -21,7 +21,7 @@ $ youtube-to-xml https://www.youtube.com/watch\?v\=NAV3G9oFPC0
 *[The file is too big for Claude Code (> 25,000 tokens). Summarising the file per chapter will lose timestamps. Anthropic API holds 200,000 tokens in context, so we still wouldn't have to use RAG in an app.]*
 
 ```text
-Read(~/projects/nextjs/day1_design-systems-that-make-apps-look-real-live.xml)                                              
+Read(~/projects/nextjs/day1_design-systems-that-make-apps-look-real-live.xml)
   ⎿  ❌ Error: File content (63231 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.
 ```
 

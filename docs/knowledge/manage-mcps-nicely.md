@@ -12,7 +12,7 @@ There are three MCP installation scopes to choose from. I use "Project Scope" fo
 ## MCP Installation Scopes
 
 | Scope | Command (with flag) | Where's the config? | Use Case |
-|:------|:----------|:--------|:---------|
+| :--- | :--- | :--- | :--- |
 | 🛖 **Local Scope**<br/>_Private to you in a **specific project**_ | `claude mcp add --scope local` | Outside project<br/>_`~/.claude.json` (not in source control)_ | MCPs for a specific project, you don't care about keeping config in source control. Default scope. |
 | ♥️ **Project Scope**<br/>_Shared with team via source control_ | `claude mcp add --scope project` | Inside project directory<br/> _`.mcp.json` (checked into source control)_ | Team-shared MCPs that everyone can access OR its your project and you want config source control. |
 | 🔛 **User Scope**<br/>_Private to you across **all projects**_ | `claude mcp add --scope user` | Outside project<br/>_`~/.claude.json` (not in source control)_ | MCPs available to all projects, you don't care about keeping config in source control. |

@@ -1,8 +1,4 @@
 {
-    // General editor settings
-    "window.commandCenter": true,   // search box at top of window
-    "editor.colorDecorators": true, // show colour pickers in code
-
     // Hide generated cache/venv dirs from the Explorer
     "files.exclude": {
         "**/__pycache__": true,
@@ -17,19 +13,24 @@
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "python.terminal.activateEnvironment": false, // don't auto-activate; use `uv run`
 
-    // 🐍 Ruff: Python lint & format — editor behaviour only.
-    // The rules themselves live in pyproject.toml; type-checking via Pylance/Pyright.
+    // 🐍 Ruff: Python lint & format (see pyproject.toml)
     "ruff.nativeServer": "on",  // faster Rust-based language server
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": "explicit",         // apply Ruff autofixes on save
-            "source.organizeImports.ruff": "explicit" // sort & prune imports on save
+            "source.fixAll.ruff": "explicit", // autofix on save
+            "source.organizeImports.ruff": "explicit" // organise on save
         }
     },
 
-    // 📝 Markdownlint: Markdown linting (matches CodeRabbit's checks)
+    // 🧩 Even Better TOML (tamasfe.even-better-toml)
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml",
+        "editor.formatOnSave": true
+    },
+
+    // 📝 Markdownlint (davidanson.vscode-markdownlint)
     "[markdown]": {
         "editor.codeActionsOnSave": {
             "source.fixAll.markdownlint": "explicit"

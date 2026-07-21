@@ -13,17 +13,17 @@ I have an unused `logging_config.py` module that needs integration before mergin
 ### Exception Raises
 
 | Exception Type | Module | File | Location(s) | Status |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | `FileEmptyError` | parser | `src/youtube_to_xml/parser.py` | Line 57 | Active |
 | `FileInvalidFormatError` | parser | `src/youtube_to_xml/parser.py` | Lines 67, 72, 77, 82 | Active |
 | `URLVideoNotFoundError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Lines 140, 203 | Experimental |
 | `URLRateLimitError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Line 201 | Experimental |
 | `URLSubtitlesNotFoundError` | transcript_auto_fetcher | `scripts/transcript_auto_fetcher.py` | Lines 206, 402 | Experimental |
 
-### Exception Catches  
+### Exception Catches
 
 | Exception Type | Module | File | Location(s) | Purpose |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | `FileEmptyError` | cli | `src/youtube_to_xml/cli.py` | Line 64 | User error handling |
 | `FileInvalidFormatError` | cli | `src/youtube_to_xml/cli.py` | Line 67 | User error handling |
 | `FileNotFoundError` | cli | `src/youtube_to_xml/cli.py` | Line 54 | System error handling |
@@ -31,7 +31,7 @@ I have an unused `logging_config.py` module that needs integration before mergin
 
 **Notes:**
 
-- **3 YouTube exceptions are proven** in experimental script; **1 is unused** (`URLFormatError`)  
+- **3 YouTube exceptions are proven** in experimental script; **1 is unused** (`URLFormatError`)
 - **YouTube exceptions are unused** in active `src/` code - they exist as infrastructure for future integration
 
 ## Logging Implications

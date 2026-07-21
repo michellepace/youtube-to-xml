@@ -9,6 +9,7 @@
       "Bash(head *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
+      "Bash(npx markdownlint-cli2 *)",
       "Bash(pwd)",
       "Bash(tail *)",
       "Bash(test *)",

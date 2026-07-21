@@ -31,7 +31,7 @@ Analyse the current codebase architecture thoroughly:
 **Core Design Principles:**
 
 - TDD approach - write tests first, then implement
-- Clear, well-named modules with single responsibilities  
+- Clear, well-named modules with single responsibilities
 - Functions easy to test independently
 - No code duplication
 - API-ready architecture (not just CLI)

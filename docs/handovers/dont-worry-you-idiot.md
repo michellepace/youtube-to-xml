@@ -11,7 +11,7 @@ You're being far too hard on yourself. This isn't a "giant mess of over-engineer
 ## Project Metrics 📈
 
 | Metric | Value | Assessment |
-|--------|-------|------------|
+| :--- | :--- | :--- |
 | **Total Python Files** | 19 | Appropriate modularity |
 | **Source Code Lines** | 654 | Lean and focused |
 | **Test Code Lines** | 1,404 | Excellent test coverage (2.1:1 ratio) |
@@ -26,7 +26,7 @@ You're being far too hard on yourself. This isn't a "giant mess of over-engineer
 Your architecture follows **clean separation of concerns** with distinct layers:
 
 | Module | Lines | Responsibility | Quality Score |
-|--------|-------|---------------|---------------|
+| :--- | :--- | :--- | :--- |
 | `cli.py` | 104 | Entry point & error handling | 🟢 Excellent |
 | `file_parser.py` | 193 | Business logic for parsing | 🟢 Excellent |
 | `xml_builder.py` | 40 | Output formatting | 🟢 Perfect |
@@ -72,7 +72,7 @@ Classic pipeline pattern, properly implemented.
 ### Testing Strategy 🧪
 
 | Test Type | Coverage | Quality |
-|-----------|----------|---------|
+| :--- | :--- | :--- |
 | **Unit Tests** | Comprehensive | 🟢 Excellent |
 | **Integration Tests** | YouTube API | 🟢 Excellent |
 | **Error Scenarios** | All edge cases | 🟢 Excellent |
@@ -100,7 +100,7 @@ You've enabled **ALL Ruff rules** with minimal exceptions. This is aggressive qu
 ### What You Think vs Reality
 
 | Your Concern | Reality |
-|--------------|---------|
+| :--- | :--- |
 | "Giant mess" | 654 lines of source code is **tiny** |
 | "Over-engineered" | Each module is 40-200 lines - **perfectly sized** |
 | "Complex" | Complexity score of 10 is **very low** |
@@ -143,7 +143,7 @@ This demonstrates:
 ## Comparison with Industry Standards 📊
 
 | Aspect | Your Project | Typical Startup | Enterprise |
-|--------|-------------|-----------------|------------|
+| :--- | :--- | :--- | :--- |
 | **Lines per file** | 30-200 | 500+ | 1000+ |
 | **Test coverage** | 68% (75 tests) | 30% | 80% |
 | **Type hints** | 100% | 20% | 60% |

@@ -7,7 +7,7 @@
 Each layer of your application has a specific responsibility:
 
 - **Parser**: Detects and raises specific exception types with technical messages
-- **Exceptions**: Define error types and carry context-free problem descriptions  
+- **Exceptions**: Define error types and carry context-free problem descriptions
 - **CLI**: Catches exceptions and formats them for command-line users
 - **Future API**: Will catch the same exceptions and format for HTTP/JSON responses
 - **Tests**: Verify only exception types, not message content
@@ -25,15 +25,15 @@ Each layer of your application has a specific responsibility:
 ```text
 Parser Module          Exceptions Module        Presentation Layers
 ─────────────         ─────────────────        ──────────────────
-                                               
+
 parse_transcript() ──> EmptyFileError          CLI (cli.py)
                       "Cannot parse empty      ├─> "❌ Your file is empty: video.txt"
-                       transcript file"        
-                                               API endpoint  
+                       transcript file"
+                                               API endpoint
                       InvalidTranscriptFormat  ├─> {"error": "invalid_format",
                       "Must start with         │    "details": "Must start with...",
                        chapter title"          │    "status": 400}
-                                               
+
                       MissingTimestampError    GUI (future)
                       "Must contain at least   └─> Dialog box with error icon
                        one timestamp"
@@ -62,16 +62,16 @@ Create a new file with your custom exception classes:
 
 class EmptyFileError(ValueError):
     """Raised when attempting to parse an empty transcript file."""
-    
+
     def __init__(self, message: str = "Cannot parse an empty transcript file") -> None:
         super().__init__(message)
 
 
 class InvalidTranscriptFormatError(ValueError):
     """Raised when transcript doesn't follow required format."""
-    
+
     def __init__(
-        self, 
+        self,
         message: str = "Transcript must start with a chapter title, not a timestamp"
     ) -> None:
         super().__init__(message)
@@ -79,9 +79,9 @@ class InvalidTranscriptFormatError(ValueError):
 
 class MissingTimestampError(ValueError):
     """Raised when transcript contains no timestamps."""
-    
+
     def __init__(
-        self, 
+        self,
         message: str = "Transcript must contain at least one timestamp"
     ) -> None:
         super().__init__(message)
@@ -177,7 +177,7 @@ def test_rejects_transcript_starting_with_timestamp() -> None:
 For any test currently checking `ValueError`, determine which specific exception it should expect:
 
 - Empty file tests → `EmptyFileError`
-- Format validation tests → `InvalidTranscriptFormatError`  
+- Format validation tests → `InvalidTranscriptFormatError`
 - Missing timestamp tests → `MissingTimestampError`
 
 ### Step 4: Create `src/youtube_to_xml/cli.py`
@@ -236,7 +236,7 @@ def main() -> None:
     """Main entry point for YouTube to XML converter."""
     args = parse_arguments()
     transcript_path = Path(args.transcript)
-    
+
     # Read the input file
     try:
         raw_content = transcript_path.read_text(encoding="utf-8")
@@ -246,7 +246,7 @@ def main() -> None:
     except PermissionError:
         print(f"❌ We don't have permission to access: {transcript_path}")
         sys.exit(1)
-    
+
     # Parse the transcript
     try:
         chapters = parse_transcript(raw_content)
@@ -256,23 +256,23 @@ def main() -> None:
     except (InvalidTranscriptFormatError, MissingTimestampError):
         print(f"❌ Wrong format in '{transcript_path}' - run 'youtube-to-xml --help'")
         sys.exit(1)
-    
+
     # Generate XML
     xml_content = chapters_to_xml(chapters)
-    
+
     # Create output directory and write XML
     output_dir = Path("transcript_files")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     output_filename = transcript_path.stem + ".xml"
     output_path = output_dir / output_filename
-    
+
     try:
         output_path.write_text(xml_content, encoding="utf-8")
     except PermissionError:
         print(f"❌ Cannot write to: {output_path}")
         sys.exit(1)
-    
+
     # Success message
     print(f"✅ Created: {output_path}")
 ```
@@ -309,14 +309,14 @@ After making these changes:
    ```bash
    # Valid transcript
    uv run youtube-to-xml sample.txt
-   
+
    # Missing file
    uv run youtube-to-xml nonexistent.txt
-   
+
    # Empty file
    echo "" > empty.txt
    uv run youtube-to-xml empty.txt
-   
+
    # Invalid format (starts with timestamp)
    echo "0:00" > invalid.txt
    echo "Content" >> invalid.txt
@@ -333,19 +333,19 @@ After making these changes:
 
    ```python
    """Tests for CLI functionality."""
-   
+
    import subprocess
    from pathlib import Path
-   
+
    import pytest
-   
-   
+
+
    def test_valid_transcript_creates_xml(tmp_path: Path) -> None:
        """Test that valid transcript produces XML output."""
        # Create test file in tmp directory
        test_file = tmp_path / "test.txt"
        test_file.write_text("Chapter One\n0:00\nContent here", encoding="utf-8")
-       
+
        # Run CLI from tmp directory to isolate all file operations
        result = subprocess.run(
            ["uv", "run", "youtube-to-xml", "test.txt"],
@@ -353,16 +353,16 @@ After making these changes:
            text=True,
            cwd=tmp_path,  # Run from tmp directory
        )
-       
+
        # Check success
        assert result.returncode == 0
        assert "Created:" in result.stdout
-       
+
        # Verify output file exists in tmp location
        output_file = tmp_path / "transcript_files" / "test.xml"
        assert output_file.exists()
-   
-   
+
+
    def test_missing_file_shows_error(tmp_path: Path) -> None:
        """Test error message for missing file."""
        result = subprocess.run(
@@ -371,7 +371,7 @@ After making these changes:
            text=True,
            cwd=tmp_path,  # Run from tmp directory for consistency
        )
-       
+
        assert result.returncode == 1
        assert "couldn't find your file" in result.stdout
    ```

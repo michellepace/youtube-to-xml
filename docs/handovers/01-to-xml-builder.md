@@ -24,7 +24,7 @@ The XML builder module (`src/youtube_to_xml/xml_builder.py`) has been implemente
 This is a YouTube transcript to XML converter that:
 
 1. Parses transcript text files to extract chapters with timestamps
-2. Converts chapter data to structured XML format  
+2. Converts chapter data to structured XML format
 3. Outputs XML files for better LLM comprehension of video content
 
 The XML builder is the transformation layer between parsed chapter data and the final XML output format.

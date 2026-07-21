@@ -305,7 +305,7 @@ Actual Output:
 **🟢 COMPLETE SUCCESS - All bugs fixed, all noise eliminated**
 
 | Test Case | Status | Exception Type | User-Facing Message | Output Lines | Change from Before |
-|-----------|---------|----------------|---------------------|--------------|-------------------|
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | 1. Empty URL | 🟢 | InvalidInputError (CLI) | Input must be a YouTube URL or .txt file | 3 | No change (already clean) |
 | 2. Plain text | 🟢 | InvalidInputError (CLI) | Input must be a YouTube URL or .txt file | 3 | No change (already clean) |
 | 3. Non-YouTube URL | 🟢 | URLNotYouTubeError | URL is not a YouTube video | 4 | **Reduced 8→4 lines** |
@@ -327,7 +327,7 @@ Actual Output:
 ## 📄 Summary of Issues (Revised: 2025-09-30, WITH quiet=True)
 
 | Issue Type | Count | Severity | Status |
-|------------|-------|----------|--------|
+| :--- | :--- | :--- | :--- |
 | **Unhandled exceptions** | 0 | ✅ None | All exceptions properly caught and mapped |
 | **yt-dlp technical noise** | 0 | ✅ None | Completely eliminated with `quiet=True` flag |
 | **Output consistency** | 0 | ✅ None | URL and file processing both show clean output |

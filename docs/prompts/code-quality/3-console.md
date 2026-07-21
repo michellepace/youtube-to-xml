@@ -70,7 +70,7 @@ You are evaluating `<source_module>` and its test suite `<test_module>` for refa
 When recommending changes that require new tests:
 
 - **Extract Method**: Write test for extracted functionality first > run to fail
-- **Interface Changes**: Update tests before modifying function signatures  
+- **Interface Changes**: Update tests before modifying function signatures
 - **New Features**: Follow write-test-fail-implement-pass cycle
 - **Existing Behaviour**: Ensure current tests still pass after refactoring
 

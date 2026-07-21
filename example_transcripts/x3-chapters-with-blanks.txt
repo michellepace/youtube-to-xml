@@ -24,5 +24,3 @@ Chapter 3 (subsequent)
 content_line
 0:09
 content_line
-
-

@@ -55,7 +55,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
 ## Concrete Examples of Inconsistency
 
 | Scenario | Current Behavior | User Experience |
-|----------|------------------|-----------------|
+| :--- | :--- | :--- |
 | **Known Pattern** | "video unavailable" → URLVideoUnavailableError() | ✅ **Clean**: "YouTube video unavailable" |
 | **Unknown Pattern** | "Private video" → URLUnmappedError("Private video") | ❌ **Technical**: "Private video" |
 | **Unknown Pattern** | "Unable to download webpage" → URLUnmappedError("Unable to download webpage") | ❌ **Technical**: "Unable to download webpage" |
@@ -189,7 +189,7 @@ Your file-based exceptions are excellently designed - simple, consistent, always
 
 ```python
 In map_yt_dlp_exception(), line 162 vs line 157:
-return exception_class() # ✅ Clean: "YouTube video unavailable" 
+return exception_class() # ✅ Clean: "YouTube video unavailable"
 return URLUnmappedError(raw_msg) # ❌ Technical: "Private video", "Unable to download webpage"
 ```
 

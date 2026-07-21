@@ -72,7 +72,7 @@ from dataclasses import dataclass
 class Metadata:
     """Video metadata for XML attributes."""
     video_title: str      # Empty string for file source
-    upload_date: str      # Empty string for file source  
+    upload_date: str      # Empty string for file source
     duration: str         # Empty string for file source
     video_url: str        # Empty string for file source
 
@@ -102,10 +102,10 @@ from typing import Protocol
 
 class TranscriptSource(Protocol):
     """Protocol for transcript sources."""
-    
+
     def fetch(self) -> tuple[list[Chapter], Metadata]:
         """Fetch and parse transcript from source.
-        
+
         Returns:
             Tuple of (chapters, metadata)
         """
@@ -117,18 +117,18 @@ class TranscriptSource(Protocol):
 ```python
 class FileSource:
     """Adapter for file-based transcripts."""
-    
+
     def __init__(self, file_path: Path):
         self.file_path = file_path
-    
+
     def fetch(self) -> tuple[list[Chapter], Metadata]:
         """Read file and parse transcript."""
         # 1. Read file content
         raw_content = self._read_file()
-        
+
         # 2. Parse using file_parser
         chapters = parse_transcript(raw_content)
-        
+
         # 3. Create empty metadata
         metadata = Metadata(
             video_title="",
@@ -136,7 +136,7 @@ class FileSource:
             duration="",
             video_url=""
         )
-        
+
         return chapters, metadata
 ```
 
@@ -145,18 +145,18 @@ class FileSource:
 ```python
 class YouTubeSource:
     """Adapter for YouTube URL transcripts."""
-    
+
     def __init__(self, url: str):
         self.url = url
-    
+
     def fetch(self) -> tuple[list[Chapter], Metadata]:
         """Download and parse YouTube transcript."""
         # 1. Fetch video metadata and subtitles
         video_data = self._fetch_video_data()
-        
+
         # 2. Parse using youtube_parser
         chapters = parse_youtube_transcript(video_data)
-        
+
         # 3. Create populated metadata
         metadata = Metadata(
             video_title=video_data.title,
@@ -164,7 +164,7 @@ class YouTubeSource:
             duration=format_duration(video_data.duration),
             video_url=video_data.url
         )
-        
+
         return chapters, metadata
 ```
 
@@ -201,26 +201,26 @@ def parse_arguments() -> argparse.Namespace:
         prog="youtube-to-xml",
         description="Convert YouTube transcripts to XML format"
     )
-    
+
     # Mutually exclusive source selection
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument(
-        "--file", 
+        "--file",
         metavar="PATH",
         help="Path to transcript text file"
     )
     source_group.add_argument(
         "--url",
-        metavar="URL", 
+        metavar="URL",
         help="YouTube video URL"
     )
-    
+
     return parser.parse_args()
 
 def main() -> None:
     """Main entry point."""
     args = parse_arguments()
-    
+
     # Select source based on arguments
     if args.file:
         source = FileSource(Path(args.file))
@@ -228,24 +228,24 @@ def main() -> None:
     else:  # args.url
         source = YouTubeSource(args.url)
         input_identifier = None  # Will use video title
-    
+
     try:
         # Fetch and parse from selected source
         chapters, metadata = source.fetch()
-        
+
         # Generate XML (unchanged)
         xml_content = chapters_to_xml(chapters, metadata)
-        
+
         # Determine output filename
         if metadata.video_title:
             output_name = sanitize_title_for_filename(metadata.video_title)
         else:
             output_name = f"{input_identifier}.xml"
-        
+
         # Save output
         Path(output_name).write_text(xml_content, encoding="utf-8")
         print(f"✅ Created: {output_name}")
-        
+
     except (FileEmptyError, FileInvalidFormatError) as e:
         print(f"❌ File error: {e}")
         sys.exit(1)
@@ -264,7 +264,7 @@ def chapters_to_xml(chapters: list[Chapter], metadata: Metadata) -> str:
     root.set("upload_date", metadata.upload_date)
     root.set("duration", metadata.duration)
     root.set("video_url", metadata.video_url)
-    
+
     # Rest remains the same...
 ```
 
@@ -354,7 +354,7 @@ async def convert_transcript(source_type: str, source_data: str):
         source = FileSource(source_data)  # Would need adjustment for content vs path
     else:
         source = YouTubeSource(source_data)
-    
+
     chapters, metadata = source.fetch()
     return {"xml": chapters_to_xml(chapters, metadata)}
 ```

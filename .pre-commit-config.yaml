@@ -1,8 +1,26 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict    # block on merge markers
+        fail_fast: true
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+        exclude: ^\.vscode/         # .vscode/*.json is JSONC (has comments)
+      - id: check-toml
+
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.15
+    rev: 0.11.30
     hooks:
       - id: uv-lock
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.23.1
+    hooks:
+      - id: markdownlint-cli2       # autofix markdown (.markdownlint-cli2.yaml)
+        args: [--fix]
 
   - repo: local
     hooks:
@@ -47,11 +65,3 @@ repos:
         entry: xmllint --noout
         language: system
         types: [xml]
-
-# Notes:
-# 1. `uv-lock` syncs uv.lock with pyproject.toml, then blocks commit for review
-# 2. Python tools run via `uv run` (single version source: pyproject.toml)
-# 3. `ruff-format` precedes `ruff-check` so linting validates formatted code
-# 4. `--exit-non-zero-on-fix` blocks commits when ruff auto-fixes, must review changes
-# 5. `pass_filenames: false` runs pyright/pytest project-wide, not just on changed files
-# 6. Fast tests run at commit; full suite (incl. slow network tests) runs at push

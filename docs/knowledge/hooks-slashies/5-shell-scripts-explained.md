@@ -14,7 +14,7 @@ Think of shell scripts as the **universal remote control** for your computer. Th
 # Run Python scripts
 python3 /path/to/my/analysis.py
 
-# Call web APIs  
+# Call web APIs
 curl -X POST https://api.slack.com/webhooks/your-webhook \
      -d '{"text":"Claude just finished the task!"}'
 
@@ -56,13 +56,13 @@ file_path=$(echo "$1" | jq -r '.tool_input.file_path')
 if [[ "$file_path" == *.csv ]]; then
     # Run Python data validation
     python3 /lab/scripts/validate_experiment_data.py "$file_path"
-    
+
     # If validation fails, prevent Claude from proceeding
     if [ $? -ne 0 ]; then
         echo "❌ Data validation failed - see lab protocols" >&2
         exit 2  # Block the operation
     fi
-    
+
     # Send notification to lab team
     curl -X POST "$LAB_WEBHOOK" \
          -d "{\"message\": \"New data validated: $file_path\"}"
@@ -81,10 +81,10 @@ input_data=$(echo "$1" | jq -r '.tool_input.content')
 if echo "$input_data" | grep -qi "insider\|confidential\|material"; then
     # Run compliance checker (Python script)
     echo "$input_data" | python3 /compliance/check_disclosure.py
-    
+
     # Log for audit trail
     echo "$(date): Compliance check triggered" >> /logs/audit.log
-    
+
     # Notify compliance team
     python3 /compliance/notify_team.py "Claude processing sensitive data"
 fi
@@ -101,15 +101,15 @@ protocol_file=$(echo "$1" | jq -r '.tool_input.file_path')
 if [[ "$protocol_file" == *patient* ]]; then
     # Validate against medical guidelines (R script)
     Rscript /medical/validate_protocol.R "$protocol_file"
-    
+
     # Check drug interaction database
     python3 /medical/drug_interactions.py "$protocol_file"
-    
+
     # Update electronic health record
     curl -X POST "$EHR_API/protocols" \
          -H "Authorization: Bearer $MEDICAL_TOKEN" \
          -d @"$protocol_file"
-    
+
     # Page on-call physician if critical
     if grep -qi "critical\|urgent" "$protocol_file"; then
         python3 /medical/page_oncall.py "Claude updated critical protocol"
@@ -122,7 +122,7 @@ fi
 Because shell commands can execute **any installed program**, hooks can integrate with:
 
 **Programming Languages**: Python, R, Node.js, Julia, MATLAB, Mathematica, etc.
-**Databases**: MySQL, PostgreSQL, MongoDB, SQLite, Redis, etc.  
+**Databases**: MySQL, PostgreSQL, MongoDB, SQLite, Redis, etc.
 **Cloud Services**: AWS, Google Cloud, Azure, Dropbox, etc.
 **APIs**: REST APIs, GraphQL, webhooks, etc.
 **Communication**: Slack, Teams, email, SMS, etc.
@@ -139,7 +139,7 @@ Because shell commands can execute **any installed program**, hooks can integrat
 # Python for data preprocessing
 python3 /analysis/preprocess.py "$input_file" > /tmp/clean_data.csv
 
-# R for statistical analysis  
+# R for statistical analysis
 Rscript /analysis/statistics.R /tmp/clean_data.csv > /tmp/stats.json
 
 # Node.js for visualization
@@ -182,7 +182,7 @@ curl -X POST "$BUILD_SERVER/trigger" \
 **Hooks aren't limited to "shell scripting"—they're limited to "anything your computer can do."** This means:
 
 - **Machine Learning**: Train models, run predictions, analyze patterns
-- **Data Science**: Statistical analysis, visualization, report generation  
+- **Data Science**: Statistical analysis, visualization, report generation
 - **System Integration**: Connect any service, database, or API
 - **Hardware Control**: Interface with lab equipment, IoT devices, sensors
 - **Document Processing**: Generate PDFs, parse complex formats, OCR
