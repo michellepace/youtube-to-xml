@@ -67,6 +67,8 @@ markers = [
 
 typeCheckingMode = "strict"
 pythonVersion = "3.14"
+venvPath = "."                  # Claude Code Official: LSP plugin
+venv = ".venv"                  # Claude Code Official: LSP plugin
 
 # Silence rules Ruff already reports these
 reportUnusedImport = false      # Ruff F401
