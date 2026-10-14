@@ -1,13 +1,9 @@
 {
     "recommendations": [
-        "ms-python.python",           // core Python: debugging, Test Explorer, venv integration
-        "ms-python.debugpy",          // Python debugger (breakpoints, stepping)
-        "charliermarsh.ruff",         // linter & formatter (Astral, same family as uv)
-        "ms-python.vscode-pylance",   // (vscode) language server: autocomplete, hover, go-to-definition
-        "tamasfe.even-better-toml",   // TOML support for pyproject.toml (highlighting, validation)
-        "davidanson.vscode-markdownlint",  // Markdown linter
-
-        // Notes:
-        // 1. ms-python.python expects to manage the venv, but here uv owns it (`uv sync`)
+        "ms-python.python",           // Python core: interpreter picker, pytest Test Explorer
+        "ms-python.vscode-pylance",   // language server: IntelliSense, hover, go-to-definition
+        "charliermarsh.ruff",         // lint + format (by Astral, same makers as uv)
+        "tamasfe.even-better-toml",   // TOML: highlight, validate, format
+        "davidanson.vscode-markdownlint",  // Markdown lint + fix on save
     ]
 }
