@@ -47,8 +47,10 @@ Your experimental script demonstrates a **fundamentally better architecture**:
 ```python
 import logging
 
+
 class YouTubeXMLError(Exception):
     """Base exception with HTTP status and logging support."""
+
     def __init__(self, message: str, status_code: int = 500):
         super().__init__(message)
         self.status_code = status_code
@@ -57,30 +59,40 @@ class YouTubeXMLError(Exception):
             f"Exception created: {self.__class__.__name__}: {message}"
         )
 
+
 # Client Errors (4xx) - User's fault
 class InvalidURLError(YouTubeXMLError):
     """Malformed or non-YouTube URL."""
+
     def __init__(self, url: str):
         super().__init__(f"Invalid YouTube URL format: {url}", 400)
 
+
 class VideoNotFoundError(YouTubeXMLError):
     """Video doesn't exist, is private, or restricted."""
+
     def __init__(self, url: str):
         super().__init__(f"Video not accessible: {url}", 404)
 
+
 class SubtitlesUnavailableError(YouTubeXMLError):
     """No subtitles found for video."""
+
     def __init__(self, video_title: str):
         super().__init__(f"No subtitles available for: {video_title}", 422)
+
 
 # Server Errors (5xx) - Our fault or external service fault
 class YouTubeServiceError(YouTubeXMLError):
     """YouTube API is down or rate limiting."""
+
     def __init__(self, message: str):
         super().__init__(f"YouTube service unavailable: {message}", 503)
 
+
 class TranscriptProcessingError(YouTubeXMLError):
     """Internal XML generation failure."""
+
     def __init__(self, message: str):
         super().__init__(f"Failed to process transcript: {message}", 500)
 ```
@@ -106,8 +118,7 @@ try:
 except YouTubeXMLError as e:
     logger.error(f"API error: {e.__class__.__name__}: {e}")
     return JSONResponse(
-        {"error": e.__class__.__name__, "message": str(e)},
-        status_code=e.status_code
+        {"error": e.__class__.__name__, "message": str(e)}, status_code=e.status_code
     )
 ```
 
@@ -149,6 +160,7 @@ youtube-to-xml https://youtu.be/dQw4w9WgXcQ rick_roll.xml
 @dataclass(frozen=True, slots=True)
 class VideoMetadata:
     """Complete video information from YouTube."""
+
     title: str
     upload_date: str  # ISO format: "2024-12-15"
     duration_seconds: int
@@ -156,22 +168,28 @@ class VideoMetadata:
     chapter_markers: list[ChapterMarker]
     subtitle_url: str | None
 
+
 @dataclass(frozen=True, slots=True)
 class ChapterMarker:
     """YouTube's native chapter boundary."""
+
     title: str
     start_time_seconds: float
     end_time_seconds: float
 
+
 @dataclass(frozen=True, slots=True)
 class SubtitleEntry:
     """Individual subtitle with precise timing."""
+
     start_time_seconds: float
     text_content: str
+
 
 @dataclass(frozen=True, slots=True)
 class ProcessedChapter:
     """Chapter with assigned subtitles for XML generation."""
+
     title: str
     start_time_seconds: float
     subtitle_entries: list[SubtitleEntry]
@@ -254,9 +272,11 @@ rm src/youtube_to_xml/xml_builder.py   # Simple XML without metadata
 ```python
 # Create: src/youtube_to_xml/logging_config.py
 """Centralized logging configuration for YouTube-to-XML service."""
+
 import logging
 import logging.handlers
 from pathlib import Path
+
 
 def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") -> None:
     """Configure logging for the application."""
@@ -265,9 +285,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 
     # File handler with rotation (10MB files, keep 5 backups)
     file_handler = logging.handlers.RotatingFileHandler(
-        f"logs/{log_file}",
-        maxBytes=10*1024*1024,
-        backupCount=5
+        f"logs/{log_file}", maxBytes=10 * 1024 * 1024, backupCount=5
     )
 
     # Console handler for immediate feedback
@@ -275,12 +293,12 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
 
     # Detailed format for files (includes function name and line number)
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
     )
 
     # Simple format for console (module name and message)
     console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     file_handler.setFormatter(file_formatter)
@@ -290,8 +308,9 @@ def setup_logging(log_level: str = "INFO", log_file: str = "youtube_xml.log") ->
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
         handlers=[file_handler, console_handler],
-        force=True  # Override any existing configuration
+        force=True,  # Override any existing configuration
     )
+
 
 # Purpose: Centralized logging setup with file rotation
 # Logging Level: Configuration and setup operations
@@ -398,6 +417,7 @@ def test_successful_operation_logging(caplog):
     assert "Fetching metadata for:" in caplog.text
     assert "Success:" in caplog.text
 
+
 def test_error_operation_logging(caplog):
     with pytest.raises(VideoNotFoundError):
         fetch_video_metadata("https://youtu.be/invalid")
@@ -428,6 +448,7 @@ def test_error_operation_logging(caplog):
 # api/youtube-to-xml.py (Vercel Functions)
 from youtube_to_xml.api_service import handle_transcript_request
 from youtube_to_xml.logging_config import setup_logging
+
 
 def handler(request):
     setup_logging(log_level="INFO", log_file="vercel_api.log")

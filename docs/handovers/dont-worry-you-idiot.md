@@ -47,7 +47,11 @@ Your architecture follows **clean separation of concerns** with distinct layers:
 ```python
 # Your exception hierarchy is actually brilliant:
 class BaseTranscriptError(Exception): ...
+
+
 class URLRateLimitError(BaseTranscriptError): ...
+
+
 class URLBotProtectionError(BaseTranscriptError): ...
 ```
 

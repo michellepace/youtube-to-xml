@@ -106,17 +106,14 @@ def parse_arguments() -> argparse.Namespace:
     # Mutually exclusive group for input sources
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument(
-        "--file",
-        metavar="transcript.txt",
-        help="Process local transcript file"
+        "--file", metavar="transcript.txt", help="Process local transcript file"
     )
     source_group.add_argument(
-        "--url",
-        metavar="youtube_url",
-        help="Process YouTube video URL"
+        "--url", metavar="youtube_url", help="Process YouTube video URL"
     )
 
     return parser.parse_args()
+
 
 def main() -> None:
     """Main entry point with source routing."""
@@ -142,9 +139,11 @@ def main() -> None:
 ```python
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class Metadata:
     """Video metadata for XML attributes."""
+
     video_title: str
     upload_date: str
     duration: str
@@ -153,12 +152,7 @@ class Metadata:
     @classmethod
     def empty(cls) -> "Metadata":
         """Create empty metadata for file sources."""
-        return cls(
-            video_title="",
-            upload_date="",
-            duration="",
-            video_url=""
-        )
+        return cls(video_title="", upload_date="", duration="", video_url="")
 ```
 
 ### 3. File Source Adapter (`file_source.py`)
@@ -167,6 +161,7 @@ class Metadata:
 from pathlib import Path
 from youtube_to_xml.file_parser import parse_transcript
 from youtube_to_xml.metadata import Metadata
+
 
 class FileSource:
     """Adapter for file-based transcript sources."""
@@ -199,8 +194,9 @@ from youtube_to_xml.metadata import Metadata
 from youtube_to_xml.exceptions import (
     URLVideoNotFoundError,
     URLSubtitlesNotFoundError,
-    URLRateLimitError
+    URLRateLimitError,
 )
+
 
 class YouTubeSource:
     """Adapter for YouTube URL sources."""
@@ -221,20 +217,17 @@ class YouTubeSource:
         """
         # Fetch video info and subtitles
         video_data = self._fetch_video_data(url)
-        subtitles = self._download_subtitles(video_data['subtitle_url'])
+        subtitles = self._download_subtitles(video_data["subtitle_url"])
 
         # Transform to chapters
-        chapters = parse_youtube_subtitles(
-            subtitles,
-            video_data.get('chapters', [])
-        )
+        chapters = parse_youtube_subtitles(subtitles, video_data.get("chapters", []))
 
         # Create metadata
         metadata = Metadata(
-            video_title=video_data['title'],
-            upload_date=self._format_date(video_data['upload_date']),
-            duration=self._format_duration(video_data['duration']),
-            video_url=video_data['webpage_url']
+            video_title=video_data["title"],
+            upload_date=self._format_date(video_data["upload_date"]),
+            duration=self._format_duration(video_data["duration"]),
+            video_url=video_data["webpage_url"],
         )
 
         return chapters, metadata
@@ -242,13 +235,13 @@ class YouTubeSource:
     def _fetch_video_data(self, url: str) -> dict:
         """Fetch video information using yt-dlp."""
         options = {
-            'quiet': True,
-            'no_warnings': True,
-            'skip_download': True,
-            'writesubtitles': True,
-            'writeautomaticsub': True,
-            'subtitleslangs': ['en.*', 'all'],
-            'subtitlesformat': 'json3'
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
+            "subtitleslangs": ["en.*", "all"],
+            "subtitlesformat": "json3",
         }
 
         with yt_dlp.YoutubeDL(options) as ydl:
@@ -271,9 +264,9 @@ class YouTubeSource:
 ```python
 from youtube_to_xml.parser import Chapter  # Reuse Chapter dataclass
 
+
 def parse_youtube_subtitles(
-    subtitles: list[dict],
-    chapter_markers: list[dict]
+    subtitles: list[dict], chapter_markers: list[dict]
 ) -> list[Chapter]:
     """Transform YouTube subtitles into Chapter objects.
 
@@ -290,29 +283,27 @@ def parse_youtube_subtitles(
     # Transform to standard Chapter format
     return [
         Chapter(
-            title=ch['title'],
-            start_time=_format_timestamp(ch['start_time']),
-            content_lines=_format_subtitle_lines(ch['subtitles'])
+            title=ch["title"],
+            start_time=_format_timestamp(ch["start_time"]),
+            content_lines=_format_subtitle_lines(ch["subtitles"]),
         )
         for ch in chapters
     ]
+
 
 def _format_subtitle_lines(subtitles: list[dict]) -> list[str]:
     """Format subtitles as alternating timestamp/text lines."""
     lines = []
     for subtitle in subtitles:
-        lines.append(_seconds_to_timestamp(subtitle['start']))
-        lines.append(subtitle['text'])
+        lines.append(_seconds_to_timestamp(subtitle["start"]))
+        lines.append(subtitle["text"])
     return lines
 ```
 
 ### 6. XML Builder Enhancement (`xml_builder.py`)
 
 ```python
-def chapters_to_xml(
-    chapters: list[Chapter],
-    metadata: Metadata
-) -> str:
+def chapters_to_xml(chapters: list[Chapter], metadata: Metadata) -> str:
     """Build XML document with chapters and metadata.
 
     Args:
@@ -434,6 +425,7 @@ The stateless adapter design makes API endpoints trivial:
 async def convert_file(content: str):
     chapters, metadata = FileSource().fetch_from_string(content)
     return {"xml": chapters_to_xml(chapters, metadata)}
+
 
 @app.post("/convert/youtube")
 async def convert_youtube(url: str):

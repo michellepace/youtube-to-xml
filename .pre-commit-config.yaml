@@ -2,9 +2,10 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      - id: check-merge-conflict    # block on merge markers
+      - id: check-merge-conflict
         fail_fast: true
       - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
@@ -12,14 +13,14 @@ repos:
       - id: check-toml
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.30
+    rev: 0.12.5
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.23.1
+    rev: v0.23.2
     hooks:
-      - id: markdownlint-cli2       # autofix markdown (.markdownlint-cli2.yaml)
+      - id: markdownlint-cli2       # rules .markdownlint-cli2.yaml
         args: [--fix]
 
   - repo: local

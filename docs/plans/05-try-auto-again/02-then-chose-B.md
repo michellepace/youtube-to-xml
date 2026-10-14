@@ -147,16 +147,20 @@ For future API use, repeatedly fetching the same YouTube video wastes resources.
 # src/youtube_to_xml/models.py
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class Chapter:
     """Chapter with content for XML generation."""
+
     title: str
     start_time: str
     content_lines: list[str]
 
+
 @dataclass(frozen=True)
 class Metadata:
     """Video metadata for XML attributes."""
+
     video_title: str
     upload_date: str
     duration: str
@@ -172,8 +176,10 @@ class Metadata:
 ```python
 from typing import Protocol
 
+
 class TranscriptSource(Protocol):
     """Protocol for transcript sources."""
+
     def fetch(self, source: str) -> tuple[list[Chapter], Metadata]:
         """Fetch chapters and metadata from source."""
         ...
@@ -202,6 +208,7 @@ class YouTubeSource:
 
 ```python
 from functools import lru_cache
+
 
 class YouTubeSource:
     @lru_cache(maxsize=100)

@@ -71,8 +71,7 @@ class InvalidTranscriptFormatError(ValueError):
     """Raised when transcript doesn't follow required format."""
 
     def __init__(
-        self,
-        message: str = "Transcript must start with a chapter title, not a timestamp"
+        self, message: str = "Transcript must start with a chapter title, not a timestamp"
     ) -> None:
         super().__init__(message)
 
@@ -81,8 +80,7 @@ class MissingTimestampError(ValueError):
     """Raised when transcript contains no timestamps."""
 
     def __init__(
-        self,
-        message: str = "Transcript must contain at least one timestamp"
+        self, message: str = "Transcript must contain at least one timestamp"
     ) -> None:
         super().__init__(message)
 ```
@@ -167,6 +165,7 @@ Update test assertions to check exception types instead of message strings:
 def test_rejects_transcript_starting_with_timestamp() -> None:
     with pytest.raises(ValueError, match="timestamp"):
         parse_transcript(starts_with_timestamp)
+
 
 # NEW: Type checking
 def test_rejects_transcript_starting_with_timestamp() -> None:
@@ -253,7 +252,7 @@ def main() -> None:
     except EmptyFileError:
         print(f"❌ Your file is empty: {transcript_path}")
         sys.exit(1)
-    except (InvalidTranscriptFormatError, MissingTimestampError):
+    except InvalidTranscriptFormatError, MissingTimestampError:
         print(f"❌ Wrong format in '{transcript_path}' - run 'youtube-to-xml --help'")
         sys.exit(1)
 

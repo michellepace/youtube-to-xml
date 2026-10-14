@@ -138,10 +138,11 @@ The magic happens when hooks and slash commands work together, creating **intell
 # This hook runs after every file edit and ensures quality
 #!/usr/bin/env python3
 import json, sys
-data = json.load(sys.stdin)
-file_path = data.get('tool_input', {}).get('file_path', '')
 
-if file_path.endswith('.py'):
+data = json.load(sys.stdin)
+file_path = data.get("tool_input", {}).get("file_path", "")
+
+if file_path.endswith(".py"):
     # Run formatter, linter, basic tests automatically
     # If issues found, provide feedback to Claude
     print("✅ Code quality checked and maintained", file=sys.stderr)

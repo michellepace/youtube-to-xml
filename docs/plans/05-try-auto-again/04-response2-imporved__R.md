@@ -44,7 +44,9 @@ class VideoMetadata:
 **Step 2: Update xml_builder signature (backward compatible)**
 
 ```python
-def chapters_to_xml(chapters: list[Chapter], metadata: VideoMetadata | None = None) -> str:
+def chapters_to_xml(
+    chapters: list[Chapter], metadata: VideoMetadata | None = None
+) -> str:
     if metadata is None:
         metadata = VideoMetadata()  # Empty defaults
 ```
