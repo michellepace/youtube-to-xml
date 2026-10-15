@@ -228,7 +228,7 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
         ("incomplete youtube id", URLIncompleteError),
         ("is not a valid url", URLIsInvalidError),
         ("[youtube] invalid-url:", URLIsInvalidError),
-        ("video unavailable", URLVideoUnavailableError),
+        ("video is unavailable", URLVideoUnavailableError),
     ]
 
     for pattern, exception_class in error_patterns:
