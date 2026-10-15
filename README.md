@@ -115,7 +115,7 @@ At the time of this demo, Claude Code could only read 25,000 tokens at a time, b
 - **Key Modules**: See [CLAUDE.md](.claude/CLAUDE.md)
 - **Dependencies**: Python 3.15+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 - **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
-- **Test-Driven Development**: 123 tests (19 slow, 104 unit)
+- **Test-Driven Development**: 126 tests (17 slow, 109 unit)
 - **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 <div align="center">

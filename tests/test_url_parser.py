@@ -31,7 +31,8 @@ from youtube_to_xml.url_parser import (
     _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
-    _validate_url_is_youtube_video,
+    _validate_is_single_youtube_video,
+    _validate_is_youtube_url,
     _YtDlpMetadata,
     is_valid_url,
     parse_youtube_url,
@@ -318,7 +319,7 @@ class TestDecomposedFunctions:
 
 
 class TestIsValidUrl:
-    """Test basic URL structure validation (Tier 1 - instant validation)."""
+    """Test basic URL structure validation (instant, no network)."""
 
     def test_rejects_invalid_url_structures(self) -> None:
         """Invalid URL structures return False."""
@@ -356,18 +357,18 @@ class TestIsValidUrl:
             assert is_valid_url(valid_url) is True
 
 
-class TestValidateUrlIsYoutubeVideo:
-    """Test URL validation for YouTube videos vs playlists/non-YouTube."""
+class TestValidateIsYoutubeUrl:
+    """Test URL validation that runs before any network call."""
 
     def test_rejects_non_youtube_urls(self) -> None:
-        """Non-YouTube URLs raise URLNotYouTubeError (Tier 2)."""
+        """Non-YouTube URLs raise URLNotYouTubeError."""
         non_youtube_url = "https://www.google.com/"
 
         with pytest.raises(URLNotYouTubeError):
-            _validate_url_is_youtube_video(non_youtube_url)
+            _validate_is_youtube_url(non_youtube_url)
 
     def test_rejects_fake_youtube_domains(self) -> None:
-        """Fake YouTube-like domains raise URLNotYouTubeError (Tier 2)."""
+        """Fake YouTube-like domains raise URLNotYouTubeError."""
         fake_youtube_urls = [
             "https://notyoutube.com/watch?v=123",
             "https://fakeyoutube.com/watch?v=123",
@@ -376,22 +377,33 @@ class TestValidateUrlIsYoutubeVideo:
 
         for fake_url in fake_youtube_urls:
             with pytest.raises(URLNotYouTubeError):
-                _validate_url_is_youtube_video(fake_url)
+                _validate_is_youtube_url(fake_url)
 
-    @pytest.mark.slow
-    def test_rejects_youtube_playlist_urls(self) -> None:
-        """Playlist URLs raise URLPlaylistNotSupportedError (Tier 3)."""
-        playlist_url = (
-            "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
-        )
-
-        with pytest.raises(URLPlaylistNotSupportedError):
-            _validate_url_is_youtube_video(playlist_url)
-
-    @pytest.mark.slow
     def test_accepts_youtube_video_urls(self) -> None:
-        """Valid YouTube video URLs pass validation without errors (Tier 3)."""
-        video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        """YouTube video URLs pass without errors."""
+        _validate_is_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        _validate_is_youtube_url("https://youtu.be/dQw4w9WgXcQ")
 
-        # Should complete without raising exception
-        _validate_url_is_youtube_video(video_url)
+
+class TestValidateIsSingleYoutubeVideo:
+    """Test validation of the yt-dlp lookup result, before transcript download."""
+
+    def test_rejects_playlist(self) -> None:
+        """Playlist results raise URLPlaylistNotSupportedError."""
+        with pytest.raises(URLPlaylistNotSupportedError):
+            _validate_is_single_youtube_video(
+                {"_type": "playlist", "extractor": "youtube:tab"}
+            )
+
+    def test_rejects_non_youtube_extractor(self) -> None:
+        """Results from a non-YouTube extractor raise URLNotYouTubeError."""
+        with pytest.raises(URLNotYouTubeError):
+            _validate_is_single_youtube_video({"extractor": "generic"})
+
+    def test_accepts_video(self) -> None:
+        """A single YouTube video result passes without errors."""
+        _validate_is_single_youtube_video({"extractor": "youtube", "id": "dQw4w9WgXcQ"})
+
+    def test_accepts_video_link_from_playlist_url(self) -> None:
+        """A watch URL with a list param resolves to a link to its single video."""
+        _validate_is_single_youtube_video({"_type": "url", "extractor": "youtube:tab"})

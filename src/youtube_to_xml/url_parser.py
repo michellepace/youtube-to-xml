@@ -11,8 +11,11 @@ import json
 import math
 import tempfile
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import TYPE_CHECKING, Any, TypedDict, cast
 from urllib.parse import urlparse
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
@@ -76,6 +79,8 @@ _TRANSCRIPT_LANGUAGE_PREFERENCES = (
 # Subtitle/transcript file extension for yt-dlp
 _TRANSCRIPT_FILE_EXT = "json3"
 
+_YOUTUBE_DOMAINS = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
+
 # Module-level logger
 logger = get_logger(__name__)
 
@@ -96,8 +101,8 @@ def _get_youtube_transcript_file_priority(transcript_file_path: Path) -> int:
 def _validate_basic_url_structure(url: str) -> None:
     """Validate basic URL structure before expensive operations.
 
-    Tier 1 validation (~0.0002s): Checks scheme, netloc, and TLD presence.
-    Rejects obviously invalid URLs instantly to save processing time.
+    Checks scheme, netloc, and TLD presence.
+    Rejects obviously invalid URLs instantly, without a network call.
 
     Args:
         url: URL string to validate
@@ -141,59 +146,39 @@ def _create_video_metadata(raw_metadata: _YtDlpMetadata, url: str) -> VideoMetad
     )
 
 
-def _validate_url_is_youtube_video(url: str) -> None:
-    """Validate URL is a YouTube video using three-tier validation.
-
-    Three-tier fast-fail validation strategy for optimal UX:
-    - Tier 1 (~0.0002s): Basic URL structure (scheme, netloc, TLD)
-    - Tier 2 (~0.0002s): YouTube domain check (youtube.com, youtu.be, etc.)
-    - Tier 3 (~1.5s): yt-dlp validation with process=False (playlist check, etc.)
-
-    Args:
-        url: URL to validate
+def _validate_is_youtube_url(url: str) -> None:
+    """Reject malformed and non-YouTube URLs before any network call.
 
     Raises:
-        URLIsInvalidError: If URL structure is invalid (Tier 1)
-        URLNotYouTubeError: If URL is not from YouTube (Tier 2/3)
-        URLPlaylistNotSupportedError: If URL is a YouTube playlist (Tier 3)
-        Other URL*Error: Mapped from yt-dlp errors (invalid, unavailable, etc.)
+        URLIsInvalidError: If URL lacks scheme, netloc, or TLD
+        URLNotYouTubeError: If URL domain is not YouTube
     """
-    # Tier 1: Basic URL structure validation (~0.0002s)
     _validate_basic_url_structure(url)
-
-    # Tier 2: YouTube domain check (~0.0002s)
-    parsed = urlparse(url)
-    domain = parsed.netloc.lower()
-    valid_domains = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
-    if domain not in valid_domains:
+    if urlparse(url).netloc.lower() not in _YOUTUBE_DOMAINS:
         raise URLNotYouTubeError
 
-    # Tier 3: yt-dlp validation (~1.5s with process=False)
-    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True}) as ydl:
-        try:
-            info = ydl.extract_info(url, download=False, process=False)
 
-            # Validate info was returned
-            # Stubs say non-None, but yt-dlp can return None at runtime
-            if info is None:  # type: ignore[reportUnnecessaryComparison]
-                raise URLIsInvalidError
+def _validate_is_single_youtube_video(video_info: Mapping[str, Any]) -> None:
+    """Reject yt-dlp lookup results that are not a single YouTube video.
 
-            # Double-check extractor (yt-dlp may redirect)
-            extractor = info.get("extractor", "").lower()
-            if "youtube" not in extractor:
-                raise URLNotYouTubeError
+    Raises:
+        URLIsInvalidError: If yt-dlp returned nothing
+        URLNotYouTubeError: If yt-dlp used a non-YouTube extractor (e.g. redirect)
+        URLPlaylistNotSupportedError: If URL is a YouTube playlist
+    """
+    # Stubs say non-None, but yt-dlp can return None at runtime
+    if video_info is None:  # type: ignore[reportUnnecessaryComparison]
+        raise URLIsInvalidError
 
-            # Check for playlist type
-            if info.get("_type") == "playlist":
-                raise URLPlaylistNotSupportedError
+    if "youtube" not in video_info.get("extractor", "").lower():
+        raise URLNotYouTubeError
 
-        except (DownloadError, ExtractorError, UnsupportedError) as e:
-            mapped_exception = map_yt_dlp_exception(e)
-            raise mapped_exception from e
+    if video_info.get("_type") == "playlist":
+        raise URLPlaylistNotSupportedError
 
 
 def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata:
-    """Handle yt-dlp configuration and download of transcript.
+    """Look up a YouTube video once, then download its transcript files.
 
     Args:
         url: YouTube video URL
@@ -202,8 +187,7 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata
     Returns:
         Raw metadata dictionary from yt-dlp
     """
-    # Validate URL is YouTube video before expensive operations
-    _validate_url_is_youtube_video(url)
+    _validate_is_youtube_url(url)
 
     yt_dlp_options = {
         # Core purpose: Download transcripts
@@ -224,10 +208,11 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata
 
     with yt_dlp.YoutubeDL(yt_dlp_options) as ydl:  # type: ignore[reportArgumentType]
         try:
-            # a) YT-DLP: get complete video metadata from YouTube
-            raw_metadata = ydl.extract_info(url, download=False)
-            # b) YT-DLP: download subtitle files (.json3 format)
-            ydl.process_info(raw_metadata)
+            # a) YT-DLP: look up the video once (formats/subtitles not yet processed)
+            unprocessed_metadata = ydl.extract_info(url, download=False, process=False)
+            _validate_is_single_youtube_video(unprocessed_metadata)
+            # b) YT-DLP: process that same lookup, writing subtitle files (.json3)
+            raw_metadata = ydl.process_ie_result(unprocessed_metadata, download=True)
         except (DownloadError, ExtractorError, UnsupportedError) as e:
             mapped_exception = map_yt_dlp_exception(e)
             raise mapped_exception from e
