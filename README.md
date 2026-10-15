@@ -29,14 +29,14 @@ Convert directly from YouTube URL:
 ```bash
 youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 
-🎬 Processing: https://www.youtube.com/watch?v=Q4gsvJvRjCU
+🎬 Processing: https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
 Output XML (condensed - 4 chapters, 88 lines total):
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <transcript video_title="How Claude Code Hooks Save Me HOURS Daily"
             video_published="2025-07-12"
             video_duration="2m 43s"
@@ -83,7 +83,7 @@ First, we'll start with the patches
 Output XML:
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <transcript video_title="" video_published="" video_duration="" video_url="">
   <chapters>
     <chapter title="Introduction to Cows" start_time="0:02">
@@ -107,7 +107,7 @@ Interesting findings:
 - **XML chapters** — made it trivial to target specific sections (e.g., "analyse chapter 10 and 11")
 - **Follow-up questions** — improved answer completeness. In an App this could be handled by prompt engineering.
 
-Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 200,000 token window. So, we still don't have to use RAG (later).
+At the time of this demo, Claude Code could only read 25,000 tokens at a time, but the Anthropic API had a 200,000 token window. So, we still don't have to use RAG (later).
 
 ## 📊 Technical Details
 
@@ -115,7 +115,7 @@ Claude Code can only read 25,000 tokens at a time. But the Anthropic API has a 2
 - **Key Modules**: See [CLAUDE.md](.claude/CLAUDE.md)
 - **Dependencies**: Python 3.15+, `yt-dlp` for YouTube downloads, see [pyproject.toml](pyproject.toml)
 - **Python Package Management**: [UV](https://docs.astral.sh/uv/concepts/projects/)
-- **Test-Driven Development**: 125 tests (19 slow, 106 unit)
+- **Test-Driven Development**: 123 tests (19 slow, 104 unit)
 - **Terminology**: Uses TRANSCRIPT terminology throughout codebase, see [docs/terminology.md](docs/terminology.md)
 
 <div align="center">
@@ -258,7 +258,7 @@ Learnings To Carry Over:
 - [Manage MCPs nicely](docs/knowledge/manage-mcps-nicely.md) constrain what you use, put API keys in one place
 - [Git branch workflow](docs/knowledge/git-branch-flow.md) try put everything on a purposeful branch
 - Always use strict linting and typing and enforce in [pre-commit hook](.pre-commit-config.yaml)
-- Always do test-driven development and [manual LLM testing](docs/refactor-todo/exceptions/test_url.md) is useful too
+- Always do test-driven development and [manual LLM testing](docs/refactor-done/exceptions/test_url.md) is useful too
 - Manage LLM Context: set [terminology](docs/terminology.md), use clear naming, keep docstrings/comments accurate, at 60% context window `/clear` Claude Code
 
 Open Questions:
@@ -267,4 +267,4 @@ Open Questions:
 - Q2. Is the system architecture well-designed and elegant?
 - Q3. Is the exception design suitable for a future API service?
 - Q4. Are [tests/](tests/) clear and sane, or over-engineered?
-- Q5. Was it safe to exclude "XML security" Ruff [S314](pyproject.toml)?
+- Q5. Was it safe to exclude "XML security" Ruff [S314](pyproject.toml) in `tests/` (they only parse self-generated XML)?
