@@ -7,7 +7,6 @@ YouTube URLs into structured TranscriptDocument objects.
 # pyright: reportPrivateUsage=false
 
 import inspect
-from pathlib import Path
 from typing import get_args
 
 import pytest
@@ -28,10 +27,11 @@ from youtube_to_xml.url_parser import (
     _create_video_metadata,
     _extract_transcript_lines_from_json3,
     _fetch_video_metadata_and_transcript,
-    _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
-    _validate_url_is_youtube_video,
+    _select_transcript_language,
+    _validate_is_single_youtube_video,
+    _validate_is_youtube_url,
     _YtDlpMetadata,
     is_valid_url,
     parse_youtube_url,
@@ -188,23 +188,52 @@ class TestParseYoutubeUrlFunction:
         )
 
 
-class TestTranscriptFilePriority:
-    """Test transcript file priority selection logic."""
+class TestSelectTranscriptLanguage:
+    """Test which subtitle language code is chosen for download."""
 
-    def test_transcript_file_priority_ordering(self) -> None:
-        """Verify priority ordering: manual English > auto English > others."""
-        files = [
-            Path("video.es.json3"),  # Other language
-            Path("video.en-orig.json3"),  # Auto-generated English
-            Path("video.en.json3"),  # Manual English
-            Path("video.fr.json3"),  # Other language
-        ]
+    def test_prefers_creator_english_over_auto_generated(self) -> None:
+        """Creator-uploaded "en" wins even when YouTube's own English exists."""
+        chosen = _select_transcript_language(["en", "fr"], ["en", "en-orig"])
+        assert chosen == "en"
 
-        sorted_files = sorted(files, key=_get_youtube_transcript_file_priority)
+    def test_finds_regional_creator_english_when_plain_en_missing(self) -> None:
+        """Creator "en-GB" beats YouTube's auto-generated English."""
+        chosen = _select_transcript_language(["en-GB"], ["en", "en-orig"])
+        assert chosen == "en-GB"
 
-        assert sorted_files[0].name == "video.en.json3"  # Highest priority
-        assert sorted_files[1].name == "video.en-orig.json3"  # Medium priority
-        # Remaining two can be in any order (same priority)
+    def test_prefers_plain_en_over_regional_creator_english(self) -> None:
+        """Plain "en" comes before regional codes, whatever their order."""
+        chosen = _select_transcript_language(["en-US", "en", "en-GB"], [])
+        assert chosen == "en"
+
+    def test_picks_regional_creator_english_alphabetically(self) -> None:
+        """Without plain "en", regional codes are chosen in a fixed A-Z order."""
+        chosen = _select_transcript_language(["en-US", "en-GB"], [])
+        assert chosen == "en-GB"
+
+    def test_falls_back_to_auto_generated_english_speech(self) -> None:
+        """English video without creator subtitles uses YouTube's "en-orig"."""
+        chosen = _select_transcript_language([], ["en", "en-orig", "fr", "de"])
+        assert chosen == "en-orig"
+
+    def test_falls_back_to_auto_translated_english_for_foreign_video(self) -> None:
+        """Foreign video without creator English uses YouTube's translated "en"."""
+        chosen = _select_transcript_language(["fr"], ["fr-orig", "fr", "en", "de"])
+        assert chosen == "en"
+
+    def test_ignores_creator_subtitles_in_other_languages(self) -> None:
+        """Creator "fr" does not count as English and does not block fallbacks."""
+        chosen = _select_transcript_language(["fr", "de"], ["en-orig", "en"])
+        assert chosen == "en-orig"
+
+    def test_returns_none_without_any_english_track(self) -> None:
+        """No creator English and no auto captions means no transcript."""
+        chosen = _select_transcript_language(["fr"], [])
+        assert chosen is None
+
+    def test_returns_none_for_video_without_captions(self) -> None:
+        """Empty caption lists mean no transcript."""
+        assert _select_transcript_language([], []) is None
 
 
 class TestExtractTranscriptLinesBehavior:
@@ -318,7 +347,7 @@ class TestDecomposedFunctions:
 
 
 class TestIsValidUrl:
-    """Test basic URL structure validation (Tier 1 - instant validation)."""
+    """Test basic URL structure validation (instant, no network)."""
 
     def test_rejects_invalid_url_structures(self) -> None:
         """Invalid URL structures return False."""
@@ -356,18 +385,18 @@ class TestIsValidUrl:
             assert is_valid_url(valid_url) is True
 
 
-class TestValidateUrlIsYoutubeVideo:
-    """Test URL validation for YouTube videos vs playlists/non-YouTube."""
+class TestValidateIsYoutubeUrl:
+    """Test URL validation that runs before any network call."""
 
     def test_rejects_non_youtube_urls(self) -> None:
-        """Non-YouTube URLs raise URLNotYouTubeError (Tier 2)."""
+        """Non-YouTube URLs raise URLNotYouTubeError."""
         non_youtube_url = "https://www.google.com/"
 
         with pytest.raises(URLNotYouTubeError):
-            _validate_url_is_youtube_video(non_youtube_url)
+            _validate_is_youtube_url(non_youtube_url)
 
     def test_rejects_fake_youtube_domains(self) -> None:
-        """Fake YouTube-like domains raise URLNotYouTubeError (Tier 2)."""
+        """Fake YouTube-like domains raise URLNotYouTubeError."""
         fake_youtube_urls = [
             "https://notyoutube.com/watch?v=123",
             "https://fakeyoutube.com/watch?v=123",
@@ -376,22 +405,33 @@ class TestValidateUrlIsYoutubeVideo:
 
         for fake_url in fake_youtube_urls:
             with pytest.raises(URLNotYouTubeError):
-                _validate_url_is_youtube_video(fake_url)
+                _validate_is_youtube_url(fake_url)
 
-    @pytest.mark.slow
-    def test_rejects_youtube_playlist_urls(self) -> None:
-        """Playlist URLs raise URLPlaylistNotSupportedError (Tier 3)."""
-        playlist_url = (
-            "https://youtube.com/playlist?list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
-        )
-
-        with pytest.raises(URLPlaylistNotSupportedError):
-            _validate_url_is_youtube_video(playlist_url)
-
-    @pytest.mark.slow
     def test_accepts_youtube_video_urls(self) -> None:
-        """Valid YouTube video URLs pass validation without errors (Tier 3)."""
-        video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        """YouTube video URLs pass without errors."""
+        _validate_is_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        _validate_is_youtube_url("https://youtu.be/dQw4w9WgXcQ")
 
-        # Should complete without raising exception
-        _validate_url_is_youtube_video(video_url)
+
+class TestValidateIsSingleYoutubeVideo:
+    """Test validation of the yt-dlp lookup result, before transcript download."""
+
+    def test_rejects_playlist(self) -> None:
+        """Playlist results raise URLPlaylistNotSupportedError."""
+        with pytest.raises(URLPlaylistNotSupportedError):
+            _validate_is_single_youtube_video(
+                {"_type": "playlist", "extractor": "youtube:tab"}
+            )
+
+    def test_rejects_non_youtube_extractor(self) -> None:
+        """Results from a non-YouTube extractor raise URLNotYouTubeError."""
+        with pytest.raises(URLNotYouTubeError):
+            _validate_is_single_youtube_video({"extractor": "generic"})
+
+    def test_accepts_video(self) -> None:
+        """A single YouTube video result passes without errors."""
+        _validate_is_single_youtube_video({"extractor": "youtube", "id": "dQw4w9WgXcQ"})
+
+    def test_accepts_video_link_from_playlist_url(self) -> None:
+        """A watch URL with a list param resolves to a link to its single video."""
+        _validate_is_single_youtube_video({"_type": "url", "extractor": "youtube:tab"})

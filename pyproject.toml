@@ -1,15 +1,7 @@
-# =================================
-# Build System
-# =================================
-
 [build-system]
-requires = ["uv_build>=0.11.30"]
+# Packaged for the [project.scripts] CLIs only; never published.
+requires = ["uv_build>=0.13.0,<0.14"]
 build-backend = "uv_build"
-
-
-# =================================
-# Project Metadata & Configuration
-# =================================
 
 [project]
 name = "youtube-to-xml"
@@ -17,104 +9,84 @@ version = "0.1.0"
 description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
 authors = [{ name = "Michelle", email = "your.email@example.com" }]
-requires-python = ">=3.14"
-dependencies = [        # runtime
-    "yt-dlp>=2026.7.4",
-]
+requires-python = ">=3.15"
+dependencies = ["yt-dlp>=2026.8.19"]
 
-# CLI entry points
 [project.scripts]
 youtube-to-xml = "youtube_to_xml.cli:main"
 
-# Development dependencies
 [dependency-groups]
-dev = [
-    "pre-commit>=4.6.0",
-    "pyright>=1.1.411",
-    "pytest>=9.1.1",
-    "ruff>=0.15.22",
-]
+dev = ["pre-commit>=4.7.0", "pyright>=1.1.414", "pytest>=9.1.1", "ruff>=0.17.0"]
 
+
+# PACKAGE MANAGER (UV)
 # =================================
-# Package Manager Configuration
+# Uncomment to allow PyPI pre-releases (e.g. yt-dlp dev builds "2025.9.19.232813.dev0").
+# Even when enabled, run `uv lock --upgrade` to pull them into the lockfile.
+# [tool.uv]
+# prerelease = "allow"
+
+
+# TESTING (PYTEST)
 # =================================
-
-# Allow PyPI pre-releases (❌ DISABLED to use stable releases only)
-#   for example yt-dlp dev versions like "2025.9.19.232813.dev0"
-#   note: even when enabled, run `uv lock --upgrade` to pull them into the lockfile
-#[tool.uv]
-#prerelease = "allow"
-
-
-# =================================
-# Pytest Configuration
-# =================================
-
 [tool.pytest.ini_options]
 markers = [
-    "slow: tests that require internet connection (hit yt-dlp API) (reviewed and confirmed)"
+  "slow: tests that require internet connection (hit yt-dlp API) (reviewed and confirmed)",
 ]
 
-# =================================
-# Pyright Type Checking
-# =================================
 
+# TYPE CHECKING (PYRIGHT)
+# =================================
 [tool.pyright]
-# Type checker — Ruff only lints, doesn't type-check.
-# In VSCode, Pylance reads this config (Pylance bundles Pyright).
-# The CLI `uv run pyright` reads the same config.
-
 typeCheckingMode = "strict"
-pythonVersion = "3.14"
+pythonVersion = "3.15"
+venvPath = "."                # Claude Code Official: LSP plugin
+venv = ".venv"                # Claude Code Official: LSP plugin
+reportUnusedImport = false    # Ruff F401 covers it
+reportUnusedVariable = false  # Ruff F841
+reportDuplicateImport = false # Ruff F811
 
-# Silence rules Ruff already reports these
-reportUnusedImport = false      # Ruff F401
-reportUnusedVariable = false    # Ruff F841
-reportDuplicateImport = false   # Ruff F811
 
+# LINTING (RUFF)
 # =================================
-# Ruff Linter Configuration
-# =================================
-
 [tool.ruff]
-# Strictest ruff settings
 line-length = 90
-target-version = "py314"
+target-version = "py315"
 
 [tool.ruff.lint]
-# Enable all available rules
 select = ["ALL"]
-# Only ignore rules that are incompatible or overly pedantic
-ignore = [
-    "D100",    # Missing docstring in public module
-    "D104",    # Missing docstring in public package
-    "D203",    # 1 blank line required before class docstring (conflicts with D211)
-    "D213",    # Multi-line docstring summary should start at the second line (conflicts with D212)
-    "COM812",  # Trailing comma missing (conflicts with formatter)
-    "ISC001",  # Implicitly concatenated string literals on one line (conflicts with formatter)
-    "T201",    # Print found (allow print statements)
+ignore = [ # ignore incompatible or overly pedantic rules
+  "D100",   # Missing docstring in public module
+  "D104",   # Missing docstring in public package
+  "D203",   # blank line before class docstring (conflicts with D211)
+  "D213",   # multi-line summary starts on line 2 (conflicts with D212)
+  "COM812", # Trailing comma missing (conflicts with formatter)
+  "ISC001", # implicit string concatenation (conflicts with formatter)
+  "T201",   # Print found (allow print statements)
+  "CPY001", # Missing copyright notice (never published)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "S101",    # assert statements are idiomatic in tests
+  "PLR2004", # literal expected values are fine
+  "D103",    # Missing docstring in public function
+  "S314",    # XML parsing (safe in tests with self-generated XML)
+  "S607",    # partial executable paths (controlled test env)
+]
+"src/youtube_to_xml/cli.py" = [
+  "TRY400", # logger.error for handled user errors (no traceback needed)
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+# Both sections restate Ruff's defaults — kept visible
 [tool.ruff.lint.pylint]
-max-args = 5
-max-branches = 12
-max-returns = 6
-max-statements = 50
+max-args = 5        # PLR0913
+max-branches = 12   # PLR0912
+max-returns = 6     # PLR0911
+max-statements = 50 # PLR0915
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = [
-    "D103",    # Missing docstring in public function
-    "PLR2004", # Magic value used in comparison
-    "S101",    # Use of assert detected
-    "S314",    # XML parsing (safe in tests with self-generated XML)
-    "S607",    # Partial executable paths (controlled test env)
-]
-"src/youtube_to_xml/cli.py" = [
-    "TRY400",  # Use logger.error for handled user errors (not exceptions needing traceback)
-]
+max-complexity = 10 # C901

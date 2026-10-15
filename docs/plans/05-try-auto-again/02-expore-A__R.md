@@ -68,19 +68,23 @@ src/youtube_to_xml/
 ```python
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class Metadata:
     """Video metadata for XML attributes."""
-    video_title: str      # Empty string for file source
-    upload_date: str      # Empty string for file source
-    duration: str         # Empty string for file source
-    video_url: str        # Empty string for file source
+
+    video_title: str  # Empty string for file source
+    upload_date: str  # Empty string for file source
+    duration: str  # Empty string for file source
+    video_url: str  # Empty string for file source
+
 
 @dataclass(frozen=True)
 class Chapter:
     """Chapter with content lines for XML generation."""
+
     title: str
-    start_time: str       # Already formatted as timestamp string
+    start_time: str  # Already formatted as timestamp string
     content_lines: list[str]  # Lines with alternating timestamps and text
 ```
 
@@ -99,6 +103,7 @@ This ensures the XML builder remains unchanged and both sources produce identica
 
 ```python
 from typing import Protocol
+
 
 class TranscriptSource(Protocol):
     """Protocol for transcript sources."""
@@ -130,12 +135,7 @@ class FileSource:
         chapters = parse_transcript(raw_content)
 
         # 3. Create empty metadata
-        metadata = Metadata(
-            video_title="",
-            upload_date="",
-            duration="",
-            video_url=""
-        )
+        metadata = Metadata(video_title="", upload_date="", duration="", video_url="")
 
         return chapters, metadata
 ```
@@ -162,7 +162,7 @@ class YouTubeSource:
             video_title=video_data.title,
             upload_date=format_date(video_data.upload_date),
             duration=format_duration(video_data.duration),
-            video_url=video_data.url
+            video_url=video_data.url,
         )
 
         return chapters, metadata
@@ -198,24 +198,18 @@ def format_subtitles_as_lines(subtitles: list[IndividualSubtitle]) -> list[str]:
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="youtube-to-xml",
-        description="Convert YouTube transcripts to XML format"
+        prog="youtube-to-xml", description="Convert YouTube transcripts to XML format"
     )
 
     # Mutually exclusive source selection
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument(
-        "--file",
-        metavar="PATH",
-        help="Path to transcript text file"
+        "--file", metavar="PATH", help="Path to transcript text file"
     )
-    source_group.add_argument(
-        "--url",
-        metavar="URL",
-        help="YouTube video URL"
-    )
+    source_group.add_argument("--url", metavar="URL", help="YouTube video URL")
 
     return parser.parse_args()
+
 
 def main() -> None:
     """Main entry point."""

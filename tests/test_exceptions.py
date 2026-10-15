@@ -190,12 +190,12 @@ class TestYtDlpExceptionMapping:
                 EXCEPTION_MESSAGES["url_is_invalid_error"],
             ),
             (
-                "ERROR: [youtube] invalid-url: Video unavailable",
+                "ERROR: [youtube] invalid-url: This video is unavailable",
                 URLIsInvalidError,
                 EXCEPTION_MESSAGES["url_is_invalid_error"],
             ),
             (
-                "ERROR: [youtube] ai_HGCf2w_w: Video unavailable",
+                "ERROR: [youtube] ai_HGCf2w_w: This video is unavailable",
                 URLVideoUnavailableError,
                 EXCEPTION_MESSAGES["url_video_unavailable_error"],
             ),

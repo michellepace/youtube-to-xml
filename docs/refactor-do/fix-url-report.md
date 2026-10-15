@@ -212,7 +212,9 @@ Change ONE line in `exceptions.py`:
 return URLUnmappedError(clean_msg)
 
 # AFTER (consistent like file method)
-return URLUnmappedError()# Uses clean default: "YouTube processing failed - unmapped error"
+return (
+    URLUnmappedError()
+)  # Uses clean default: "YouTube processing failed - unmapped error"
 ```
 
 Result: URL exceptions will match your excellent file-based design - 5 minutes of work for unified user

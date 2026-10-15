@@ -38,24 +38,36 @@ Single module approach with standardized internal format.
 # exceptions.py
 class BaseTranscriptError(Exception):
     """Base exception for all transcript processing."""
+
     pass
+
 
 # File input errors (keep existing + base class)
 class FileEmptyError(BaseTranscriptError): ...
+
+
 class FileInvalidFormatError(BaseTranscriptError): ...
+
 
 # YouTube input errors (new)
 class URLFormatError(BaseTranscriptError): ...
+
+
 class URLVideoNotFoundError(BaseTranscriptError): ...
+
+
 class URLSubtitlesNotFoundError(BaseTranscriptError): ...
+
+
 class URLRateLimitError(BaseTranscriptError): ...
+
 
 # logging_config.py
 def setup_logging(log_file="youtube_to_xml.log"):
     logging.basicConfig(
         filename=log_file,
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 ```
 
@@ -100,6 +112,7 @@ class TranscriptData:
     upload_date: str = ""
     duration: str = ""
     video_url: str = ""
+
 
 # Keep Chapter as-is (already perfect):
 @dataclass
@@ -186,20 +199,22 @@ class YouTubeSource(TranscriptSource):
 
    ```python
    from youtube_to_xml.transcript_source import FileSource
+
    source = FileSource(Path("example_transcripts/x4-chapters.txt"))
    data = source.load()
    print(data.chapters[0].title)  # Should work
-   print(data.video_title)        # Should be empty string
+   print(data.video_title)  # Should be empty string
    ```
 
 3. Test YouTubeSource with a known working URL:
 
    ```python
    from youtube_to_xml.transcript_source import YouTubeSource
+
    source = YouTubeSource("https://www.youtube.com/watch?v=Q4gsvJvRJCU")
    data = source.load()
-   print(data.video_title)        # Should have video title
-   print(len(data.chapters))      # Should show chapter count
+   print(data.video_title)  # Should have video title
+   print(len(data.chapters))  # Should show chapter count
    ```
 
 4. Verify both sources return TranscriptData with proper Chapter objects
@@ -229,8 +244,8 @@ def build_xml(data: TranscriptData) -> str:
     root = ET.Element("transcript")
     root.set("video_title", data.video_title)  # "" for files
     root.set("upload_date", data.upload_date)  # "" for files
-    root.set("duration", data.duration)        # "" for files
-    root.set("video_url", data.video_url)      # "" for files
+    root.set("duration", data.duration)  # "" for files
+    root.set("video_url", data.video_url)  # "" for files
 
     # Rest remains similar
 ```
@@ -252,6 +267,7 @@ def build_xml(data: TranscriptData) -> str:
    ```python
    from youtube_to_xml.transcript_source import FileSource
    from youtube_to_xml.xml_builder import build_xml
+
    source = FileSource(Path("example_transcripts/x4-chapters.txt"))
    data = source.load()
    xml = build_xml(data)
@@ -263,10 +279,13 @@ def build_xml(data: TranscriptData) -> str:
    ```python
    from youtube_to_xml.transcript_source import YouTubeSource
    from youtube_to_xml.xml_builder import build_xml
+
    source = YouTubeSource("https://www.youtube.com/watch?v=Q4gsvJvRJCU")
    data = source.load()
    xml = build_xml(data)
-   print(xml)  # Should show <transcript video_title="Video Title" upload_date="2024-01-01" ...>
+   print(
+       xml
+   )  # Should show <transcript video_title="Video Title" upload_date="2024-01-01" ...>
    ```
 
 4. Verify both XML outputs have the same structure, just different attribute values

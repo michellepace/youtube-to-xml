@@ -46,10 +46,12 @@ def test_video_metadata_empty_factory():
     assert metadata.duration == 0
     assert metadata.video_url == ""
 
+
 def test_chapter_duration_calculation():
     """Chapter calculates duration from start/end times."""
     chapter = Chapter("Title", 10.0, 25.5, ["line1"])
     assert chapter.duration == 15.5
+
 
 # 2. Create src/youtube_to_xml/models.py to make tests pass
 # 3. Update imports in file_parser.py and xml_builder.py simultaneously
@@ -72,6 +74,7 @@ def test_xml_includes_metadata():
     assert 'upload_date="2025-01-01"' in xml  # Note formatting
     assert 'duration="2m 0s"' in xml  # Note formatting
 
+
 # 2. Move format_date() and format_duration() to time_utils.py
 # 3. Update xml_builder to use metadata and format functions
 # 4. Update CLI to pass VideoMetadata.empty()
@@ -86,6 +89,7 @@ def test_xml_includes_metadata():
 def test_url_and_file_produce_identical_xml_structure():
     """Both workflows produce same XML for same content."""
     # Implementation to verify compatibility
+
 
 # 2. Update url_to_transcript.py to use shared models
 # 3. Convert IndividualSubtitle list to content_lines during Chapter creation

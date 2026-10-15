@@ -3,19 +3,19 @@ gitignore: true
 ignores:
   - "docs/knowledge/api-yt_dlp/README.md"
 
-# Disable rules
 config:
-  default: true # Enable all rules by default
-  MD013: false  # don't enforce a maximum line length
-  MD024: false  # don't forbid duplicate heading content
-  MD031: false  # don't require blank lines around code blocks
-  MD032: false  # don't require blank lines around lists
-  MD033: false  # don't forbid inline HTML
-  MD034: false  # don't forbid bare URLs
-  MD036: false  # don't forbid emphasis instead of a heading
-  MD040: false  # don't require language on fenced code blocks
-  MD041: false  # don't require first line to be H1 heading
-  MD046: false  # don't enforce consistent code block style
-  MD059: false  # don't require descriptive link text
-  MD060:        # enforce a consistent table column style
+  default: true     # Enable all rules by default
+
+  # false == RULE OFF
+  MD013: false      # enforce a maximum line length
+  MD024: false      # forbid duplicate heading content
+  MD032: false      # require blank lines around lists
+  MD033: false      # forbid inline HTML
+  MD034: false      # forbid bare URLs
+  MD036: false      # forbid emphasis instead of a heading
+  MD041: false      # require first line to be H1 heading
+  MD046: false      # enforce consistent code block style
+  MD059: false      # require descriptive link text
+
+  MD060:            # enforce consistent table column style
     style: compact  # single space around cell content
