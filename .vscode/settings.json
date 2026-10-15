@@ -14,7 +14,6 @@
     "python.terminal.activateEnvironment": false, // don't auto-activate; use `uv run`
 
     // 🐍 Ruff: Python lint & format (see pyproject.toml)
-    "ruff.nativeServer": "on",  // faster Rust-based language server
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
