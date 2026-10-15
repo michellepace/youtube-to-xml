@@ -9,7 +9,7 @@ version = "0.1.0"
 description = "Convert YouTube transcripts to structured XML format"
 readme = "README.md"
 authors = [{ name = "Michelle", email = "your.email@example.com" }]
-requires-python = ">=3.14"
+requires-python = ">=3.15"
 dependencies = ["yt-dlp>=2026.8.19"]
 
 [project.scripts]
@@ -39,7 +39,7 @@ markers = [
 # =================================
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.14"
+pythonVersion = "3.15"
 venvPath = "."                # Claude Code Official: LSP plugin
 venv = ".venv"                # Claude Code Official: LSP plugin
 reportUnusedImport = false    # Ruff F401 covers it
@@ -51,7 +51,7 @@ reportDuplicateImport = false # Ruff F811
 # =================================
 [tool.ruff]
 line-length = 90
-target-version = "py314"
+target-version = "py315"
 
 [tool.ruff.lint]
 select = ["ALL"]
