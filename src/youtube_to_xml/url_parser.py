@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, TypedDict, cast
 from urllib.parse import urlparse
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterable, Mapping
 
 import yt_dlp
 from yt_dlp.utils import DownloadError, ExtractorError, UnsupportedError
@@ -55,6 +55,8 @@ class _YtDlpMetadata(TypedDict, total=False):
     duration: int
     webpage_url: str
     chapters: list[_InternalChapterDict]
+    subtitles: dict[str, object]  # creator-uploaded tracks, keyed by language code
+    automatic_captions: dict[str, object]  # YouTube-generated tracks, same keys
 
 
 class _Json3Seg(TypedDict, total=False):
@@ -70,14 +72,11 @@ class _Json3Event(TypedDict, total=False):
     segs: list[_Json3Seg]
 
 
-# Transcript language preferences (ordered by priority - index IS priority)
-_TRANSCRIPT_LANGUAGE_PREFERENCES = (
-    "en",  # Manual English subtitles (priority 0)
-    "en-orig",  # Auto-generated English (priority 1)
-)
-
 # Subtitle/transcript file extension for yt-dlp
 _TRANSCRIPT_FILE_EXT = "json3"
+
+# Base name for the downloaded transcript file (yt-dlp appends ".<lang>.json3")
+_TRANSCRIPT_FILE_STEM = "transcript"
 
 _YOUTUBE_DOMAINS = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com")
 
@@ -85,17 +84,35 @@ _YOUTUBE_DOMAINS = ("youtube.com", "youtu.be", "m.youtube.com", "www.youtube.com
 logger = get_logger(__name__)
 
 
-def _get_youtube_transcript_file_priority(transcript_file_path: Path) -> int:
-    """Return priority for transcript file selection (0=highest)."""
-    name = transcript_file_path.name
+def _select_transcript_language(
+    creator_langs: Iterable[str], auto_langs: Iterable[str]
+) -> str | None:
+    """Choose the one subtitle language code to download from YouTube.
 
-    # Check each language preference in order (index = priority)
-    for priority, lang in enumerate(_TRANSCRIPT_LANGUAGE_PREFERENCES):
-        if name.endswith(f".{lang}.{_TRANSCRIPT_FILE_EXT}"):
-            return priority
+    Preference order:
+    1. Creator-uploaded English: "en", then regional codes such as "en-GB" (A-Z)
+    2. YouTube's speech-to-text of English speech: "en-orig"
+    3. YouTube's machine translation of foreign speech into English: "en"
 
-    # Return lowest priority for unrecognized languages
-    return len(_TRANSCRIPT_LANGUAGE_PREFERENCES)
+    Args:
+        creator_langs: Language codes of creator-uploaded subtitles
+        auto_langs: Language codes of YouTube's automatic captions
+
+    Returns:
+        Language code to download, or None if the video has no English transcript
+    """
+    creator_english = sorted(
+        (lang for lang in creator_langs if lang == "en" or lang.startswith("en-")),
+        key=lambda lang: (lang != "en", lang),  # plain "en" first, then A-Z
+    )
+    if creator_english:
+        return creator_english[0]
+
+    available_auto = set(auto_langs)
+    for lang in ("en-orig", "en"):
+        if lang in available_auto:
+            return lang
+    return None
 
 
 def _validate_basic_url_structure(url: str) -> None:
@@ -177,29 +194,33 @@ def _validate_is_single_youtube_video(video_info: Mapping[str, Any]) -> None:
         raise URLPlaylistNotSupportedError
 
 
-def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata:
-    """Look up a YouTube video once, then download its transcript files.
+def _download_transcript_with_yt_dlp(
+    url: str, temp_dir: Path
+) -> tuple[_YtDlpMetadata, Path]:
+    """Look up a YouTube video once, then download its best English transcript.
 
     Args:
         url: YouTube video URL
         temp_dir: Temporary directory for downloaded files
 
     Returns:
-        Raw metadata dictionary from yt-dlp
+        Tuple of (raw metadata dictionary from yt-dlp, downloaded transcript file)
+
+    Raises:
+        URLTranscriptNotFoundError: If the video has no English transcript
     """
     _validate_is_youtube_url(url)
 
     yt_dlp_options = {
-        # Core purpose: Download transcripts
+        # Core purpose: Download transcripts (language chosen after the lookup)
         "writesubtitles": True,
         "writeautomaticsub": True,
-        "subtitleslangs": _TRANSCRIPT_LANGUAGE_PREFERENCES,
         "subtitlesformat": _TRANSCRIPT_FILE_EXT,
         # Download behavior: Skip video, only get transcripts
         "skip_download": True,
         "noplaylist": True,
         # Output formatting: Where to save files
-        "outtmpl": str(Path(temp_dir) / "%(title)s [%(id)s].%(ext)s"),
+        "outtmpl": str(temp_dir / f"{_TRANSCRIPT_FILE_STEM}.%(ext)s"),
         # UI/UX: Quiet operation for CLI user experience
         "quiet": True,
         "no_warnings": True,
@@ -211,7 +232,29 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata
             # a) YT-DLP: look up the video once (formats/subtitles not yet processed)
             unprocessed_metadata = ydl.extract_info(url, download=False, process=False)
             _validate_is_single_youtube_video(unprocessed_metadata)
-            # b) YT-DLP: process that same lookup, writing subtitle files (.json3)
+            # A watch URL carrying "&list=" first yields a pointer to the plain
+            # video URL, so follow pointers until the actual video lookup comes back
+            while unprocessed_metadata.get("_type") == "url":
+                pointer_url = unprocessed_metadata.get("url")
+                if not pointer_url:
+                    raise URLIsInvalidError
+                unprocessed_metadata = ydl.extract_info(
+                    pointer_url,
+                    download=False,
+                    process=False,
+                    ie_key=unprocessed_metadata.get("ie_key"),
+                )
+                _validate_is_single_youtube_video(unprocessed_metadata)
+            # b) Choose the one language to download from the lookup's caption lists
+            transcript_lang = _select_transcript_language(
+                creator_langs=unprocessed_metadata.get("subtitles", {}),
+                auto_langs=unprocessed_metadata.get("automatic_captions", {}),
+            )
+            if transcript_lang is None:
+                raise URLTranscriptNotFoundError
+            logger.info("Selected transcript language: %s", transcript_lang)
+            ydl.params["subtitleslangs"] = [transcript_lang]
+            # c) YT-DLP: process that same lookup, writing the subtitle file (.json3)
             raw_metadata = ydl.process_ie_result(unprocessed_metadata, download=True)
         except (DownloadError, ExtractorError, UnsupportedError) as e:
             mapped_exception = map_yt_dlp_exception(e)
@@ -221,36 +264,27 @@ def _download_transcript_with_yt_dlp(url: str, temp_dir: Path) -> _YtDlpMetadata
     if raw_metadata is None:  # type: ignore[reportUnnecessaryComparison]
         msg = "Something weird happened, we couldn't get this video's information."
         raise URLUnmappedError(msg)
-    return cast("_YtDlpMetadata", raw_metadata)
+    transcript_file = (
+        temp_dir / f"{_TRANSCRIPT_FILE_STEM}.{transcript_lang}.{_TRANSCRIPT_FILE_EXT}"
+    )
+    return cast("_YtDlpMetadata", raw_metadata), transcript_file
 
 
-def _extract_transcript_lines_from_files(temp_dir: Path) -> list[TranscriptLine]:
-    """Process downloaded transcript files into TranscriptLine objects.
-
-    Finds transcript files, selects the best one by language priority,
-    and extracts transcript lines from JSON3 format.
+def _extract_transcript_lines_from_file(transcript_file: Path) -> list[TranscriptLine]:
+    """Process the downloaded transcript file into TranscriptLine objects.
 
     Args:
-        temp_dir: Directory containing downloaded transcript files
+        transcript_file: JSON3 transcript file written by yt-dlp
 
     Returns:
         List of TranscriptLine objects
 
     Raises:
-        URLTranscriptNotFoundError: If no transcript files found
+        URLTranscriptNotFoundError: If yt-dlp did not write the transcript file
     """
-    # Locate downloaded transcript files
-    transcript_files = list(temp_dir.glob(f"*.{_TRANSCRIPT_FILE_EXT}"))
-
-    # Sort transcript files by priority: Uploaded English over auto-generated
-    transcript_files.sort(key=_get_youtube_transcript_file_priority)
-
-    # Parse transcript files into structured objects
-    if not transcript_files:
+    if not transcript_file.is_file():
         raise URLTranscriptNotFoundError
 
-    # Use highest priority transcript file
-    transcript_file = transcript_files[0]
     # Read JSON3 format from disk
     transcript_data = json.loads(transcript_file.read_text(encoding="utf-8"))
     # Extract events → TranscriptLine objects
@@ -275,10 +309,12 @@ def _fetch_video_metadata_and_transcript(
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         # Phase 1: Download transcript and metadata using yt-dlp
-        raw_metadata = _download_transcript_with_yt_dlp(url, Path(temp_dir))
+        raw_metadata, transcript_file = _download_transcript_with_yt_dlp(
+            url, Path(temp_dir)
+        )
 
-        # Phase 2: Process downloaded transcript files
-        transcript_lines = _extract_transcript_lines_from_files(Path(temp_dir))
+        # Phase 2: Process the downloaded transcript file
+        transcript_lines = _extract_transcript_lines_from_file(transcript_file)
 
         # Phase 3: Create structured metadata object
         metadata = _create_video_metadata(raw_metadata, url)

@@ -33,6 +33,8 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
+Transcript language: creator-uploaded English subtitles are preferred, then YouTube's auto-generated English captions, then YouTube's auto-translation into English.
+
 Output XML (condensed - 4 chapters, 88 lines total):
 
 ```xml

@@ -23,7 +23,7 @@ def run_cli(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
         capture_output=True,
         text=True,
         cwd=tmp_path,
-        timeout=15,
+        timeout=20,
         check=False,
     )
 

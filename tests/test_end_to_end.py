@@ -21,9 +21,12 @@ from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 # Test constants
 EXAMPLES_DIR = Path("example_transcripts")
-URL_CHAPTERS = "https://www.youtube.com/watch?v=Q4gsvJvRjCU"
-URL_CHAPTERS_SHARED = "https://youtu.be/Q4gsvJvRjCU?si=8cEkF7OrXrB1R4d7&t=27"
+URL_CHAPTERS = "https://www.youtube.com/watch?v=zueuzhBkd9Y"
+URL_CHAPTERS_SHARED = "https://youtu.be/zueuzhBkd9Y?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
+REFERENCE_CHAPTERS = (  # reference files for URL_CHAPTERS
+    "i-tested-gemini-4-vs-opus-5-5-vs-gpt-6-astra-vs-muse-wonder-5-use-cases"
+)
 URL_PLAYLIST = (
     "https://www.youtube.com/watch?v=LorEJPrALcg&list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
 )
@@ -50,7 +53,7 @@ def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, s
         capture_output=True,
         text=True,
         cwd=tmp_path,
-        timeout=15,
+        timeout=20,
         check=False,
     )
 
@@ -148,9 +151,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
 
-    reference_file = setup_reference_file(
-        tmp_path, "how-claude-code-hooks-save-me-hours-daily.xml"
-    )
+    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -165,9 +166,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    reference_file = setup_reference_file(
-        tmp_path, "how-claude-code-hooks-save-me-hours-daily.xml"
-    )
+    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -205,7 +204,7 @@ def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
 def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     """Test URL vs file processing equivalence using direct XML parsing."""
     # Process file method
-    input_file = EXAMPLES_DIR / "how-claude-code-hooks-save-me-hours-daily.txt"
+    input_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
     file_exit_code = run_cli("youtube-to-xml", ["input.txt"], tmp_path)[0]

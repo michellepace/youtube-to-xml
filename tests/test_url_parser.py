@@ -7,7 +7,6 @@ YouTube URLs into structured TranscriptDocument objects.
 # pyright: reportPrivateUsage=false
 
 import inspect
-from pathlib import Path
 from typing import get_args
 
 import pytest
@@ -28,9 +27,9 @@ from youtube_to_xml.url_parser import (
     _create_video_metadata,
     _extract_transcript_lines_from_json3,
     _fetch_video_metadata_and_transcript,
-    _get_youtube_transcript_file_priority,
     _InternalChapterDict,
     _Json3Event,
+    _select_transcript_language,
     _validate_is_single_youtube_video,
     _validate_is_youtube_url,
     _YtDlpMetadata,
@@ -189,23 +188,52 @@ class TestParseYoutubeUrlFunction:
         )
 
 
-class TestTranscriptFilePriority:
-    """Test transcript file priority selection logic."""
+class TestSelectTranscriptLanguage:
+    """Test which subtitle language code is chosen for download."""
 
-    def test_transcript_file_priority_ordering(self) -> None:
-        """Verify priority ordering: manual English > auto English > others."""
-        files = [
-            Path("video.es.json3"),  # Other language
-            Path("video.en-orig.json3"),  # Auto-generated English
-            Path("video.en.json3"),  # Manual English
-            Path("video.fr.json3"),  # Other language
-        ]
+    def test_prefers_creator_english_over_auto_generated(self) -> None:
+        """Creator-uploaded "en" wins even when YouTube's own English exists."""
+        chosen = _select_transcript_language(["en", "fr"], ["en", "en-orig"])
+        assert chosen == "en"
 
-        sorted_files = sorted(files, key=_get_youtube_transcript_file_priority)
+    def test_finds_regional_creator_english_when_plain_en_missing(self) -> None:
+        """Creator "en-GB" beats YouTube's auto-generated English."""
+        chosen = _select_transcript_language(["en-GB"], ["en", "en-orig"])
+        assert chosen == "en-GB"
 
-        assert sorted_files[0].name == "video.en.json3"  # Highest priority
-        assert sorted_files[1].name == "video.en-orig.json3"  # Medium priority
-        # Remaining two can be in any order (same priority)
+    def test_prefers_plain_en_over_regional_creator_english(self) -> None:
+        """Plain "en" comes before regional codes, whatever their order."""
+        chosen = _select_transcript_language(["en-US", "en", "en-GB"], [])
+        assert chosen == "en"
+
+    def test_picks_regional_creator_english_alphabetically(self) -> None:
+        """Without plain "en", regional codes are chosen in a fixed A-Z order."""
+        chosen = _select_transcript_language(["en-US", "en-GB"], [])
+        assert chosen == "en-GB"
+
+    def test_falls_back_to_auto_generated_english_speech(self) -> None:
+        """English video without creator subtitles uses YouTube's "en-orig"."""
+        chosen = _select_transcript_language([], ["en", "en-orig", "fr", "de"])
+        assert chosen == "en-orig"
+
+    def test_falls_back_to_auto_translated_english_for_foreign_video(self) -> None:
+        """Foreign video without creator English uses YouTube's translated "en"."""
+        chosen = _select_transcript_language(["fr"], ["fr-orig", "fr", "en", "de"])
+        assert chosen == "en"
+
+    def test_ignores_creator_subtitles_in_other_languages(self) -> None:
+        """Creator "fr" does not count as English and does not block fallbacks."""
+        chosen = _select_transcript_language(["fr", "de"], ["en-orig", "en"])
+        assert chosen == "en-orig"
+
+    def test_returns_none_without_any_english_track(self) -> None:
+        """No creator English and no auto captions means no transcript."""
+        chosen = _select_transcript_language(["fr"], [])
+        assert chosen is None
+
+    def test_returns_none_for_video_without_captions(self) -> None:
+        """Empty caption lists mean no transcript."""
+        assert _select_transcript_language([], []) is None
 
 
 class TestExtractTranscriptLinesBehavior:
