@@ -2,7 +2,7 @@
 
 Tests complete successful workflows from user input to final output:
 - File-based workflow: transcript file → CLI → XML output
-- URL-based workflow: YouTube URL → url_to_transcript.py → YouTube API → XML output
+- URL-based workflow: YouTube URL → url_parser.py → YouTube API → XML output
 - File vs URL equivalence verification
 
 Uses unified run_cli() helper with automatic rate limiting protection.
@@ -21,11 +21,12 @@ from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 # Test constants
 EXAMPLES_DIR = Path("example_transcripts")
-URL_CHAPTERS = "https://www.youtube.com/watch?v=zueuzhBkd9Y"
-URL_CHAPTERS_SHARED = "https://youtu.be/zueuzhBkd9Y?si=8cEkF7OrXrB1R4d7&t=27"
+# Creator captions and chapters keep output stable; auto-generated ones drift.
+URL_CHAPTERS = "https://www.youtube.com/watch?v=4NlrfOl0l8U"
+URL_CHAPTERS_SHARED = "https://youtu.be/4NlrfOl0l8U?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 REFERENCE_CHAPTERS = (  # reference files for URL_CHAPTERS
-    "i-tested-gemini-4-vs-opus-5-5-vs-gpt-6-astra-vs-muse-wonder-5-use-cases"
+    "the-ai-that-solved-imo-geometry-problems-guest-video-by-aleph0"
 )
 URL_PLAYLIST = (
     "https://www.youtube.com/watch?v=LorEJPrALcg&list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
@@ -66,14 +67,6 @@ def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, s
     return result.returncode, result.stdout + result.stderr
 
 
-def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
-    """Copy reference file to tmp directory for testing."""
-    source = EXAMPLES_DIR / reference_name
-    target = tmp_path / reference_name
-    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-    return target
-
-
 def assert_files_identical(actual: Path, expected: Path) -> None:
     """Assert two files are identical using cross-platform comparison."""
     expected_content = expected.read_text(encoding="utf-8")
@@ -106,9 +99,7 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
 
     # Verify output matches reference file exactly
     output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x4-chapters.xml")
-
-    assert output_file.exists()
+    reference_file = EXAMPLES_DIR / "x4-chapters.xml"
     assert_files_identical(output_file, reference_file)
 
 
@@ -123,9 +114,7 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     assert "Created:" in output
 
     output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x3-chapters-with-blanks.xml")
-
-    assert output_file.exists()
+    reference_file = EXAMPLES_DIR / "x3-chapters-with-blanks.xml"
     assert_files_identical(output_file, reference_file)
 
 
@@ -151,7 +140,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
 
-    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
+    reference_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -166,7 +155,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
+    reference_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -181,9 +170,7 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    reference_file = setup_reference_file(
-        tmp_path, "pick-up-where-you-left-off-with-claude.xml"
-    )
+    reference_file = EXAMPLES_DIR / "pick-up-where-you-left-off-with-claude.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -221,18 +208,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     assert len(url_xml_files) == 1
     url_xml = url_xml_files[0]
 
-    # Parse both XML files
-    file_tree = ET.parse(file_xml)
-    url_tree = ET.parse(url_xml)
-    file_root = file_tree.getroot()
-    url_root = url_tree.getroot()
+    file_root = ET.parse(file_xml).getroot()
+    url_root = ET.parse(url_xml).getroot()
 
-    # 1. Assert both files have same line count
-    file_lines = len(file_xml.read_text(encoding="utf-8").splitlines())
-    url_lines = len(url_xml.read_text(encoding="utf-8").splitlines())
-    assert file_lines == url_lines, "Line count must be the same"
-
-    # 2. Assert transcript element attributes
+    # 1. Assert transcript element attributes
     expected_attrs = ["video_title", "video_published", "video_duration", "video_url"]
 
     # File transcript should have empty metadata
@@ -249,26 +228,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         "URL missing required metadata"
     )
 
-    # 3. Assert matching chapter structure
-    file_chapters = file_root.findall(".//chapter")
-    url_chapters = url_root.findall(".//chapter")
-    assert len(file_chapters) == len(url_chapters), "Chapter count mismatch"
-
-    # 4. Assert matching chapter titles
-    file_titles = [ch.get("title") for ch in file_chapters]
-    url_titles = [ch.get("title") for ch in url_chapters]
-    assert file_titles == url_titles, "Chapter titles don't match"
-
-    # 5. Assert similar content volume per chapter (allow minor variations)
-    for i, (file_ch, url_ch) in enumerate(zip(file_chapters, url_chapters, strict=False)):
-        file_content = (file_ch.text or "").strip()
-        url_content = (url_ch.text or "").strip()
-        file_content_lines = len(file_content.split("\n")) if file_content else 0
-        url_content_lines = len(url_content.split("\n")) if url_content else 0
-
-        assert abs(file_content_lines - url_content_lines) <= 2, (
-            f"Chapter {i} ({file_titles[i]}) content volume differs significantly"
-        )
+    # 2. Assert identical chapters: titles, start times and transcript text
+    file_chapters = [(ch.attrib, ch.text) for ch in file_root.iter("chapter")]
+    url_chapters = [(ch.attrib, ch.text) for ch in url_root.iter("chapter")]
+    assert file_chapters == url_chapters, "Chapters differ between file and URL"
 
 
 @pytest.mark.slow
@@ -302,14 +265,4 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     ]
     assert first_3_lines == expected_manual_version, (
         f"Expected clean manual transcript, got: {first_3_lines}"
-    )
-
-    # Auto generated transcript (messier)
-    autogen_version = [
-        "0:00 [Music]",
-        "0:18 We're no strangers to",
-        "0:21 love. You know the rules and so do",
-    ]
-    assert first_3_lines != autogen_version, (
-        "Should not match messy auto-generated transcript"
     )

@@ -1,0 +1,533 @@
+What's surprising
+0:00
+[Submit subtitle corrections at criblate.com] In January 2024, Google DeepMind released an AI model called Alpha Geometry,
+0:05
+which could solve geometry problems from the International Mathematical Olympiad,
+0:10
+or the IMO.
+0:11
+The IMO is the highest level of competitive math contests at the high school level.
+0:16
+Every year, more than 100 countries send six teenagers
+0:19
+to represent them at the competition.
+0:22
+Each country has its own elaborate system of contests
+0:24
+leading to their choice of six representatives.
+0:26
+When Alpha Geometry was tested on a database of 30 geometry problems,
+0:31
+it solved 25 of them.
+0:33
+This is better than the performance of a silver medalist.
+0:36
+This quite understandably generated a lot of buzz.
+0:39
+But here's what nobody talks about.
+0:41
+The most surprising part for me is not that AI managed to solve these problems,
+0:45
+but it's what happened even before the AI showed up.
+0:48
+A 25-year-old technique with no AI at all, just using logic and pure equation solving,
+0:54
+was already able to solve 18 out of 25 problems.
+0:58
+That's already a bronze medal at the IMO.
+1:00
+And then the model hit a wall.
+1:02
+There were problems that even this ingenious logical model wasn't able to solve.
+1:06
+And that's where AI comes in.
+1:08
+But instead of leaving everything to AI, the DeepMind team very
+1:12
+cleverly integrated the logical model with an AI component in
+1:16
+order to reach their spectacular result of 25 out of 30 problems.
+1:20
+So in this video, yes, I do want to talk about AI and geometry.
+1:24
+But before that, I also want to talk about how a non-AI model
+1:27
+was already better at geometry than the vast majority of humans.
+1:31
+So with that, let's begin.
+Solve without AI
+1:33
+Our task today is simple.
+1:35
+Build a bot that can solve IMO geometry problems.
+1:39
+But I'm going to make a caveat to make our problem a little bit harder.
+1:42
+Write a bot that solves IMO problems with no AI.
+1:45
+To begin attacking this, we're going to use a well-kept secret about geometry problems.
+1:50
+A few key facts can get you very far.
+1:54
+For example, here are two important facts from geometry.
+1:57
+One, when two lines cross, the opposite angles are equal.
+2:00
+And two, if these two horizontal lines are parallel,
+2:03
+and you look at the Z over here in blue, the angles on the inside of the Z are equal.
+2:09
+With these two facts alone, we can already prove a non-trivial theorem.
+2:12
+In this diagram, the two orange angles alpha are equal.
+2:16
+If you apply our two facts one after another, it proves our theorem.
+2:23
+Now this is how far we could get starting with two facts.
+2:26
+Now imagine how far we could get if we started off with 10 facts,
+2:30
+or 50 facts, or 100 facts.
+2:32
+The space of theorems we could prove would get larger and larger.
+2:35
+In October 2000, the researchers Tu, Gao, and
+2:39
+Zhang released a paper that did precisely this.
+2:43
+In their paper, they made a database of 75 geometry rules.
+2:47
+Applying these facts in various combinations, the
+2:49
+researchers could solve some very hard geometry problems.
+2:53
+These rules start out simple, like the ones I've written on screen.
+2:57
+But as you go on, the rules get more complicated,
+2:59
+like the rule at the bottom of the screen.
+3:02
+But how do you feed all these diagrams into a computer?
+3:05
+Well, the naive way to do it would be to plot
+3:07
+everything on Desmos using explicit equations.
+3:10
+But I think we can both agree that that's far too clunky.
+3:12
+Another alternative is using a language that's specifically designed for theorem proving.
+3:17
+The predominant language in this regard is called Lean.
+3:20
+While Lean is really great for things like algebra and inequalities,
+3:23
+at the moment it's not very well suited for Euclidean geometry.
+3:27
+To get around this, the authors used a more niche
+3:29
+language that's specifically designed for geometry.
+3:31
+Now, to the best of my knowledge, this language doesn't yet
+3:34
+have an official name and is only described in research papers.
+3:37
+Here's what it looks like.
+3:39
+Say we want to represent this problem over here to a computer,
+3:42
+which says that a triangle with two equal sides has two equal angles.
+3:46
+In the specialized machine language, you'd write it like this.
+3:50
+ABC points, which means that there are three points ABC.
+3:54
+AB equals AC, which means that the sides AB and AC have the same length.
+4:00
+Goal, angle ABC, equals angle BCA, which means that
+4:04
+the goal is to show that these two angles are equal.
+4:08
+The researchers called this method deductive database, or DD for short.
+4:13
+The word database suggests that you're starting with a database of key facts,
+4:17
+and deductive means that you're deducing new theorems from those key facts.
+4:22
+So how did it perform?
+4:24
+Well, out of 30 geometry IMO problems, it solved seven of them.
+4:28
+Now, there are two ways to look at this.
+4:31
+On one hand, seven out of 30 isn't very much.
+4:33
+It's not even an honorable mention at the IMO.
+4:36
+On the other hand, the fact that brute force can solve
+4:39
+even one of the IMO problems is incredibly impressive.
+4:42
+IMO problems are very hard.
+4:45
+So how do we bring the score up?
+4:46
+On one hand, we could just throw our hands in the air and say,
+4:49
+okay, we need AI to make it better.
+4:50
+But that's not quite true, because DD has a fundamental
+4:53
+limitation that we haven't addressed yet.
+4:56
+DD can't solve equations.
+4:59
+This is a problem.
+5:00
+To see why, I'm going to tell you about a theorem called Thelz's theorem.
+5:04
+The angle in a semicircle here is always a right angle.
+5:08
+Here's a short proof using equations.
+5:10
+Draw a third line connecting the third point to the center.
+5:14
+Then the three lines I'm marking over here are all radii of the circle,
+5:17
+so they have the same length.
+5:19
+Therefore, the two smaller triangles are both isosceles.
+5:23
+Their opposite angles are equal.
+5:25
+Since the angles of the big triangle ABC sum to 180 degrees,
+5:29
+we have 2 alpha plus 2 beta equals 180 degrees.
+5:33
+Dividing both sides by 2, alpha plus beta equals 90 degrees.
+5:38
+But alpha plus beta is the angle ABC, so we're done the theorem.
+5:42
+Solving linear equations is something that computers can do very well
+5:46
+just using linear algebra, so the DeepMind researchers implemented
+5:49
+this in their model and called it algebraic reasoning, or AR for short.
+5:53
+So to recap, we have 2 modules so far.
+5:56
+Deductive database, or DD, is a hardcoded list of geometric rules.
+6:01
+Algebraic reasoning, or AR, is the ability to solve systems of linear equations.
+6:06
+The DeepMind team used these 2 models alternatingly.
+6:09
+So they first ran DD until it stopped.
+6:12
+And then they ran AR until that stopped, and then DD and then AR.
+6:16
+And they kept doing this until either the problem was solved or the time ran out.
+6:20
+Together, they called this procedure DD plus AR.
+6:25
+This works really well.
+6:26
+For example, given this problem below from their paper,
+6:30
+the DD module deduced the first two lines.
+6:33
+The AR module then took the resulting system of equations and solved them.
+6:39
+Now here are the results on the IMO geometry problems.
+6:42
+DD alone solved 7 out of 30 problems.
+6:45
+DD plus AR solved 14 out of 30 problems.
+6:49
+The DeepMind researchers pushed it even further to 18 out of 30
+6:52
+problems by adding in what they call human-coded heuristics.
+6:56
+This is nearly a bronze medal at the IMO.
+6:59
+To me, it's really surprising that DD plus AR does so well.
+7:03
+Because IMO geometry problems are really really hard,
+7:05
+so the fact that a brute force approach can get you this far at all is very surprising.
+Where AI comes in
+7:10
+And given that we've gotten this far with no AI at all,
+7:13
+it's worth asking why bother adding AI in the very first place?
+7:17
+Because our model has a fundamental weakness.
+7:20
+It struggles to make so-called auxiliary constructions.
+7:25
+To solve many hard geometry problems, you have to draw in
+7:28
+extra lines or shapes that aren't in the diagram already.
+7:31
+For example, suppose you want to show that the
+7:34
+sum of the angles in a triangle is 180 degrees.
+7:36
+Here's a very slick way to do it.
+7:38
+Draw two parallel lines at the top and the bottom of the triangle.
+7:42
+This is the auxiliary construction.
+7:44
+The angles labeled alpha on the inside of the Z are equal.
+7:48
+Likewise for the angles over here, labeled beta.
+7:51
+Now call the remaining angle of the triangle gamma.
+7:54
+And now you just solve equations.
+7:56
+We know that alpha plus gamma plus beta is 180 degrees
+7:59
+because the top purple line is a straight line.
+8:03
+But alpha, beta, gamma are also the angles of the triangle, so they sum to 180 degrees.
+8:08
+We're now done.
+8:09
+Now the key step was to draw the two lines at the top and bottom.
+8:12
+Once we had that, we could deduce the theorem from facts that we already knew.
+8:16
+In a sense, this is what makes geometry problems so fun.
+8:19
+The true gems in the field always feel like adding
+8:21
+in the right idea seemingly came out of left field.
+8:24
+In IMO geometry problems, you typically need to add not just one,
+8:28
+but several auxiliary constructions to the diagram.
+8:31
+Which is bad news for machines because it means that
+8:33
+there's an infinite search space at every step.
+8:37
+This is where AI comes in.
+8:38
+The DeepMind team built a language model whose one
+8:41
+and only job was to produce auxiliary constructions.
+8:45
+The input to the language model was the problem statement
+8:48
+and the steps in the proof that had been produced so far.
+8:51
+Now I'm writing it in English, but keep in mind that it has to be
+8:53
+inputted using the geometry coding language that we talked about before.
+8:57
+The output of the language model would be on auxiliary construction.
+9:01
+So an extra point or figure on the diagram.
+9:04
+So given this, here's how Alpha Geometry works in total.
+9:08
+First, input the problem statement into the language model.
+9:11
+It will return an auxiliary construction.
+9:14
+Second, give this new diagram to DD plus AR.
+9:18
+It will output a bunch of steps until it terminates.
+9:21
+Feed this output back into the language model.
+9:23
+It will produce yet another auxiliary construction.
+9:26
+Feed this new output back into DD plus AR.
+9:29
+Repeat this procedure until either the problem is solved or the time runs out.
+9:34
+Put simply, the language model is the creative
+9:36
+brain thinking of clever auxiliary constructions.
+9:39
+On the other hand, DD plus AR is the logical brain,
+9:42
+using pure logic to deduce new facts from known ones.
+9:46
+So the creative brain thinks of a clever idea
+9:48
+and the logical brain deduces things from that.
+9:51
+The creative brain thinks of yet another idea and
+9:53
+the logical brain deduces even more things from that.
+9:57
+And so on and so forth.
+9:59
+So we've been talking about this language model and that's all fine and good,
+10:02
+but if there's one thing we haven't discussed,
+10:03
+where are they getting their training data?
+10:06
+Because there aren't that many IMO geometry problems with solutions available online.
+10:11
+So you need to do something else.
+10:12
+The Alpha Geometry team circumvented this issue by doing something quite interesting.
+10:17
+They generated their own training data.
+10:19
+Here's how you can generate a sample problem and solution for your training data.
+10:23
+Randomly plot a bunch of points and lines on the plane.
+10:27
+Then using DD plus AR, deduce everything you can.
+10:31
+Like various angles are equal.
+10:33
+Various lines are parallel.
+10:34
+It'll conclude, for example, that the sum of the
+10:37
+three angles in the triangle is 180 degrees.
+10:40
+Now go backwards.
+10:41
+Erase some portions of the diagram.
+10:44
+Now we can state a problem.
+10:46
+Given this triangle showed that the sum of the angles is 180 degrees.
+10:50
+To solve it, we would need to draw back the lines that we'd erased,
+10:53
+but those would be auxiliary constructions.
+10:56
+So just like that, Alpha Geometry generated some new training data.
+11:00
+They randomly plotted a bunch of lines and points on the plane.
+11:03
+They used DD plus AR to deduce a bunch of known theorems from that.
+11:07
+And then they erased some portions of the diagram.
+11:10
+So that if you want to arrive at that theorem yourself,
+11:12
+you would need to draw those portions back in using an auxiliary construction.
+11:17
+In fact, they generated hundreds of millions of synthetic proof examples.
+11:20
+A total of 9 million of them required at least one auxiliary construction.
+11:26
+Here are some examples of the very complicated diagrams that this process produced.
+11:30
+The most complex synthetic proof had an impressive
+11:34
+length of 247 steps with two auxiliary constructions.
+11:38
+With all this data, they were able to train their language model.
+11:41
+So how did this whole model perform?
+11:43
+Well, recall that DD solved 7 out of 30 problems.
+11:47
+DD plus AR solved 14 out of 30 problems.
+11:50
+DD plus AR plus human quadratureistics solved 18 out of 30.
+11:55
+If you combine DD plus AR with the language model with some fine tuning,
+11:59
+it was able to solve 25 out of 30 problems.
+12:03
+So why is this so exciting?
+12:05
+Well, to me, Alpha Geometry isn't just about solving triangles.
+12:09
+It's really about something much deeper, about machines
+12:11
+being able to think and reason like human beings.
+12:15
+Alpha geometry can think creatively, but also very logically.
+12:19
+This is exciting because this general strategy,
+12:22
+using creativity and logic together, is by no means specific to geometry.
+12:26
+It's used in problem solving in any kind of domain.
+12:29
+For example, science, medicine, engineering, you name it.
+12:33
+Of course, alpha geometry wasn't built to solve problems in those other domains,
+12:37
+but it can give us a glimpse into how machines might try to tackle those problems.
+12:42
+And that's a future I'm really excited for.
+12:44
+That's all for this video.
+12:45
+Thanks so much for watching.
+12:46
+Bye.
+12:48
+This video was the second in a series of guest videos that I'm doing this summer.
+12:52
+This one comes from Aditya Chakravarti, who runs the channel Aleph Not.
+12:56
+It's a really nice channel if you're not familiar with it.
+12:58
+He does a great job taking various higher level math topics and then
+13:01
+distilling them into a bite-sized but nevertheless very substantive summary.
+13:05
+Even though alpha geometry was only announced last year, January of 2024,
+13:09
+already there have been some pretty meaningful updates to the space of AI's solving math
+13:13
+contest problems.
+13:14
+This year, there were multiple different groups that achieved a gold level
+13:18
+performance not just on the geometry problems, but on all the problems.
+13:21
+And at least those from Google DeepMind and OpenAI were purportedly
+13:24
+just doing it with natural language, so no domain specific languages
+13:28
+like this geometry one, or even a math specific language like Lean.
+13:32
+I was particularly excited when he pitched the idea of doing alpha
+13:35
+geometry as his guest video because I thought it might pair
+13:37
+particularly well with a different video that I've got in the works.
+13:40
+It's probably not going to come out until the end
+13:43
+of the year about the role of AI in math research.
+13:46
+And as part of that project, I'm collecting interviews and stories with various
+13:49
+mathematicians and I wanted to solicit any from those of you in the audience.
+13:52
+So I put a Google form in the description, essentially if you have
+13:56
+done any kind of math research or honestly even just math as a student,
+14:00
+where somehow incorporating an AI tool was of interest.
+14:03
+Not necessarily because it was useful, but maybe because
+14:06
+it was not useful in a particularly interesting way.
+14:08
+If you think it's a story worth sharing, I'd love to hear it,
+14:11
+so please feel free to fill out that form.
+14:13
+In the meantime, there are three more guest videos coming your way,
+14:16
+and I'll be back with my own content in the fall.
+14:18
+See you then.
