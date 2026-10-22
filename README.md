@@ -72,7 +72,7 @@ Interesting findings:
 - **XML chapters** — made it trivial to target specific sections (e.g., "analyse chapter 10 and 11")
 - **Follow-up questions** — improved answer completeness. In an App this could be handled by prompt engineering.
 
-At the time of this demo, Claude Code could only read 25,000 tokens at a time, but the Anthropic API had a 200,000 token window. So RAG isn't needed yet.
+At the time of this demo, Claude Code could only read 25,000 tokens at a time. It's now at 1,000,000.
 
 ## 🏗️ Architecture
 
