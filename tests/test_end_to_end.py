@@ -2,7 +2,7 @@
 
 Tests complete successful workflows from user input to final output:
 - File-based workflow: transcript file → CLI → XML output
-- URL-based workflow: YouTube URL → url_to_transcript.py → YouTube API → XML output
+- URL-based workflow: YouTube URL → url_parser.py → YouTube API → XML output
 - File vs URL equivalence verification
 
 Uses unified run_cli() helper with automatic rate limiting protection.
@@ -100,8 +100,6 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     # Verify output matches reference file exactly
     output_file = tmp_path / "input.xml"
     reference_file = EXAMPLES_DIR / "x4-chapters.xml"
-
-    assert output_file.exists()
     assert_files_identical(output_file, reference_file)
 
 
@@ -117,8 +115,6 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
 
     output_file = tmp_path / "input.xml"
     reference_file = EXAMPLES_DIR / "x3-chapters-with-blanks.xml"
-
-    assert output_file.exists()
     assert_files_identical(output_file, reference_file)
 
 
@@ -212,18 +208,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     assert len(url_xml_files) == 1
     url_xml = url_xml_files[0]
 
-    # Parse both XML files
-    file_tree = ET.parse(file_xml)
-    url_tree = ET.parse(url_xml)
-    file_root = file_tree.getroot()
-    url_root = url_tree.getroot()
+    file_root = ET.parse(file_xml).getroot()
+    url_root = ET.parse(url_xml).getroot()
 
-    # 1. Assert both files have same line count
-    file_lines = len(file_xml.read_text(encoding="utf-8").splitlines())
-    url_lines = len(url_xml.read_text(encoding="utf-8").splitlines())
-    assert file_lines == url_lines, "Line count must be the same"
-
-    # 2. Assert transcript element attributes
+    # 1. Assert transcript element attributes
     expected_attrs = ["video_title", "video_published", "video_duration", "video_url"]
 
     # File transcript should have empty metadata
@@ -240,26 +228,10 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         "URL missing required metadata"
     )
 
-    # 3. Assert matching chapter structure
-    file_chapters = file_root.findall(".//chapter")
-    url_chapters = url_root.findall(".//chapter")
-    assert len(file_chapters) == len(url_chapters), "Chapter count mismatch"
-
-    # 4. Assert matching chapter titles
-    file_titles = [ch.get("title") for ch in file_chapters]
-    url_titles = [ch.get("title") for ch in url_chapters]
-    assert file_titles == url_titles, "Chapter titles don't match"
-
-    # 5. Assert similar content volume per chapter (allow minor variations)
-    for i, (file_ch, url_ch) in enumerate(zip(file_chapters, url_chapters, strict=False)):
-        file_content = (file_ch.text or "").strip()
-        url_content = (url_ch.text or "").strip()
-        file_content_lines = len(file_content.split("\n")) if file_content else 0
-        url_content_lines = len(url_content.split("\n")) if url_content else 0
-
-        assert abs(file_content_lines - url_content_lines) <= 2, (
-            f"Chapter {i} ({file_titles[i]}) content volume differs significantly"
-        )
+    # 2. Assert identical chapters: titles, start times and transcript text
+    file_chapters = [(ch.attrib, ch.text) for ch in file_root.iter("chapter")]
+    url_chapters = [(ch.attrib, ch.text) for ch in url_root.iter("chapter")]
+    assert file_chapters == url_chapters, "Chapters differ between file and URL"
 
 
 @pytest.mark.slow
@@ -293,14 +265,4 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     ]
     assert first_3_lines == expected_manual_version, (
         f"Expected clean manual transcript, got: {first_3_lines}"
-    )
-
-    # Auto generated transcript (messier)
-    autogen_version = [
-        "0:00 [Music]",
-        "0:18 We're no strangers to",
-        "0:21 love. You know the rules and so do",
-    ]
-    assert first_3_lines != autogen_version, (
-        "Should not match messy auto-generated transcript"
     )
