@@ -21,11 +21,12 @@ from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
 # Test constants
 EXAMPLES_DIR = Path("example_transcripts")
-URL_CHAPTERS = "https://www.youtube.com/watch?v=zueuzhBkd9Y"
-URL_CHAPTERS_SHARED = "https://youtu.be/zueuzhBkd9Y?si=8cEkF7OrXrB1R4d7&t=27"
+# Creator captions and chapters keep output stable; auto-generated ones drift.
+URL_CHAPTERS = "https://www.youtube.com/watch?v=4NlrfOl0l8U"
+URL_CHAPTERS_SHARED = "https://youtu.be/4NlrfOl0l8U?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
 REFERENCE_CHAPTERS = (  # reference files for URL_CHAPTERS
-    "i-tested-gemini-4-vs-opus-5-5-vs-gpt-6-astra-vs-muse-wonder-5-use-cases"
+    "the-ai-that-solved-imo-geometry-problems-guest-video-by-aleph0"
 )
 URL_PLAYLIST = (
     "https://www.youtube.com/watch?v=LorEJPrALcg&list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
@@ -66,14 +67,6 @@ def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, s
     return result.returncode, result.stdout + result.stderr
 
 
-def setup_reference_file(tmp_path: Path, reference_name: str) -> Path:
-    """Copy reference file to tmp directory for testing."""
-    source = EXAMPLES_DIR / reference_name
-    target = tmp_path / reference_name
-    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-    return target
-
-
 def assert_files_identical(actual: Path, expected: Path) -> None:
     """Assert two files are identical using cross-platform comparison."""
     expected_content = expected.read_text(encoding="utf-8")
@@ -106,7 +99,7 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
 
     # Verify output matches reference file exactly
     output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x4-chapters.xml")
+    reference_file = EXAMPLES_DIR / "x4-chapters.xml"
 
     assert output_file.exists()
     assert_files_identical(output_file, reference_file)
@@ -123,7 +116,7 @@ def test_file_chapters_with_blanks_success(tmp_path: Path) -> None:
     assert "Created:" in output
 
     output_file = tmp_path / "input.xml"
-    reference_file = setup_reference_file(tmp_path, "x3-chapters-with-blanks.xml")
+    reference_file = EXAMPLES_DIR / "x3-chapters-with-blanks.xml"
 
     assert output_file.exists()
     assert_files_identical(output_file, reference_file)
@@ -151,7 +144,7 @@ def test_url_multi_chapters_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Expected exactly one XML file to be generated"
 
-    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
+    reference_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -166,7 +159,7 @@ def test_url_multi_chapters_shared_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    reference_file = setup_reference_file(tmp_path, f"{REFERENCE_CHAPTERS}.xml")
+    reference_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
@@ -181,9 +174,7 @@ def test_url_single_chapter_success(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    reference_file = setup_reference_file(
-        tmp_path, "pick-up-where-you-left-off-with-claude.xml"
-    )
+    reference_file = EXAMPLES_DIR / "pick-up-where-you-left-off-with-claude.xml"
     assert_files_identical(xml_files[0], reference_file)
 
 
