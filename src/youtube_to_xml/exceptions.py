@@ -12,7 +12,7 @@ EXCEPTION_MESSAGES = {
     "url_is_invalid_error": "Invalid URL format",
     "url_video_unavailable_error": "YouTube video unavailable",
     "url_video_is_private_error": "Video is private and transcript cannot be downloaded",
-    "url_transcript_not_found_error": "This video doesn't have a transcript available",
+    "url_transcript_not_found_error": "This video doesn't have an English transcript",
     "url_rate_limit_error": "YouTube is temporarily limiting requests - try again later",
     "url_not_youtube_error": "URL is not a YouTube video",
     "url_incomplete_error": "YouTube URL is incomplete",

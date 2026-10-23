@@ -31,7 +31,7 @@ youtube-to-xml https://youtu.be/Q4gsvJvRjCU
 ✅ Created: how-claude-code-hooks-save-me-hours-daily.xml
 ```
 
-Transcript language: creator-uploaded English subtitles are preferred, then YouTube's auto-generated English captions, then YouTube's auto-translation into English.
+English transcripts are chosen best quality first: creator subtitles, then YouTube's auto-captions, then YouTube's translation of non-English speech.
 
 Output XML (condensed - 4 chapters, 88 lines total):
 
@@ -45,11 +45,14 @@ Output XML (condensed - 4 chapters, 88 lines total):
     <chapter title="Intro" start_time="0:00">
       0:00 Hooks are hands down one of the best
       0:02 features in Claude Code and for some
-      <!-- ... more transcript content ... -->
+      0:03 reason a lot of people don't know about
+      <!-- ... 7 more transcript lines ... -->
     </chapter>
     <chapter title="Hooks" start_time="0:19">
       0:20 To create your first hook, use the hooks
-      <!-- ... more transcript content ... -->
+      0:22 slash command, which shows this scary
+      0:25 looking warning because hooks are
+      <!-- ... 13 more transcript lines ... -->
     </chapter>
     <!-- ... 2 more chapters ... -->
   </chapters>
@@ -58,7 +61,7 @@ Output XML (condensed - 4 chapters, 88 lines total):
 
 📁 **[View Output XML →](example_transcripts/how-claude-code-hooks-save-me-hours-daily.xml)**
 
-Unlike YouTube transcripts, which put each timestamp on its own line, every line here keeps its timestamp with the text (`0:02 Welcome to this talk`). So when an agent like Claude Code searches the file, every hit shows *what* was said and *when*, with no follow-up read to find the timestamp.
+Unlike YouTube transcripts, which put each timestamp on its own line, every line here keeps its timestamp with the text (`0:02 features in Claude Code and for some`). So when an agent like Claude Code searches the file, every hit shows *what* was said and *when*, with no follow-up read to find the timestamp.
 
 *You can also pass a `.txt` file of a transcript copied from YouTube's transcript panel. See `youtube-to-xml --help` for the format.*
 
