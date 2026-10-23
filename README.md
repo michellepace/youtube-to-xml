@@ -68,11 +68,9 @@ See **[demo-analysing-transcripts-with-claude-code.md](docs/demo-analysing-trans
 
 Interesting findings:
 
-- **63,231 tokens** — too large for Claude Code to read at once, but it adapted by using grep and reading specific line ranges
+- **63,231 tokens** — too large for Claude Code to read in one go at the time, but it adapted by using grep and reading specific line ranges
 - **XML chapters** — made it trivial to target specific sections (e.g., "analyse chapter 10 and 11")
 - **Follow-up questions** — improved answer completeness. In an App this could be handled by prompt engineering.
-
-At the time of this demo, Claude Code could only read 25,000 tokens at a time. It's now at 1,000,000.
 
 ## 🏗️ Architecture
 
