@@ -13,7 +13,7 @@ The file and URL parsers both produce a `TranscriptDocument`. yt-dlp gives dates
 The models store values exactly as they come in, and only `xml_builder` formats them, using `time_utils`:
 
 | Field | Raw value | File input |
-|---|---|---|
+| --- | --- | --- |
 | `VideoMetadata.video_published` | `YYYYMMDD` string | `""` |
 | `VideoMetadata.video_duration` | whole seconds (`int`) | `0` |
 | `TranscriptLine.timestamp`, `Chapter.start_time`, `Chapter.end_time` | seconds (`float`), last chapter ends at `math.inf` | same |

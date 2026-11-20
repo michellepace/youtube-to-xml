@@ -3,7 +3,7 @@
 Decisions that are important and not obvious from the code live here, not in code comments ([ADR 0001](0001-ban-code-comments.md)).
 
 | ADR | Decision |
-|---|---|
+| --- | --- |
 | [0001](0001-ban-code-comments.md) | Ban code comments; record decisions as ADRs |
 | [0002](0002-transcript-file-format-and-chapter-detection.md) | Transcript file format and the 2-line chapter rule |
 | [0003](0003-models-hold-raw-values.md) | Models hold raw values; formatting happens at output |

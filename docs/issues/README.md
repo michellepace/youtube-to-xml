@@ -13,7 +13,7 @@ done
 Code links point at commit `31a8828`, the last commit that still had the comments.
 
 | Draft | Area |
-|---|---|
+| --- | --- |
 | [01](01-file-parser-drops-text-lines.md) | `file_parser`: text lines silently dropped |
 | [02](02-console-log-handler-leaks-tracebacks.md) | `logging_config`: tracebacks shown to users |
 | [03](03-read-transcript-path-from-yt-dlp.md) | `url_parser`: transcript path guessed from yt-dlp's naming scheme |
