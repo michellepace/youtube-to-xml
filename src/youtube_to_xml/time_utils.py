@@ -10,17 +10,13 @@ from datetime import datetime
 
 from youtube_to_xml.exceptions import FileInvalidFormatError
 
-# Time conversion constants
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_MINUTE = 60
 MILLISECONDS_PER_SECOND = 1000.0
 
-# Timestamp format constants
-TIMESTAMP_PARTS_SHORT = 2  # M:SS format
-TIMESTAMP_PARTS_LONG = 3  # H:MM:SS format
+TIMESTAMP_PARTS_SHORT = 2
+TIMESTAMP_PARTS_LONG = 3
 
-# Timestamp pattern matching M:SS, MM:SS, H:MM:SS, HH:MM:SS, or HHH:MM:SS
-# Minutes and seconds must be 00-59, hours can be up to 999
 TIMESTAMP_PATTERN = re.compile(r"^(\d{1,2}:[0-5]\d(:[0-5]\d)?|\d{3}:[0-5]\d:[0-5]\d)$")
 
 
@@ -40,7 +36,6 @@ def timestamp_to_seconds(timestamp_str: str) -> float:
     Raises:
         FileInvalidFormatError: If timestamp format is invalid
     """
-    # Validate format using regex pattern
     ts = timestamp_str.strip()
     if not TIMESTAMP_PATTERN.match(ts):
         msg = f"Invalid timestamp format: {timestamp_str}"
@@ -48,13 +43,13 @@ def timestamp_to_seconds(timestamp_str: str) -> float:
 
     parts = ts.split(":")
 
-    if len(parts) == TIMESTAMP_PARTS_SHORT:  # M:SS or MM:SS format
+    if len(parts) == TIMESTAMP_PARTS_SHORT:
         minutes, seconds = parts
         m = int(minutes)
         s = int(seconds)
         return float(m * SECONDS_PER_MINUTE + s)
 
-    if len(parts) == TIMESTAMP_PARTS_LONG:  # H:MM:SS format
+    if len(parts) == TIMESTAMP_PARTS_LONG:
         hours, minutes, seconds = parts
         h = int(hours)
         m = int(minutes)

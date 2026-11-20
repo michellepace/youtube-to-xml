@@ -39,24 +39,12 @@ def assert_error_has_prefix_and_suffix(output: str) -> None:
     assert output.endswith("\n\nTry: youtube-to-xml --help\n")
 
 
-# =============================================================================
-# Unit Tests: Core Validation Functions
-# =============================================================================
-# NOTE: _has_txt_extension covered by CLI integration tests below
-# NOTE: URL validation logic tested in test_url_parser.py::TestValidateBasicUrlStructure
-
-
 def test_sanitise_video_title_for_filename_comprehensive() -> None:
     """Test normalization: special chars removed, lowercased, spaces to dashes."""
     title = "A - B --  C  (Multi   Spaces) & 😁 Special!@# Chars: Test"
     result = _sanitise_video_title_for_filename(title)
     expected = "a-b-c-multi-spaces-special-chars-test.xml"
     assert result == expected
-
-
-# =============================================================================
-# CLI Tests: Argument & Input Validation
-# =============================================================================
 
 
 def test_cli_shows_argparse_error_for_no_arguments(tmp_path: Path) -> None:
@@ -75,11 +63,6 @@ def test_cli_shows_error_for_non_url_non_txt_input(tmp_path: Path) -> None:
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
     assert EXCEPTION_MESSAGES["invalid_input_error"] in output
-
-
-# =============================================================================
-# CLI Tests: File Extension Validation
-# =============================================================================
 
 
 def test_cli_shows_error_for_nonexistent_non_txt_extension(tmp_path: Path) -> None:
@@ -101,11 +84,6 @@ def test_cli_shows_error_for_existing_non_txt_extension(tmp_path: Path) -> None:
     assert exit_code == 1
     assert_error_has_prefix_and_suffix(output)
     assert EXCEPTION_MESSAGES["invalid_input_error"] in output
-
-
-# =============================================================================
-# CLI Tests: File Processing Errors
-# =============================================================================
 
 
 def test_cli_shows_error_for_nonexistent_txt_file(tmp_path: Path) -> None:

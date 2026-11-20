@@ -27,7 +27,6 @@ def run_cli(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
         check=False,
     )
 
-    # Handle rate limiting - skip test if encountered
     if result.returncode != 0:
         output = (result.stderr + result.stdout).lower()
         if any(pattern in output for pattern in ["429", "rate limit", "bot protection"]):
@@ -36,7 +35,6 @@ def run_cli(url: str, tmp_path: Path | None = None) -> tuple[int, str]:
     return result.returncode, result.stdout + result.stderr
 
 
-# === URL Domain Validation ===
 @pytest.mark.slow
 def test_non_youtube_url_raises_not_youtube_error(tmp_path: Path) -> None:
     """Test rejection of non-YouTube domains (e.g., google.com)."""
@@ -53,7 +51,6 @@ def test_invalid_domain_raises_not_youtube_error(tmp_path: Path) -> None:
     assert EXCEPTION_MESSAGES["url_not_youtube_error"] in output
 
 
-# === YouTube URL Format ===
 @pytest.mark.slow
 def test_incomplete_youtube_id_raises_incomplete_error(tmp_path: Path) -> None:
     """Test error message for truncated YouTube video IDs."""
@@ -81,7 +78,6 @@ def test_playlist_url_raises_playlist_not_supported_error(tmp_path: Path) -> Non
     assert EXCEPTION_MESSAGES["url_playlist_not_supported_error"] in output
 
 
-# === Video Availability ===
 @pytest.mark.slow
 def test_removed_video_raises_unavailable_error(tmp_path: Path) -> None:
     """Test error message for removed/unavailable YouTube videos."""
@@ -98,7 +94,6 @@ def test_private_video_raises_private_error(tmp_path: Path) -> None:
     assert EXCEPTION_MESSAGES["url_video_is_private_error"] in output
 
 
-# === Transcript Availability ===
 @pytest.mark.slow
 def test_video_without_transcript_raises_transcript_not_found_error(
     tmp_path: Path,
@@ -109,7 +104,6 @@ def test_video_without_transcript_raises_transcript_not_found_error(
     assert EXCEPTION_MESSAGES["url_transcript_not_found_error"] in output
 
 
-# === Network/Access ===
 @pytest.mark.slow
 def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
     """Test graceful handling of YouTube bot protection (may succeed or fail)."""
@@ -124,7 +118,6 @@ def test_bot_protection_handles_gracefully(tmp_path: Path) -> None:
         assert len(xml_files) == 1
 
 
-# === Success Case ===
 @pytest.mark.slow
 def test_valid_video_with_transcript_creates_xml_successfully(
     tmp_path: Path,

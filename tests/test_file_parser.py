@@ -22,8 +22,6 @@ from youtube_to_xml.models import (
     VideoMetadata,
 )
 
-# ============= FIXTURES =============
-
 
 @pytest.fixture
 def minimal_transcript() -> str:
@@ -69,14 +67,10 @@ spoken words at timestamp
 spoken words at timestamp"""
 
 
-# ============= CORE FUNCTIONALITY TESTS =============
-
-
 def test_output_structure_conforms_to_interface(one_chapter_transcript: str) -> None:
     """Verify parse_transcript_document returns correct unified model structure."""
     doc = parse_transcript_file(one_chapter_transcript)
 
-    # Core structure validation
     assert isinstance(doc, TranscriptDocument)
     assert isinstance(doc.metadata, VideoMetadata)
     assert isinstance(doc.chapters[0], Chapter)
@@ -105,7 +99,7 @@ def test_single_chapter_time_boundaries(one_chapter_transcript: str) -> None:
     doc = parse_transcript_file(one_chapter_transcript)
     chapter = doc.chapters[0]
 
-    assert chapter.start_time == 10.0  # 0:10 = 10 seconds
+    assert chapter.start_time == 10.0
     assert chapter.end_time == math.inf
 
 
@@ -135,7 +129,6 @@ def test_chapter_boundary_calculation(complex_transcript: str) -> None:
     """Chapter boundaries are calculated correctly between multiple chapters."""
     doc = parse_transcript_file(complex_transcript)
 
-    # Time boundaries: 0:55 → 1:15:30 → 102:45:13 → ∞
     assert doc.chapters[0].start_time == 55.0
     assert doc.chapters[0].end_time == 4530.0
 
@@ -163,7 +156,6 @@ Line B at 2 seconds"""
     doc = parse_transcript_file(transcript)
     lines = doc.chapters[0].transcript_lines
 
-    # Lines should be in document order, not sorted by timestamp
     assert lines[0].timestamp == 5.0
     assert lines[0].text == "Line E at 5 seconds"
 
@@ -204,9 +196,6 @@ Special preserved: <@> & ! and unicode 你好 🎉 résumé
     assert lines[2].text == ""
 
 
-# ============= TRANSCRIPT LINE CONVERSION TESTS =============
-
-
 def test_multiple_transcript_lines_and_timestamp_conversion() -> None:
     """Many timestamp/text pairs with float second conversion."""
     lines_content = ["Chapter", "0:00", "Text 0"]
@@ -221,9 +210,6 @@ def test_multiple_transcript_lines_and_timestamp_conversion() -> None:
         assert isinstance(line.timestamp, float)
         assert line.timestamp == float(i)
         assert line.text == f"Text {i}"
-
-
-# ============= CHAPTER STRUCTURE TESTS =============
 
 
 def test_chapter_start_end_times_correct() -> None:
@@ -252,7 +238,6 @@ Content"""
 
 def test_subsequent_chapter_detection() -> None:
     """2-line boundary rule correctly identifies chapters."""
-    # Exactly 2 lines between timestamps = chapter boundary
     transcript = """First Chapter
 0:00
 Line 1
@@ -301,9 +286,6 @@ More content"""
     assert doc.chapters[0].title == "Intro"
 
 
-# ============= EDGE CASES =============
-
-
 def test_minimal_valid_transcript(minimal_transcript: str) -> None:
     """Process minimal 3-line transcript."""
     doc = parse_transcript_file(minimal_transcript)
@@ -333,13 +315,9 @@ Second text
     assert lines[2].text == ""
 
 
-# ============= ERROR VALIDATION TESTS =============
-
-
 @pytest.mark.parametrize(
     ("input_text", "expected_error"),
     [
-        # Empty input cases
         pytest.param(
             "",
             FileEmptyError,
@@ -350,7 +328,6 @@ Second text
             FileEmptyError,
             id="whitespace",
         ),
-        # Format validation cases
         pytest.param(
             "0:00\nShould start with title\nNot timestamp",
             FileInvalidFormatError,
@@ -388,7 +365,6 @@ def test_invalid_input_raises_appropriate_error(
 
 def test_rejects_non_increasing_chapter_timestamps() -> None:
     """Test that non-increasing chapter timestamps raise FileInvalidFormatError."""
-    # Create a transcript where second chapter has same/earlier start time than first
     transcript_with_bad_timestamps = """Chapter 1
 0:30
 First chapter content
