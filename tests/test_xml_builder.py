@@ -22,15 +22,6 @@ from youtube_to_xml.xml_builder import transcript_to_xml
 if TYPE_CHECKING:
     from pathlib import Path
 
-# ============= FIXTURES =============
-
-
-# ===========================================================
-# ========== 👍 NEW TRANSCRIPT_TO_XML TDD TESTS ============
-# ===========================================================
-
-# ============= 1. FOUNDATION TESTS (Basic XML Structure) =============
-
 
 def test_transcript_to_xml_empty_chapters() -> None:
     """Document with no chapters creates valid XML with empty chapters element."""
@@ -48,7 +39,6 @@ def test_transcript_to_xml_basic_structure() -> None:
     """Single chapter with empty metadata produces expected XML elements and structure."""
     metadata = VideoMetadata()
 
-    # Single chapter test data
     lines = [
         TranscriptLine(timestamp=2.0, text="Welcome to the session"),
         TranscriptLine(timestamp=150.0, text="Let's begin"),
@@ -60,7 +50,6 @@ def test_transcript_to_xml_basic_structure() -> None:
     document = TranscriptDocument(metadata=metadata, chapters=[chapter])
     xml = transcript_to_xml(document)
 
-    # Verify complete XML structure
     assert '<transcript video_title="" video_published=""' in xml
     assert 'video_duration="" video_url="">' in xml
     assert "<chapters>" in xml
@@ -78,7 +67,7 @@ def test_transcript_to_xml_single_untitled_chapter() -> None:
         metadata=VideoMetadata(),
         chapters=[
             ModelsChapter(
-                title="",  # Empty title test case
+                title="",
                 start_time=6.0,
                 end_time=18.0,
                 transcript_lines=[
@@ -107,9 +96,6 @@ def test_transcript_to_xml_single_untitled_chapter() -> None:
     assert xml == expected
 
 
-# ============= 2. CONTENT FORMATTING TESTS (Data Processing) =============
-
-
 def test_transcript_to_xml_inline_timestamp_format() -> None:
     """Transcript lines have inline timestamps, no bare timestamp lines."""
     lines = [
@@ -123,12 +109,10 @@ def test_transcript_to_xml_inline_timestamp_format() -> None:
     document = TranscriptDocument(metadata=VideoMetadata(), chapters=[chapter])
     xml = transcript_to_xml(document)
 
-    # Each line should have timestamp and text on the same line
     assert "      0:00 Hello world" in xml
     assert "      2:30 Goodbye world" in xml
     assert "      1:01:01 Final line" in xml
 
-    # No bare timestamp lines (timestamp alone on a line)
     assert re.search(r"^\s*\d+:\d{2}\s*$", xml, re.MULTILINE) is None
 
 
@@ -168,9 +152,6 @@ def test_transcript_to_xml_transcript_line_conversion() -> None:
     </chapter>"""
 
     assert expected_chapter in xml
-
-
-# ============= 3. VALIDATION TESTS (XML Compliance) =============
 
 
 def test_transcript_to_xml_special_character_handling() -> None:
@@ -234,14 +215,10 @@ def test_transcript_to_xml_indentation() -> None:
     document = TranscriptDocument(VideoMetadata(), [chapter])
     xml_lines = transcript_to_xml(document).split("\n")
 
-    # Verify indentation levels: 2 spaces per level, 6 for transcript content
-    assert xml_lines[2] == "  <chapters>"  # Level 1: 2 spaces
-    assert xml_lines[3].startswith("    <chapter")  # Level 2: 4 spaces
-    assert xml_lines[4].startswith("      0:00")  # Content: 6 spaces
-    assert xml_lines[6] == "    </chapter>"  # Closing: 4 spaces
-
-
-# ============= 4. COMPREHENSIVE TESTS (Complete XML Generation) =============
+    assert xml_lines[2] == "  <chapters>"
+    assert xml_lines[3].startswith("    <chapter")
+    assert xml_lines[4].startswith("      0:00")
+    assert xml_lines[6] == "    </chapter>"
 
 
 def test_transcript_to_xml_multi_chapter_complete() -> None:
@@ -277,45 +254,36 @@ def test_transcript_to_xml_multi_chapter_complete() -> None:
         ],
     )
 
-    # Generate XML using our new interface
     xml = transcript_to_xml(document)
 
-    # Parse XML for structured assertions (more reliable than string matching)
     root = ET.fromstring(xml)
 
-    # Verify XML declaration and root structure
     assert xml.startswith('<?xml version="1.0" encoding="utf-8"?>')
     assert root.tag == "transcript"
 
-    # Verify metadata attributes (URL method - populated and formatted)
     assert root.get("video_title") == "How Claude Code Hooks Work"
-    assert root.get("video_published") == "2025-07-17"  # Formatted by time_utils
-    assert root.get("video_duration") == "2m 43s"  # Formatted by time_utils
+    assert root.get("video_published") == "2025-07-17"
+    assert root.get("video_duration") == "2m 43s"
     assert root.get("video_url") == "https://youtube.com/watch?v=test123"
 
-    # Verify chapters structure
     chapters_elem = root.find("chapters")
     assert chapters_elem is not None
     chapter_elems = chapters_elem.findall("chapter")
     assert len(chapter_elems) == 2
 
-    # Verify chapter attributes
     intro_chapter, hooks_chapter = chapter_elems
     assert intro_chapter.get("title") == "Intro"
     assert intro_chapter.get("start_time") == "0:00"
     assert hooks_chapter.get("title") == "Hooks"
     assert hooks_chapter.get("start_time") == "0:20"
 
-    # Verify transcript content (inline timestamp/text format)
     intro_text = intro_chapter.text.strip().split("\n") if intro_chapter.text else []
     intro_lines = [line.strip() for line in intro_text if line.strip()]
 
-    # Check transcript lines in intro chapter (3 inline entries)
     assert intro_lines[0] == "0:00 Hooks are hands down one of the best"
     assert intro_lines[1] == "0:02 features in Claude Code and for some"
     assert intro_lines[2] == "0:05 reason a lot of people don't know about"
 
-    # Check transcript lines in hooks chapter (3 inline entries)
     hooks_text = hooks_chapter.text.strip().split("\n") if hooks_chapter.text else []
     hooks_lines = [line.strip() for line in hooks_text if line.strip()]
 

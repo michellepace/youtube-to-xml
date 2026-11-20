@@ -43,11 +43,9 @@ class TestSharedModelImports:
 
     def test_url_parser_uses_video_metadata_from_shared_models(self) -> None:
         """Verify url_parser uses VideoMetadata from shared models."""
-        # Check that fetch_video_metadata_and_transcript returns VideoMetadata
         sig = inspect.signature(_fetch_video_metadata_and_transcript)
         return_annotation = sig.return_annotation
 
-        # Should return tuple containing VideoMetadata
         args = get_args(return_annotation)
         if args:
             assert VideoMetadata in args, (
@@ -57,11 +55,9 @@ class TestSharedModelImports:
 
     def test_url_parser_uses_transcript_line_from_shared_models(self) -> None:
         """Verify url_parser uses TranscriptLine from shared models."""
-        # Check that extract_transcript_lines_from_json3 returns list[TranscriptLine]
         sig = inspect.signature(_extract_transcript_lines_from_json3)
         return_annotation = sig.return_annotation
 
-        # Should return list[TranscriptLine]
         args = get_args(return_annotation)
         if args:
             assert TranscriptLine in args, (
@@ -71,11 +67,9 @@ class TestSharedModelImports:
 
     def test_url_parser_uses_chapter_from_shared_models(self) -> None:
         """Verify url_parser uses Chapter from shared models."""
-        # Check that assign_transcript_lines_to_chapters returns list[Chapter]
         sig = inspect.signature(_assign_transcript_lines_to_chapters)
         return_annotation = sig.return_annotation
 
-        # Should return list[Chapter]
         args = get_args(return_annotation)
         if args:
             assert Chapter in args, (
@@ -89,15 +83,13 @@ class TestVideoMetadataDurationFormat:
 
     def test_video_metadata_duration_is_int_type(self) -> None:
         """Verify video_duration stores int type (raw seconds)."""
-        # Create instance with int duration (raw seconds)
         metadata = VideoMetadata(
             video_title="Test Video",
             video_published="20240315",
-            video_duration=163,  # Raw seconds as int
+            video_duration=163,
             video_url="https://youtube.com/watch?v=test",
         )
 
-        # Should accept int and store as int
         assert isinstance(metadata.video_duration, int), (
             "video_duration should be stored as int (raw seconds)"
         )
@@ -111,13 +103,11 @@ class TestXMLBuilderCompatibility:
 
     def test_url_parser_module_has_no_duplicate_xml_functions(self) -> None:
         """Verify url_parser has no duplicate XML functions."""
-        # Should not have local create_xml_document function
         create_xml_func = getattr(url_parser_module, "create_xml_document", None)
         assert create_xml_func is None, (
             "create_xml_document should not exist (use xml_builder.transcript_to_xml)"
         )
 
-        # Should not have local format_xml_output function
         format_xml_func = getattr(url_parser_module, "format_xml_output", None)
         assert format_xml_func is None, (
             "format_xml_output should not exist (use xml_builder.transcript_to_xml)"
@@ -125,7 +115,6 @@ class TestXMLBuilderCompatibility:
 
     def test_parse_youtube_url_returns_transcript_document_for_xml_builder(self) -> None:
         """Verify parse_youtube_url returns TranscriptDocument for xml_builder."""
-        # Verify return type is TranscriptDocument (xml_builder.transcript_to_xml accepts)
         sig = inspect.signature(parse_youtube_url)
         return_annotation = sig.return_annotation
 
@@ -140,7 +129,6 @@ class TestParseYoutubeUrlFunction:
 
     def test_parse_youtube_url_function_exists(self) -> None:
         """Verify parse_youtube_url function exists and is callable."""
-        # Function should exist and be importable
         assert callable(parse_youtube_url)
 
     def test_parse_youtube_url_accepts_one_parameter(self) -> None:
@@ -166,17 +154,13 @@ class TestParseYoutubeUrlFunction:
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Verify yt-dlp technical output is suppressed for clean output."""
-        # Use a real YouTube video that will succeed
         url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-        # Execute function
         parse_youtube_url(url)
 
-        # Capture all output
         captured = capsys.readouterr()
         combined_output = captured.out + captured.err
 
-        # Should NOT contain yt-dlp technical noise
         assert "[youtube]" not in combined_output, (
             "yt-dlp noise '[youtube]' should be suppressed with quiet=True"
         )
@@ -245,9 +229,8 @@ class TestExtractTranscriptLinesBehavior:
 
     def test_skips_events_without_segs(self) -> None:
         """Events without 'segs' key are skipped."""
-        # Create properly typed test events
         events: list[_Json3Event] = [
-            {"tStartMs": 1000},  # No segs
+            {"tStartMs": 1000},
             {"tStartMs": 2000, "segs": [{"utf8": "text"}]},
         ]
         result = _extract_transcript_lines_from_json3(events)
@@ -335,7 +318,7 @@ class TestDecomposedFunctions:
 
     def test_create_video_metadata_with_missing_fields(self) -> None:
         """Verify default values used when metadata fields are missing."""
-        raw_metadata: _YtDlpMetadata = {}  # Empty metadata
+        raw_metadata: _YtDlpMetadata = {}
         url = "https://youtube.com/watch?v=fallback"
 
         result = _create_video_metadata(raw_metadata, url)
@@ -352,14 +335,13 @@ class TestIsValidUrl:
     def test_rejects_invalid_url_structures(self) -> None:
         """Invalid URL structures return False."""
         invalid_urls = [
-            "youtube.com",  # No scheme
-            "http://",  # No netloc
-            "http://localhost",  # No TLD
-            "https://intranet",  # No TLD (internal network)
-            "not a url at all",  # Completely malformed
-            "random_text",  # Plain text
-            "",  # Empty string
-            # File paths (common user mistakes at CLI)
+            "youtube.com",
+            "http://",
+            "http://localhost",
+            "https://intranet",
+            "not a url at all",
+            "random_text",
+            "",
             "transcript.txt",
             "/path/to/file.txt",
             "data.md",
@@ -372,11 +354,9 @@ class TestIsValidUrl:
     def test_accepts_valid_url_structures(self) -> None:
         """Valid URL structures return True."""
         valid_urls = [
-            # YouTube variants (primary use case)
             "https://www.youtube.com/watch?v=abc123",
             "https://youtube.com/watch",
             "https://youtu.be/xyz789",
-            # Other valid URLs (for completeness)
             "https://www.google.com",
             "http://example.com/path",
         ]

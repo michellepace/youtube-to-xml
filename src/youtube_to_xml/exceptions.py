@@ -1,14 +1,11 @@
 """Custom exceptions for YouTube transcript processing."""
 
-# Centralised default exception messages
 EXCEPTION_MESSAGES = {
-    # File-related errors
     "file_empty_error": "Your file is empty",
     "file_invalid_format_error": "Wrong format in transcript file",
     "file_not_exists_error": "We couldn't find your file",
     "file_permission_error": "We don't have permission to access your file",
     "file_encoding_error": "File is not UTF-8 encoded",
-    # URL-related errors
     "url_is_invalid_error": "Invalid URL format",
     "url_video_unavailable_error": "YouTube video unavailable",
     "url_video_is_private_error": "Video is private and transcript cannot be downloaded",
@@ -19,7 +16,6 @@ EXCEPTION_MESSAGES = {
     "url_bot_protection_error": "YouTube requires verification - try switching networks",
     "url_playlist_not_supported_error": ("It's a YouTube playlist, provide a video URL"),
     "url_unmapped_error": "YouTube processing failed - unmapped error",
-    # Input validation errors
     "invalid_input_error": "Input must be a YouTube URL or .txt file",
 }
 
@@ -219,7 +215,6 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
     """
     error_msg = str(error).lower()
 
-    # Map specific error patterns to appropriate exceptions
     error_patterns = [
         ("429", URLRateLimitError),
         ("sign in to confirm you're not a bot", URLBotProtectionError),
@@ -235,7 +230,6 @@ def map_yt_dlp_exception(error: Exception) -> BaseTranscriptError:
         if pattern in error_msg:
             return exception_class()
 
-    # Default for unknown yt-dlp errors - preserve original yt-dlp message
     original_msg = str(error)
     clean_msg = original_msg.removeprefix("ERROR: ")
     return URLUnmappedError(clean_msg)

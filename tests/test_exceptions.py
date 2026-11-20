@@ -21,7 +21,6 @@ from youtube_to_xml.exceptions import (
     map_yt_dlp_exception,
 )
 
-# Auto-discover all exception classes that inherit from BaseTranscriptError
 ALL_EXCEPTION_CLASSES = [
     cls
     for _name, cls in inspect.getmembers(exceptions, inspect.isclass)
@@ -50,7 +49,6 @@ class TestExceptionMessages:
     def test_all_exceptions_have_default_messages(self) -> None:
         """Test that all exceptions have non-empty default messages."""
         for exception_class in ALL_EXCEPTION_CLASSES:
-            # Test default constructor (no args) to verify default messages work
             exception = exception_class()  # type: ignore[call-arg]
             assert str(exception), (
                 f"{type(exception).__name__} should have a default message"
@@ -67,11 +65,9 @@ class TestExceptionMessages:
     def test_all_exceptions_use_messages_constants(self) -> None:
         """Test all exception classes use messages from EXCEPTION_MESSAGES constant."""
         for exception_class in ALL_EXCEPTION_CLASSES:
-            # Instantiate with default message to check actual message content
             exception = exception_class()  # type: ignore[call-arg]
             message = str(exception)
 
-            # Verify this message exists in MESSAGES values
             assert message in EXCEPTION_MESSAGES.values(), (
                 f"{exception_class.__name__} uses hardcoded message: '{message}'"
             )
@@ -91,10 +87,8 @@ class TestExceptionMessages:
         """Derive expected message keys from exception class names in snake_case."""
 
         def class_name_to_message_key(class_name: str) -> str:
-            # Handle special cases
             name = class_name.replace("YouTube", "Youtube").replace("URL", "Url")
 
-            # E.g., URLIsInvalidError → url_is_invalid_error
             parts = re.findall(r"[A-Z][a-z]*", name)
             return "_".join(parts).lower()
 

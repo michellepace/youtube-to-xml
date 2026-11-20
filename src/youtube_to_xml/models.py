@@ -12,26 +12,44 @@ class VideoMetadata:
     """Video metadata for XML output.
 
     Stores raw data format - conversion to display format happens
-    in presentation layer via time_utils functions.
+    in presentation layer via time_utils functions (docs/adr/0003).
+
+    Attributes:
+        video_title: Title as given by YouTube
+        video_published: Upload date as raw YYYYMMDD, or empty
+        video_duration: Length in whole seconds (0 for file input)
+        video_url: Canonical watch URL
     """
 
     video_title: str = ""
-    video_published: str = ""  # YYYYMMDD raw format or empty
-    video_duration: int = 0  # seconds as integer (0 for file method)
+    video_published: str = ""
+    video_duration: int = 0
     video_url: str = ""
 
 
 @dataclass(frozen=True, slots=True)
 class TranscriptLine:
-    """A single timestamped transcript line."""
+    """A single timestamped transcript line.
 
-    timestamp: float  # seconds
+    Attributes:
+        timestamp: Start time in seconds
+        text: Spoken text
+    """
+
+    timestamp: float
     text: str
 
 
 @dataclass(frozen=True, slots=True)
 class Chapter:
-    """A video chapter containing transcript lines within its time range."""
+    """A video chapter containing transcript lines within its time range.
+
+    Attributes:
+        title: Chapter title
+        start_time: Start in seconds
+        end_time: End in seconds (math.inf for the last chapter)
+        transcript_lines: Lines spoken within [start_time, end_time)
+    """
 
     title: str
     start_time: float

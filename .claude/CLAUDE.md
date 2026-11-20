@@ -90,3 +90,4 @@ Run as pre-commit hooks and config in [pyproject.toml](pyproject.toml)
 
 - **Ruff**: Strictest settings (ALL rules enabled)
 - **Pyright**: Strict mode, configured to avoid ruff dupes
+- **No code comments**: Enforced by `scripts/check_comments.py` (ratchet, baseline `.comment-baseline.json`). Make names and tests carry the meaning, put non-obvious decisions in `docs/adr/`, and file an issue instead of writing an excuse comment. Tool pragmas (`noqa`, `type: ignore`, `pyright:`) are allowed. Use `/delete-comment` to audit existing comments.

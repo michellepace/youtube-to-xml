@@ -19,15 +19,11 @@ import pytest
 
 from youtube_to_xml.exceptions import EXCEPTION_MESSAGES
 
-# Test constants
 EXAMPLES_DIR = Path("example_transcripts")
-# Creator captions and chapters keep output stable; auto-generated ones drift.
 URL_CHAPTERS = "https://www.youtube.com/watch?v=4NlrfOl0l8U"
 URL_CHAPTERS_SHARED = "https://youtu.be/4NlrfOl0l8U?si=8cEkF7OrXrB1R4d7&t=27"
 URL_NO_CHAPTERS = "https://www.youtube.com/watch?v=UdoY2l5TZaA"
-REFERENCE_CHAPTERS = (  # reference files for URL_CHAPTERS
-    "the-ai-that-solved-imo-geometry-problems-guest-video-by-aleph0"
-)
+REFERENCE_CHAPTERS = "the-ai-that-solved-imo-geometry-problems-guest-video-by-aleph0"
 URL_PLAYLIST = (
     "https://www.youtube.com/watch?v=LorEJPrALcg&list=PLwsjfz99OaPGqtBZJrn3dwMRQSBrcpE7e"
 )
@@ -42,10 +38,8 @@ def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, s
         tmp_path: Working directory for the command
     """
     if isinstance(args, str):
-        # Single URL
         cmd_args = ["uv", "run", command, args]
     else:
-        # List of args
         cmd_args = ["uv", "run", command]
         cmd_args.extend(args)
 
@@ -58,7 +52,6 @@ def run_cli(command: str, args: list[str] | str, tmp_path: Path) -> tuple[int, s
         check=False,
     )
 
-    # Handle rate limiting - skip test if encountered
     if result.returncode != 0:
         output = (result.stderr + result.stdout).lower()
         if any(pattern in output for pattern in ["429", "rate limit", "bot protection"]):
@@ -73,7 +66,6 @@ def assert_files_identical(actual: Path, expected: Path) -> None:
     actual_content = actual.read_text(encoding="utf-8")
 
     if expected_content != actual_content:
-        # Generate diff-like output for debugging
         diff_lines = list(
             difflib.unified_diff(
                 expected_content.splitlines(keepends=True),
@@ -97,7 +89,6 @@ def test_file_multi_chapters_success(tmp_path: Path) -> None:
     assert exit_code == 0
     assert "Created:" in output
 
-    # Verify output matches reference file exactly
     output_file = tmp_path / "input.xml"
     reference_file = EXAMPLES_DIR / "x4-chapters.xml"
     assert_files_identical(output_file, reference_file)
@@ -182,7 +173,6 @@ def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
     assert exit_code == 0
     assert "✅ Created" in output
 
-    # Should process exactly one video, not entire playlist
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1, "Should create exactly one XML file for single video"
 
@@ -190,19 +180,16 @@ def test_url_playlist_processes_single_video(tmp_path: Path) -> None:
 @pytest.mark.slow
 def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     """Test URL vs file processing equivalence using direct XML parsing."""
-    # Process file method
     input_file = EXAMPLES_DIR / f"{REFERENCE_CHAPTERS}.txt"
     (tmp_path / "input.txt").write_text(input_file.read_text(encoding="utf-8"))
 
     file_exit_code = run_cli("youtube-to-xml", ["input.txt"], tmp_path)[0]
 
-    # Process URL method
     url_exit_code = run_cli("youtube-to-xml", URL_CHAPTERS, tmp_path)[0]
 
     assert file_exit_code == 0
     assert url_exit_code == 0
 
-    # Get output files
     file_xml = tmp_path / "input.xml"
     url_xml_files = [f for f in tmp_path.glob("*.xml") if f.name != "input.xml"]
     assert len(url_xml_files) == 1
@@ -211,10 +198,8 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
     file_root = ET.parse(file_xml).getroot()
     url_root = ET.parse(url_xml).getroot()
 
-    # 1. Assert transcript element attributes
     expected_attrs = ["video_title", "video_published", "video_duration", "video_url"]
 
-    # File transcript should have empty metadata
     assert len(file_root.attrib) == 4, (
         "File transcript should have 4 empty metadata attributes"
     )
@@ -222,13 +207,11 @@ def test_url_vs_file_equivalent_output(tmp_path: Path) -> None:
         "File metadata should be empty"
     )
 
-    # URL transcript should have populated metadata
     assert len(url_root.attrib) >= 4, "URL transcript should have metadata attributes"
     assert all(attr in url_root.attrib for attr in expected_attrs), (
         "URL missing required metadata"
     )
 
-    # 2. Assert identical chapters: titles, start times and transcript text
     file_chapters = [(ch.attrib, ch.text) for ch in file_root.iter("chapter")]
     url_chapters = [(ch.attrib, ch.text) for ch in url_root.iter("chapter")]
     assert file_chapters == url_chapters, "Chapters differ between file and URL"
@@ -247,7 +230,6 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     xml_files = list(tmp_path.glob("*.xml"))
     assert len(xml_files) == 1
 
-    # Parse XML and get first chapter content
     tree = ET.parse(xml_files[0])
     root = tree.getroot()
     first_chapter = root.find(".//chapter")
@@ -257,7 +239,6 @@ def test_url_manual_transcript_priority(tmp_path: Path) -> None:
     content_lines = [line.strip() for line in content.split("\n") if line.strip()]
     first_3_lines = content_lines[:3]
 
-    # Expect to use manual transcripts as priority
     expected_manual_version = [
         "0:01 [♪♪♪]",
         "0:18 ♪ We're no strangers to love ♪",

@@ -18,7 +18,7 @@ from youtube_to_xml.logging_config import get_logger, setup_logging
 from youtube_to_xml.url_parser import is_valid_url, parse_youtube_url
 from youtube_to_xml.xml_builder import transcript_to_xml
 
-ARGPARSE_ERROR_CODE = 2  # argparse uses exit code 2 for argument errors
+ARGPARSE_ERROR_CODE = 2
 
 
 def _has_txt_extension(input_string: str) -> bool:
@@ -80,14 +80,13 @@ def _process_file_input(file_path_str: str, execution_id: str) -> tuple[str, str
 
     try:
         raw_transcript_text = transcript_file_path.read_text(encoding="utf-8")
-    except FileNotFoundError:  # in-built
+    except FileNotFoundError:
         raise FileNotExistsError from None
-    except PermissionError:  # in-built
+    except PermissionError:
         raise FilePermissionError from None
-    except UnicodeDecodeError:  # in-built
+    except UnicodeDecodeError:
         raise FileEncodingError from None
 
-    # Parsing errors (FileEmptyError, FileInvalidFormatError) bubble up from parser
     document = parse_transcript_file(raw_transcript_text)
 
     xml_content = transcript_to_xml(document)
@@ -158,16 +157,13 @@ def main() -> None:
         user_input = args.transcript
     except SystemExit as e:
         if e.code == ARGPARSE_ERROR_CODE:
-            # Display after argparse's message
             print("\nTry: youtube-to-xml --help", file=sys.stderr)
             sys.exit(1)
         else:
-            # Re-raise other SystemExits (like --help which should exit normally)
             raise
 
     logger.info("[%s] Starting CLI execution for: %s", execution_id, user_input)
 
-    # Main processing with single exception handler
     try:
         if is_valid_url(user_input):
             xml_content, output_filename = _process_url_input(user_input, execution_id)
@@ -179,13 +175,11 @@ def main() -> None:
         _save_xml_output(xml_content, output_filename, execution_id)
 
     except BaseTranscriptError as e:
-        # All our custom exceptions
         print(f"❌ {e}", file=sys.stderr)
         print("\nTry: youtube-to-xml --help", file=sys.stderr)
         logger.info("[%s] %s: %s", execution_id, type(e).__name__, e)
         sys.exit(1)
     except (PermissionError, OSError) as e:
-        # System errors from file operations
         print(f"❌ {e}", file=sys.stderr)
         print("\nTry: youtube-to-xml --help", file=sys.stderr)
         logger.exception("[%s] System error", execution_id)

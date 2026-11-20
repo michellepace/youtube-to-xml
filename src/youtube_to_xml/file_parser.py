@@ -33,7 +33,6 @@ from youtube_to_xml.models import (
 from youtube_to_xml.time_utils import TIMESTAMP_PATTERN, timestamp_to_seconds
 
 
-# Private TypedDict definition for internal chapter metadata
 class _InternalChapterDict(TypedDict):
     """Internal type for file-based chapter data during parsing."""
 
@@ -43,10 +42,8 @@ class _InternalChapterDict(TypedDict):
     transcript_start: int
 
 
-# Chapter detection rule: exactly 2 lines between timestamps indicates new chapter
 LINES_FOR_CHAPTER_BOUNDARY = 2
 
-# Format validation constants
 MINIMUM_LINES_REQUIRED = 3
 
 
@@ -72,19 +69,15 @@ def _validate_transcript_format(raw_transcript: str) -> None:
 
     transcript_lines = raw_transcript.splitlines()
 
-    # Remove blank lines for validation (consistent with processing)
     non_empty_lines = [line for line in transcript_lines if line.strip()]
 
-    # Must have at least 3 lines for minimum format
     if len(non_empty_lines) < MINIMUM_LINES_REQUIRED:
         raise FileInvalidFormatError
 
-    # Validate expected format: title, timestamp, text
     first_line_is_timestamp = TIMESTAMP_PATTERN.match(non_empty_lines[0].strip())
     second_line_is_timestamp = TIMESTAMP_PATTERN.match(non_empty_lines[1].strip())
     third_line_is_timestamp = TIMESTAMP_PATTERN.match(non_empty_lines[2].strip())
 
-    # Raise error if format is invalid
     if first_line_is_timestamp or not second_line_is_timestamp or third_line_is_timestamp:
         raise FileInvalidFormatError
 
@@ -148,23 +141,18 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
 
     file_chapter_dicts: list[_InternalChapterDict] = []
 
-    # Find first chapter
     if first_chapter := _find_first_chapter(transcript_lines, timestamp_indices):
         file_chapter_dicts.append(first_chapter)
 
-    # Find subsequent chapters
     file_chapter_dicts.extend(
         _find_subsequent_chapters(transcript_lines, timestamp_indices)
     )
 
-    # Build chapters with TranscriptLine objects
     chapters: list[ModelsChapter] = []
     for i, file_chapter_dict in enumerate(file_chapter_dicts):
-        # Determine transcript range and end time for this chapter
         if i < len(file_chapter_dicts) - 1:
             transcript_end_idx = file_chapter_dicts[i + 1]["title_index"]
             end_time = file_chapter_dicts[i + 1]["start_time"]
-            # Enforce monotonic chapter boundaries
             if end_time <= file_chapter_dict["start_time"]:
                 msg = "Subsequent chapter timestamps must be strictly increasing"
                 raise FileInvalidFormatError(msg)
@@ -172,11 +160,9 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
             transcript_end_idx = len(transcript_lines)
             end_time = math.inf
 
-        # Extract transcript lines from start timestamp to range end
         start_idx = file_chapter_dict["transcript_start"]
         chapter_raw_lines = transcript_lines[start_idx:transcript_end_idx]
 
-        # Convert alternating timestamp/text strings to TranscriptLine objects
         chapter_transcript_lines = _convert_strings_to_transcript_lines(chapter_raw_lines)
 
         chapters.append(
@@ -189,7 +175,7 @@ def parse_transcript_file(raw_transcript: str) -> TranscriptDocument:
         )
 
     return TranscriptDocument(
-        metadata=VideoMetadata(),  # Empty metadata for file method
+        metadata=VideoMetadata(),
         chapters=chapters,
     )
 
@@ -226,23 +212,17 @@ def _convert_strings_to_transcript_lines(
     i = 0
 
     while i < len(raw_lines):
-        # Check if current line is a timestamp
         if TIMESTAMP_PATTERN.match(raw_lines[i].strip()):
             timestamp_str = raw_lines[i]
 
-            # Get the text that follows (or empty if at end)
             if i + 1 < len(raw_lines):
-                # Check if next line is also a timestamp (shouldn't happen normally)
                 if TIMESTAMP_PATTERN.match(raw_lines[i + 1].strip()):
-                    # Two consecutive timestamps - add empty text for first
                     text = ""
-                    i += 1  # Only advance by 1 to process next timestamp
+                    i += 1
                 else:
-                    # Normal case: timestamp followed by text
                     text = raw_lines[i + 1]
-                    i += 2  # Advance past both timestamp and text
+                    i += 2
             else:
-                # Timestamp at end of chapter with no following text
                 text = ""
                 i += 1
 
@@ -253,8 +233,6 @@ def _convert_strings_to_transcript_lines(
                 )
             )
         else:
-            # Non-timestamp line without preceding timestamp (shouldn't happen)
-            # Skip it
             i += 1
 
     return result

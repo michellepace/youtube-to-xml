@@ -37,6 +37,7 @@ dev = [
 # TESTING (PYTEST)
 # =================================
 [tool.pytest.ini_options]
+pythonpath = ["scripts"]
 markers = [
   "slow: tests that require internet connection (hit yt-dlp API) (reviewed and confirmed)",
 ]
@@ -49,6 +50,7 @@ typeCheckingMode = "strict"
 pythonVersion = "3.15"
 venvPath = "."                # Claude Code Official: LSP plugin
 venv = ".venv"                # Claude Code Official: LSP plugin
+extraPaths = ["src", "scripts"] # tests import scripts/check_comments.py
 reportUnusedImport = false    # Ruff F401 covers it
 reportUnusedVariable = false  # Ruff F841
 reportDuplicateImport = false # Ruff F811
@@ -80,6 +82,9 @@ ignore = [ # ignore incompatible or overly pedantic rules
   "D103",    # Missing docstring in public function
   "S314",    # XML parsing (safe in tests with self-generated XML)
   "S607",    # partial executable paths (controlled test env)
+]
+"scripts/*" = [
+  "INP001", # standalone dev scripts, not a package
 ]
 "src/youtube_to_xml/cli.py" = [
   "TRY400", # logger.error for handled user errors (no traceback needed)
