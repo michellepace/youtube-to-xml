@@ -39,6 +39,13 @@ repos:
         types: [python]
         pass_filenames: false
 
+      - id: no-new-comments
+        name: no new code comments (ratchet)
+        entry: uv run python scripts/check_comments.py
+        language: system
+        types_or: [python, json]
+        pass_filenames: false
+
       - id: pyright
         name: pyright
         entry: uv run pyright
